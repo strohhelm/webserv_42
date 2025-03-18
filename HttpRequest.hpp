@@ -13,6 +13,9 @@
 #include"Colors.hpp"
 
 
+#include <arpa/inet.h> // send()
+
+
 enum class HttpMethod
 {
 	GET,
@@ -34,7 +37,7 @@ class HttpRequest
 		std::string _httpResponse;
 
 	public:
-		void parseInput(const std::string& requestBuffer);
+		void parseInput(const std::string& requestBuffer, int fd);
 		bool tokenizeRequest(const std::string& requestBuffer,std::string& requestLine, std::string& headers, std::string& body);
 		void setMethod(const std::string& method);
 		void setPath(const std::string& path);
@@ -45,8 +48,8 @@ class HttpRequest
 		void parseHeaders(const std::string& headerLines);
 		bool isValidRequest();
 
-		void handleRequest(void);
-		void handleGET(void);
+		void handleRequest(int fd);
+		void handleGET(int fd);
 		void handlePOST(void);
 		void handleDELETE(void);
 

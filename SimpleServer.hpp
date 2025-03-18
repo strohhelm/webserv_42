@@ -11,33 +11,44 @@
 #include <fstream>
 #include <map>
 
+#include <fcntl.h>
+
+
+
 #include"HttpRequest.hpp"
 
 
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
+#define BUFFER_SIZE 1024
 
 class SimpleServer
 {
 	private:
-		int					_domain;
-		int					_type;
-		int					_protocol;
-		int					_port;
-		u_long				_networkInterface;
-		struct sockaddr_in	_address;
-		int					_addressLen;
-		int					_amountOfConnections;
-		
-		int					_server_fd;
-		int					_bind;
-		int					_listen;
-		int					_client_fd;
+		int							_domain;
+		int							_type;
+		int							_protocol;
+		int							_port;
+		u_long						_networkInterface;
+		struct sockaddr_in			_clientAddress;
+		socklen_t					_clientAddressLen;
+		int							_amountOfConnections;
 
-		char 				_buffer[3000];
+		int							_serverSocket_fd;
+		int							_bind;
+		int							_listenSocket;
+		int							_clientSocket_fd;
 
-		struct pollfd		_mypoll;
+		char 						_buffer[3000];
+
+		struct pollfd				_mypoll;
+
+
+		std::vector<struct pollfd>	_poll_fds;
+		struct pollfd				_server_poll_fd;
+		std::vector<std::string>	_client_buffers;
+
 
 		// std::map<std::string, std::string> meta;
 
@@ -52,7 +63,7 @@ class SimpleServer
 		int startListenOnSocket(void);
 		int acceptConnectionsFromSocket(void);
 
-		void	handler(void);
+		void	handler(int index, int fd);
 		void	responder(void);
 		void	initPoll(void);
 		void	launch(void);
@@ -60,6 +71,9 @@ class SimpleServer
 		
 		void	connectionTest(int item, std::string message);
 
+		void	acceptNewConnection();
+		void	handleClient(int index);
+		void	removeClient(int index);
 
 		void	setNonBlocking(int fd);
 };

@@ -1,6 +1,6 @@
 #include"HttpRequest.hpp"
 
-void HttpRequest::parseInput(const std::string& requestBuffer)
+void HttpRequest::parseInput(const std::string& requestBuffer, int fd)
 {
 	std::string requestLine;
 	std::string headers;
@@ -8,12 +8,12 @@ void HttpRequest::parseInput(const std::string& requestBuffer)
 
 	tokenizeRequest(requestBuffer, requestLine, headers, body);
 
-	// std::cout << RED << "requestLine: " << requestLine << RESET << std::endl;
-	// std::cout << BLUE << "headers: " << headers << RESET << std::endl;
-	// std::cout << YELLOW << "body: " << body << RESET << std::endl;
+	std::cout << RED << "requestLine: " << requestLine << RESET << std::endl;
+	std::cout << BLUE << "headers: " << headers << RESET << std::endl;
+	std::cout << YELLOW << "body: " << body << RESET << std::endl;
 
 	parseRequestLine(requestLine);
-	handleRequest();
+	handleRequest(fd);
 }
 
 
@@ -108,12 +108,12 @@ void HttpRequest::setVersion(const std::string& version)
 }
 
 
-void HttpRequest::handleRequest(void)
+void HttpRequest::handleRequest(int fd)
 {
 	switch (_method)
 	{
 		case HttpMethod::GET:
-			handleGET();
+			handleGET(fd);
 			break;
 		case HttpMethod::POST:
 			handlePOST();
@@ -137,7 +137,7 @@ std::string readHtmlFile(const std::string & filename)
 }
 
 
-void HttpRequest::handleGET(void)
+void HttpRequest::handleGET(int fd)
 {
 	std::string htmlContent = readHtmlFile("index.html");
 	if(htmlContent.empty())
@@ -149,6 +149,8 @@ void HttpRequest::handleGET(void)
 		_httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " +
 					std::to_string(htmlContent.size()) + "\r\n\r\n" + htmlContent;
 	}
+	send(fd, _httpResponse.c_str(), _httpResponse.size(), 0);
+
 	// write(_client_fd, httpResponse.c_str(), httpResponse.size());
 	// close(_client_fd);
 

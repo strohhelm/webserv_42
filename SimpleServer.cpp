@@ -6,24 +6,30 @@
 SimpleServer::~SimpleServer()
 {
 	std::cout << "Destructor called" << std::endl;
-	if(_server_fd != -1)
+	for (auto& fd : _poll_fds)
 	{
-		close(_server_fd);
+		close(fd.fd);
 	}
 }
 
 SimpleServer::SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int amountOfConnections) :
 _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterface(networkInterface), _amountOfConnections(amountOfConnections)
 {
-	_server_fd = createSocket();
-	connectionTest(_server_fd, "_server_fd");
+	_serverSocket_fd = createSocket();
+	connectionTest(_serverSocket_fd, "_serverSocket_fd");
 	
+	// Set server to non blocking
+	fcntl(_serverSocket_fd, F_SETFL, O_NONBLOCK);
+
 	_bind = bindAddressToSocket();
 	connectionTest(_bind, "_bind");
 	
-	_listen = startListenOnSocket();
-	connectionTest(_listen, "_listen");
+	_listenSocket = startListenOnSocket();
+	connectionTest(_listenSocket, "_listenSocket");
 	
+	_server_poll_fd = {_serverSocket_fd, POLLIN, 0};
+	_poll_fds.push_back(_server_poll_fd);
+
 	launch();
 }
 
@@ -34,7 +40,7 @@ int SimpleServer::createSocket(void)
 
 int SimpleServer::startListenOnSocket(void)
 {
-	return listen(_server_fd, _amountOfConnections);
+	return listen(_serverSocket_fd, _amountOfConnections);
 }
 
 
@@ -56,11 +62,11 @@ int SimpleServer::startListenOnSocket(void)
 // 		return -1;
 // 	}
 
-// 	_client_fd = accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&_addressLen);
-// 	connectionTest(_client_fd, "_client_fd");
+// 	_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_clientAddress, (socklen_t*)&_clientAddressLen);
+// 	connectionTest(_clientSocket_fd, "_clientSocket_fd");
 
 // 	// Read request from client
-// 	int bytesReceived = recv(_client_fd, _buffer, sizeof(_buffer) - 1, MSG_DONTWAIT);
+// 	int bytesReceived = recv(_clientSocket_fd, _buffer, sizeof(_buffer) - 1, MSG_DONTWAIT);
 // 	// MSG_DONTWAIT – Perform a non-blocking read.
 // 	if (bytesReceived > 0)
 // 	{
@@ -72,7 +78,7 @@ int SimpleServer::startListenOnSocket(void)
 // 		return -1;
 // 	}
 
-// 	return _client_fd;
+// 	return _clientSocket_fd;
 // }
 
 #include <fcntl.h> // For fcntl()
@@ -91,7 +97,7 @@ void SimpleServer::setNonBlocking(int fd)
 
 int SimpleServer::acceptConnectionsFromSocket(void)
 {
-	initPoll();
+	// initPoll();
 	std::cout << "Waiting for a connection..." << std::endl;
 
 	int pollStatus = poll(&_mypoll, 1, 1000);  // Wait up to 1 second
@@ -109,17 +115,17 @@ int SimpleServer::acceptConnectionsFromSocket(void)
 	// Check if socket is ready for reading
 	if (_mypoll.revents & POLLIN)
 	{
-		_client_fd = accept(_server_fd, (struct sockaddr*)&_address, (socklen_t*)&_addressLen);
-		if (_client_fd < 0)
+		_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_clientAddress, (socklen_t*)&_clientAddressLen);
+		if (_clientSocket_fd < 0)
 		{
 			std::cerr << "Accept failed!" << std::endl;
 			return -1;
 		}
 
-		setNonBlocking(_client_fd); // Ensure the client socket is non-blocking
+		setNonBlocking(_clientSocket_fd); // Ensure the client socket is non-blocking
 
 		// Read request from client (only if data is ready)
-		int bytesReceived = recv(_client_fd, _buffer, sizeof(_buffer) - 1, 0);
+		int bytesReceived = recv(_clientSocket_fd, _buffer, sizeof(_buffer) - 1, 0);
 		if (bytesReceived > 0)
 		{
 			_buffer[bytesReceived] = '\0'; // Null-terminate received data
@@ -127,16 +133,16 @@ int SimpleServer::acceptConnectionsFromSocket(void)
 		else if (bytesReceived == 0)
 		{
 			std::cerr << "Client closed the connection." << std::endl;
-			close(_client_fd);
+			close(_clientSocket_fd);
 			return -1;
 		}
 		else
 		{
 			std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
-			close(_client_fd);
+			close(_clientSocket_fd);
 			return -1;
 		}
-		return _client_fd;
+		return _clientSocket_fd;
 	}
 	else
 	{
@@ -147,47 +153,121 @@ int SimpleServer::acceptConnectionsFromSocket(void)
 
 
 
-void SimpleServer::handler(void)
+void SimpleServer::handler(int index, int fd)
 {
-	std::cout << "Received request:\n" << _buffer << std::endl;
-	_request.parseInput(_buffer);
-	if(_request.getPath() == "/exit")
-	{
-		close(_server_fd);
-		close(_client_fd);
-	}
+	std::cout << "Received request:\n" << _client_buffers[index - 1] << std::endl;
+	_request.parseInput(_client_buffers[index - 1], fd);
+	// if(_request.getPath() == "/exit")
+	// {
+	// 	close(_serverSocket_fd);
+	// 	close(_clientSocket_fd);
+	// }
 }
 
 
 
 void SimpleServer::responder(void)
 {
-	write(_client_fd, _request.getHttpResponse().c_str(), _request.getHttpResponse().size());
-	close(_client_fd);	
+	write(_clientSocket_fd, _request.getHttpResponse().c_str(), _request.getHttpResponse().size());
+	close(_clientSocket_fd);	
 	// if keep-alive is requested dont close
 }
 
 
 
-void SimpleServer::initPoll(void)
+// void SimpleServer::initPoll(void)
+// {
+// 	memset(&_mypoll, 0, sizeof(_mypoll));
+// 	_mypoll.fd = _serverSocket_fd;
+// 	_mypoll.events = POLLIN;
+// }
+
+
+void SimpleServer::acceptNewConnection() {
+	struct sockaddr_in client_addr;
+	socklen_t client_len = sizeof(client_addr);
+	int client_fd = accept(_serverSocket_fd, (struct sockaddr*)&client_addr, &client_len);
+
+	if (client_fd < 0) return; // Non-blocking mode: No new connection
+
+	// Make client socket non-blocking
+	fcntl(client_fd, F_SETFL, O_NONBLOCK);
+
+	std::cout << "New connection accepted: " << client_fd << std::endl;
+
+	// Add client to poll list
+	struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
+	_poll_fds.push_back(client_poll_fd);
+	_client_buffers.emplace_back();
+}
+
+void SimpleServer::handleClient(int index)
 {
-	memset(&_mypoll, 0, sizeof(_mypoll));
-	_mypoll.fd = _server_fd;
-	_mypoll.events = POLLIN;
+	int client_fd = _poll_fds[index].fd;
+	char buffer[BUFFER_SIZE] = {0};
+
+	int bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
+	if (bytesReceived <= 0)
+	{
+		removeClient(index);
+		return;
+	}
+
+	buffer[bytesReceived] = '\0';
+	_client_buffers[index - 1] = buffer; // Store request data
+
+	std::cout << "Received: " << buffer << std::endl;
+}
+
+void SimpleServer::removeClient(int index) {
+    std::cout << "Closing connection: " << _poll_fds[index].fd << std::endl;
+    close(_poll_fds[index].fd);
+    _poll_fds.erase(_poll_fds.begin() + index);
+    _client_buffers.erase(_client_buffers.begin() + (index - 1));
 }
 
 void SimpleServer::launch(void)
 {
 	while(true)
 	{
-		
-		_client_fd = acceptConnectionsFromSocket();
-		if(_client_fd < 0)
+		int pollCount = poll(_poll_fds.data(), _poll_fds.size(), -1);
+		if(pollCount < 0)
+		{
+			perror("Poll failed");
+			break;
+		}
+
+		for (int i = _poll_fds.size() - 1; i >= 0; i--) // iteration through each file descriptor from backwards. easily to remove 
+		{
+			if (_poll_fds[i].revents & POLLIN) // data on socket available
+			{
+				if (_poll_fds[i].fd == _serverSocket_fd) // if event is on server add to poll file descriptors
+				{
+					acceptNewConnection();
+				}
+				else
+				{
+					handleClient(i);
+				}
+			}
+
+			if (_poll_fds[i].revents & POLLOUT && !_client_buffers[i - 1].empty())
+			{
+				handler(i, _poll_fds[i].fd);
+				// std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+				// send(_poll_fds[i].fd, response.c_str(), response.size(), 0);
+				_client_buffers[i - 1].clear(); // Clear after writing
+			}
+		}
+		/*
+		_clientSocket_fd = acceptConnectionsFromSocket();
+		if(_clientSocket_fd < 0)
 		{
 			continue;
 		}
 		handler();
 		responder();
+		*/
 	}
 }
 
@@ -195,19 +275,19 @@ void SimpleServer::launch(void)
 
 int SimpleServer::bindAddressToSocket()
 {
-	_addressLen = sizeof(_address);
-	memset((char*)&_address, 0, _addressLen);
-	_address.sin_family = _domain;
-	_address.sin_port = htons(_port);
-	_address.sin_addr.s_addr = htonl(_networkInterface);
+	_clientAddressLen = sizeof(_clientAddress);
+	memset((char*)&_clientAddress, 0, _clientAddressLen);
+	_clientAddress.sin_family = _domain;
+	_clientAddress.sin_port = htons(_port);
+	_clientAddress.sin_addr.s_addr = htonl(_networkInterface);
 
 	// for instant restart of server
 	// |
 	// v
 	int opt = 1;
-	setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-	return bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address));
+	return bind(_serverSocket_fd, (struct sockaddr*)&_clientAddress, sizeof(_clientAddress));
 }
 
 void SimpleServer::connectionTest(int item, std::string message)
