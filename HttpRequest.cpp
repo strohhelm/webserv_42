@@ -110,20 +110,20 @@ void HttpRequest::setVersion(const std::string& version)
 
 void HttpRequest::handleRequest(int fd)
 {
-	switch (_method)
-	{
-		case HttpMethod::GET:
-			handleGET(fd);
-			break;
-		case HttpMethod::POST:
-			handlePOST();
-			break;
-		case HttpMethod::DELETE:
-			handleDELETE();
-			break;		
-		default:
-			break;
-	}
+	// switch (_method)
+	// {
+	// 	case HttpMethod::GET:
+	// 		handleGET(fd);
+	// 		break;
+	// 	case HttpMethod::POST:
+	// 		handlePOST();
+	// 		break;
+	// 	case HttpMethod::DELETE:
+	// 		handleDELETE();
+	// 		break;		
+	// 	default:
+	// 		break;
+	// }
 }
 
 std::string readHtmlFile(const std::string & filename)

@@ -49,7 +49,6 @@ class SimpleServer
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
 
-
 		// std::map<std::string, std::string> meta;
 
 		HttpRequest			_request;
@@ -93,7 +92,7 @@ class SimpleServer
 		void	connectionTest(int item, std::string message);
 
 
-		void	setNonBlocking(int fd);
+		// void	setNonBlocking(int fd);
 };
 
 #endif
