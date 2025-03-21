@@ -31,9 +31,9 @@ class SimpleServer
 		int							_protocol;
 		int							_port;
 		u_long						_networkInterface;
-		struct sockaddr_in			_clientAddress;
-		socklen_t					_clientAddressLen;
-		int							_amountOfConnections;
+		struct sockaddr_in			_serviceAddress;
+		socklen_t					_serviceAddressLen;
+		int							_maxAmountOfConnections;
 
 		int							_serverSocket_fd;
 		int							_bind;
@@ -47,7 +47,7 @@ class SimpleServer
 
 		std::vector<struct pollfd>	_poll_fds;
 		struct pollfd				_server_poll_fd;
-		std::vector<std::string>	_client_buffers;
+		std::vector<std::string>	_recvBuffer;
 
 
 		// std::map<std::string, std::string> meta;
@@ -55,10 +55,11 @@ class SimpleServer
 		HttpRequest			_request;
 
 	public:
-	SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int amountOfConnections);
+	SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
 		~SimpleServer();
 		
 		int createSocket(void);
+		int initAddress(void);
 		int bindAddressToSocket(void);
 		int startListenOnSocket(void);
 		int acceptConnectionsFromSocket(void);

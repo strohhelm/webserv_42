@@ -12,25 +12,45 @@ SimpleServer::~SimpleServer()
 	}
 }
 
-SimpleServer::SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int amountOfConnections) :
-_domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterface(networkInterface), _amountOfConnections(amountOfConnections)
+SimpleServer::SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections) :
+_domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterface(networkInterface), _maxAmountOfConnections(maxAmountOfConnections)
 {
 	_serverSocket_fd = createSocket();
 	connectionTest(_serverSocket_fd, "_serverSocket_fd");
+	// closing if fail
 	
+
+	initAddress();
+
+	// for instant restart of server
+	// |
+	// v
+	int opt = 1;
+	setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	// Set server to non blocking
 	fcntl(_serverSocket_fd, F_SETFL, O_NONBLOCK);
+	
+
 
 	_bind = bindAddressToSocket();
 	connectionTest(_bind, "_bind");
+	// closing if fail
 	
 	_listenSocket = startListenOnSocket();
 	connectionTest(_listenSocket, "_listenSocket");
+	// closing if fail
+
 	
+
+
+
 	_server_poll_fd = {_serverSocket_fd, POLLIN, 0};
 	_poll_fds.push_back(_server_poll_fd);
 
 	launch();
+
+
+
 }
 
 int SimpleServer::createSocket(void)
@@ -40,7 +60,36 @@ int SimpleServer::createSocket(void)
 
 int SimpleServer::startListenOnSocket(void)
 {
-	return listen(_serverSocket_fd, _amountOfConnections);
+	return listen(_serverSocket_fd, _maxAmountOfConnections);
+}
+
+int SimpleServer::initAddress(void)
+{
+	_serviceAddressLen = sizeof(_serviceAddress);
+	memset((char*)&_serviceAddress, 0, _serviceAddressLen);
+	_serviceAddress.sin_family = _domain;
+	_serviceAddress.sin_port = htons(_port);
+	_serviceAddress.sin_addr.s_addr = htonl(_networkInterface);
+	return 0;
+}
+
+
+int SimpleServer::bindAddressToSocket()
+{
+	return bind(_serverSocket_fd, (struct sockaddr*)&_serviceAddress, sizeof(_serviceAddress));
+}
+
+void SimpleServer::connectionTest(int item, std::string message)
+{
+	if (item < 0)
+	{
+		std::cerr << "Failed to connect " << message << std::endl;
+		throw std::runtime_error("Socket connection failed.");
+	}
+	else
+	{
+		std::cout << "Connection successful" << std::endl;
+	}
 }
 
 
@@ -62,7 +111,7 @@ int SimpleServer::startListenOnSocket(void)
 // 		return -1;
 // 	}
 
-// 	_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_clientAddress, (socklen_t*)&_clientAddressLen);
+// 	_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_serviceAddress, (socklen_t*)&_serviceAddressLen);
 // 	connectionTest(_clientSocket_fd, "_clientSocket_fd");
 
 // 	// Read request from client
@@ -115,7 +164,7 @@ int SimpleServer::acceptConnectionsFromSocket(void)
 	// Check if socket is ready for reading
 	if (_mypoll.revents & POLLIN)
 	{
-		_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_clientAddress, (socklen_t*)&_clientAddressLen);
+		_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_serviceAddress, (socklen_t*)&_serviceAddressLen);
 		if (_clientSocket_fd < 0)
 		{
 			std::cerr << "Accept failed!" << std::endl;
@@ -155,8 +204,8 @@ int SimpleServer::acceptConnectionsFromSocket(void)
 
 void SimpleServer::handler(int index, int fd)
 {
-	std::cout << "Received request:\n" << _client_buffers[index - 1] << std::endl;
-	_request.parseInput(_client_buffers[index - 1], fd);
+	std::cout << "Received request:\n" << _recvBuffer[index - 1] << std::endl;
+	_request.parseInput(_recvBuffer[index - 1], fd);
 	// if(_request.getPath() == "/exit")
 	// {
 	// 	close(_serverSocket_fd);
@@ -189,7 +238,7 @@ void SimpleServer::acceptNewConnection() {
 	int client_fd = accept(_serverSocket_fd, (struct sockaddr*)&client_addr, &client_len);
 
 	if (client_fd < 0) return; // Non-blocking mode: No new connection
-
+	// connectionTest(client_addr, "client_addr");
 	// Make client socket non-blocking
 	fcntl(client_fd, F_SETFL, O_NONBLOCK);
 
@@ -198,13 +247,15 @@ void SimpleServer::acceptNewConnection() {
 	// Add client to poll list
 	struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
 	_poll_fds.push_back(client_poll_fd);
-	_client_buffers.emplace_back();
+	_recvBuffer.emplace_back();
 }
 
 void SimpleServer::handleClient(int index)
 {
 	int client_fd = _poll_fds[index].fd;
-	char buffer[BUFFER_SIZE] = {0};
+	// char buffer[BUFFER_SIZE] = {0};
+	char buffer[BUFFER_SIZE];
+	memset(&buffer, '\0', sizeof(buffer));
 
 	int bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
 	if (bytesReceived <= 0)
@@ -213,8 +264,8 @@ void SimpleServer::handleClient(int index)
 		return;
 	}
 
-	buffer[bytesReceived] = '\0';
-	_client_buffers[index - 1] = buffer; // Store request data
+	// buffer[bytesReceived] = '\0';
+	_recvBuffer[index - 1] = buffer; // Store request data
 
 	std::cout << "Received: " << buffer << std::endl;
 }
@@ -223,7 +274,7 @@ void SimpleServer::removeClient(int index) {
     std::cout << "Closing connection: " << _poll_fds[index].fd << std::endl;
     close(_poll_fds[index].fd);
     _poll_fds.erase(_poll_fds.begin() + index);
-    _client_buffers.erase(_client_buffers.begin() + (index - 1));
+    _recvBuffer.erase(_recvBuffer.begin() + (index - 1));
 }
 
 void SimpleServer::launch(void)
@@ -250,13 +301,12 @@ void SimpleServer::launch(void)
 					handleClient(i);
 				}
 			}
-
-			if (_poll_fds[i].revents & POLLOUT && !_client_buffers[i - 1].empty())
+			if (_poll_fds[i].revents & POLLOUT && !_recvBuffer[i - 1].empty())
 			{
 				handler(i, _poll_fds[i].fd);
 				// std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
 				// send(_poll_fds[i].fd, response.c_str(), response.size(), 0);
-				_client_buffers[i - 1].clear(); // Clear after writing
+				_recvBuffer[i - 1].clear(); // Clear after writing
 			}
 		}
 		/*
@@ -271,34 +321,3 @@ void SimpleServer::launch(void)
 	}
 }
 
-
-
-int SimpleServer::bindAddressToSocket()
-{
-	_clientAddressLen = sizeof(_clientAddress);
-	memset((char*)&_clientAddress, 0, _clientAddressLen);
-	_clientAddress.sin_family = _domain;
-	_clientAddress.sin_port = htons(_port);
-	_clientAddress.sin_addr.s_addr = htonl(_networkInterface);
-
-	// for instant restart of server
-	// |
-	// v
-	int opt = 1;
-	setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-	return bind(_serverSocket_fd, (struct sockaddr*)&_clientAddress, sizeof(_clientAddress));
-}
-
-void SimpleServer::connectionTest(int item, std::string message)
-{
-	if (item < 0)
-	{
-		std::cerr << "Failed to connect " << message << std::endl;
-		throw std::runtime_error("Socket connection failed.");
-	}
-	else
-	{
-		std::cout << "Connection successful" << std::endl;
-	}
-}
