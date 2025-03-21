@@ -25,10 +25,10 @@ _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterfac
 	// for instant restart of server
 	// |
 	// v
-	int opt = 1;
-	setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-	// Set server to non blocking
-	fcntl(_serverSocket_fd, F_SETFL, O_NONBLOCK);
+	// int opt = 1;
+	// setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	// // Set server to non blocking
+	// fcntl(_serverSocket_fd, F_SETFL, O_NONBLOCK);
 	
 
 
@@ -39,13 +39,6 @@ _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterfac
 	_listenSocket = startListenOnSocket();
 	connectionTest(_listenSocket, "_listenSocket");
 	// closing if fail
-
-	
-
-
-
-	_server_poll_fd = {_serverSocket_fd, POLLIN, 0};
-	_poll_fds.push_back(_server_poll_fd);
 
 	launch();
 
@@ -93,43 +86,6 @@ void SimpleServer::connectionTest(int item, std::string message)
 }
 
 
-// int SimpleServer::acceptConnectionsFromSocket(void)
-// {
-// 	initPoll();
-
-// 	std::cout << "Waiting for a connection..." << std::endl;
-
-// 	int pollStatus = poll(&_mypoll, 1, 1000);  // Wait up to 1 second
-// 	if (pollStatus < 0)
-// 	{
-// 		std::cerr << "Poll failed!" << std::endl;
-// 		return -1;
-// 	}
-// 	else if (pollStatus == 0)
-// 	{
-// 		std::cout << "Poll timeout: No incoming connection." << std::endl;
-// 		return -1;
-// 	}
-
-// 	_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_serviceAddress, (socklen_t*)&_serviceAddressLen);
-// 	connectionTest(_clientSocket_fd, "_clientSocket_fd");
-
-// 	// Read request from client
-// 	int bytesReceived = recv(_clientSocket_fd, _buffer, sizeof(_buffer) - 1, MSG_DONTWAIT);
-// 	// MSG_DONTWAIT – Perform a non-blocking read.
-// 	if (bytesReceived > 0)
-// 	{
-// 		_buffer[bytesReceived] = '\0'; // Null-terminate received data
-// 	}
-// 	else
-// 	{
-// 		std::cerr << "Error receiving data." << std::endl;
-// 		return -1;
-// 	}
-
-// 	return _clientSocket_fd;
-// }
-
 #include <fcntl.h> // For fcntl()
 
 void SimpleServer::setNonBlocking(int fd)
@@ -144,61 +100,6 @@ void SimpleServer::setNonBlocking(int fd)
     }
 }
 
-int SimpleServer::acceptConnectionsFromSocket(void)
-{
-	// initPoll();
-	std::cout << "Waiting for a connection..." << std::endl;
-
-	int pollStatus = poll(&_mypoll, 1, 1000);  // Wait up to 1 second
-	if (pollStatus < 0)
-	{
-		std::cerr << "Poll failed!" << std::endl;
-		return -1;
-	}
-	else if (pollStatus == 0)
-	{
-		std::cout << "Poll timeout: No incoming connection." << std::endl;
-		return -1;
-	}
-
-	// Check if socket is ready for reading
-	if (_mypoll.revents & POLLIN)
-	{
-		_clientSocket_fd = accept(_serverSocket_fd, (struct sockaddr*)&_serviceAddress, (socklen_t*)&_serviceAddressLen);
-		if (_clientSocket_fd < 0)
-		{
-			std::cerr << "Accept failed!" << std::endl;
-			return -1;
-		}
-
-		setNonBlocking(_clientSocket_fd); // Ensure the client socket is non-blocking
-
-		// Read request from client (only if data is ready)
-		int bytesReceived = recv(_clientSocket_fd, _buffer, sizeof(_buffer) - 1, 0);
-		if (bytesReceived > 0)
-		{
-			_buffer[bytesReceived] = '\0'; // Null-terminate received data
-		}
-		else if (bytesReceived == 0)
-		{
-			std::cerr << "Client closed the connection." << std::endl;
-			close(_clientSocket_fd);
-			return -1;
-		}
-		else
-		{
-			std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
-			close(_clientSocket_fd);
-			return -1;
-		}
-		return _clientSocket_fd;
-	}
-	else
-	{
-		std::cerr << "No readable data on socket." << std::endl;
-		return -1;
-	}
-}
 
 
 
@@ -224,100 +125,137 @@ void SimpleServer::responder(void)
 
 
 
-// void SimpleServer::initPoll(void)
-// {
-// 	memset(&_mypoll, 0, sizeof(_mypoll));
-// 	_mypoll.fd = _serverSocket_fd;
-// 	_mypoll.events = POLLIN;
-// }
 
 
-void SimpleServer::acceptNewConnection() {
+void SimpleServer::acceptNewConnection()
+{
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 	int client_fd = accept(_serverSocket_fd, (struct sockaddr*)&client_addr, &client_len);
 
-	if (client_fd < 0) return; // Non-blocking mode: No new connection
-	// connectionTest(client_addr, "client_addr");
-	// Make client socket non-blocking
+	if (client_fd < 0)
+	{
+		std::cerr << RED << "Error accepting connection: " << strerror(errno) << RESET<< std::endl;
+		return;
+	}
+	
 	fcntl(client_fd, F_SETFL, O_NONBLOCK);
 
-	std::cout << "New connection accepted: " << client_fd << std::endl;
+	std::cout << GREEN << "New connection accepted: " << RESET << client_fd << std::endl;
 
-	// Add client to poll list
+	// make new fd and add it with the read and write flags to the poll_fds container(vector)
 	struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
 	_poll_fds.push_back(client_poll_fd);
-	_recvBuffer.emplace_back();
+	_recvBuffer.emplace(client_fd, "");
 }
 
-void SimpleServer::handleClient(int index)
-{
-	int client_fd = _poll_fds[index].fd;
-	// char buffer[BUFFER_SIZE] = {0};
-	char buffer[BUFFER_SIZE];
-	memset(&buffer, '\0', sizeof(buffer));
 
-	int bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
-	if (bytesReceived <= 0)
+void SimpleServer::removeClient(int fdIndex)
+{
+	std::cout << "Closing connection: " << _poll_fds[fdIndex].fd << std::endl;
+
+	close(_poll_fds[fdIndex].fd);
+	_poll_fds.erase(_poll_fds.begin() + fdIndex);
+	_recvBuffer.erase(fdIndex);
+}
+
+int	SimpleServer::noDataReceived(int bytesReceived)
+{
+	return (bytesReceived <= 0);
+}
+
+
+void SimpleServer::readDataFromClient(int fdIndex)
+{
+	int		client_fd = _poll_fds[fdIndex].fd;
+	char	buffer[BUFFER_SIZE];
+	int		bytesReceived;
+
+	memset(&buffer, '\0', sizeof(buffer));
+	
+	bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
+	if(noDataReceived(bytesReceived))
 	{
-		removeClient(index);
+		removeClient(fdIndex);
 		return;
 	}
 
-	// buffer[bytesReceived] = '\0';
-	_recvBuffer[index - 1] = buffer; // Store request data
+	buffer[bytesReceived] = '\0';
+	_recvBuffer[fdIndex] = buffer;
 
-	std::cout << "Received: " << buffer << std::endl;
+	std::cout << BLUE << "Received: " << RESET << buffer << std::endl;
 }
 
-void SimpleServer::removeClient(int index) {
-    std::cout << "Closing connection: " << _poll_fds[index].fd << std::endl;
-    close(_poll_fds[index].fd);
-    _poll_fds.erase(_poll_fds.begin() + index);
-    _recvBuffer.erase(_recvBuffer.begin() + (index - 1));
+
+int SimpleServer::isDataToRead(const int& fdIndex)
+{
+	return (_poll_fds[fdIndex].revents & POLLIN);
+}
+
+int SimpleServer::isDataToWrite(const int& fdIndex)
+{
+	return (_poll_fds[fdIndex].revents & POLLOUT &&
+			fdIndex < _recvBuffer.size() &&
+			!_recvBuffer[fdIndex].empty());
+}
+
+
+int SimpleServer::isNewConnection(const int& fdIndex)
+{
+	return (_poll_fds[fdIndex].fd == _serverSocket_fd);
+}
+
+
+
+void SimpleServer::handlePolls(void)
+{
+	int fdIndex = _poll_fds.size() - 1;
+	while (fdIndex >= 0)
+	{
+		if(isDataToRead(fdIndex))
+		{
+			if(isNewConnection(fdIndex))
+			{
+				acceptNewConnection();
+			}
+			else
+			{
+				readDataFromClient(fdIndex);
+				continue; // Prevent `fdIndex--` since vector size changed
+			}
+		}
+		if(isDataToWrite(fdIndex))
+		{
+			handler(fdIndex, _poll_fds[fdIndex].fd);
+			_recvBuffer[fdIndex].clear();
+		}
+		fdIndex--;
+	}
+}
+
+
+/************************************************/
+/*	Start to Monitor Muliple FileDescriptors	*/
+/************************************************/
+int SimpleServer::initPoll(void)
+{
+	// _poll_fds.data() == &_poll_fds[0] // container function
+	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), -1);
+	if(pollCount < 0)
+	{
+		perror("Poll failed");
+		return 1;
+	}
+	return 0;
 }
 
 void SimpleServer::launch(void)
 {
 	while(true)
 	{
-		int pollCount = poll(_poll_fds.data(), _poll_fds.size(), -1);
-		if(pollCount < 0)
-		{
-			perror("Poll failed");
+		if(initPoll())
 			break;
-		}
-
-		for (int i = _poll_fds.size() - 1; i >= 0; i--) // iteration through each file descriptor from backwards. easily to remove 
-		{
-			if (_poll_fds[i].revents & POLLIN) // data on socket available
-			{
-				if (_poll_fds[i].fd == _serverSocket_fd) // if event is on server add to poll file descriptors
-				{
-					acceptNewConnection();
-				}
-				else
-				{
-					handleClient(i);
-				}
-			}
-			if (_poll_fds[i].revents & POLLOUT && !_recvBuffer[i - 1].empty())
-			{
-				handler(i, _poll_fds[i].fd);
-				// std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-				// send(_poll_fds[i].fd, response.c_str(), response.size(), 0);
-				_recvBuffer[i - 1].clear(); // Clear after writing
-			}
-		}
-		/*
-		_clientSocket_fd = acceptConnectionsFromSocket();
-		if(_clientSocket_fd < 0)
-		{
-			continue;
-		}
-		handler();
-		responder();
-		*/
+		handlePolls();
 	}
 }
 

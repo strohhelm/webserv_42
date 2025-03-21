@@ -9,7 +9,7 @@
 #include <iostream>
 #include <poll.h>
 #include <fstream>
-#include <map>
+#include <unordered_map>
 
 #include <fcntl.h>
 
@@ -42,12 +42,12 @@ class SimpleServer
 
 		char 						_buffer[3000];
 
-		struct pollfd				_mypoll;
+		// struct pollfd				_mypoll;
 
+		// struct pollfd				_server_poll_fd;
 
-		std::vector<struct pollfd>	_poll_fds;
-		struct pollfd				_server_poll_fd;
-		std::vector<std::string>	_recvBuffer;
+		std::vector<struct pollfd>				_poll_fds;
+		std::unordered_map<int, std::string>	_recvBuffer;
 
 
 		// std::map<std::string, std::string> meta;
@@ -58,23 +58,40 @@ class SimpleServer
 	SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
 		~SimpleServer();
 		
-		int createSocket(void);
-		int initAddress(void);
-		int bindAddressToSocket(void);
-		int startListenOnSocket(void);
-		int acceptConnectionsFromSocket(void);
+		int 	createSocket(void);
+		int 	initAddress(void);
+		int 	bindAddressToSocket(void);
+		int		startListenOnSocket(void);
+		void	launch(void);
+
+		int		initPoll(void);
+		void	handlePolls(void);
+
+
+		int		isDataToRead(const int& fdIndex);
+		int		isDataToWrite(const int& fdIndex);
+		int		isNewConnection(const int& fdIndex);
+
+		void	readDataFromClient(int fdIndex);
+		int		noDataReceived(int bytesReceived);
+		void	removeClient(int fdIndex);
+
+		void	acceptNewConnection(void);
+
+
+
+
+
+
+
+		// int acceptConnectionsFromSocket(void);
 
 		void	handler(int index, int fd);
 		void	responder(void);
-		void	initPoll(void);
-		void	launch(void);
 		void	parseHTTPRequest(void);
 		
 		void	connectionTest(int item, std::string message);
 
-		void	acceptNewConnection();
-		void	handleClient(int index);
-		void	removeClient(int index);
 
 		void	setNonBlocking(int fd);
 };
