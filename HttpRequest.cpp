@@ -8,9 +8,10 @@ void HttpRequest::parseInput(const std::string& requestBuffer, int fd)
 
 	tokenizeRequest(requestBuffer, requestLine, headers, body);
 
-	std::cout << RED << "requestLine: " << requestLine << RESET << std::endl;
-	std::cout << BLUE << "headers: " << headers << RESET << std::endl;
-	std::cout << YELLOW << "body: " << body << RESET << std::endl;
+	std::cout << RED << "requestLine: " << RESET << requestLine << std::endl;
+	std::cout << BLUE << "headers: " << RESET << headers << std::endl;
+	std::cout << YELLOW << "body: " << RESET << body << RESET << std::endl;
+	std::cout << std::endl;
 
 	parseRequestLine(requestLine);
 	handleRequest(fd);
@@ -40,10 +41,10 @@ bool HttpRequest::parseRequestLine(const std::string& requestLine)
 		setVersion(tokens[2]);			
 	}
 
-	for(int i = 0; i < 3; i++)
-	{
-		std::cout << BG_BRIGHT_CYAN << tokens[i] << RESET << std::endl;
-	}
+	// for(int i = 0; i < 3; i++)
+	// {
+	// 	std::cout << BG_BRIGHT_CYAN << tokens[i] << RESET << std::endl;
+	// }
 
 	return 0;
 }
@@ -110,20 +111,20 @@ void HttpRequest::setVersion(const std::string& version)
 
 void HttpRequest::handleRequest(int fd)
 {
-	// switch (_method)
-	// {
-	// 	case HttpMethod::GET:
-	// 		handleGET(fd);
-	// 		break;
-	// 	case HttpMethod::POST:
-	// 		handlePOST();
-	// 		break;
-	// 	case HttpMethod::DELETE:
-	// 		handleDELETE();
-	// 		break;		
-	// 	default:
-	// 		break;
-	// }
+	switch (_method)
+	{
+		case HttpMethod::GET:
+			handleGET(fd);
+			break;
+		case HttpMethod::POST:
+			handlePOST();
+			break;
+		case HttpMethod::DELETE:
+			handleDELETE();
+			break;		
+		default:
+			break;
+	}
 }
 
 std::string readHtmlFile(const std::string & filename)
@@ -139,6 +140,8 @@ std::string readHtmlFile(const std::string & filename)
 
 void HttpRequest::handleGET(int fd)
 {
+	// std::cout << "GET is requested" << std::endl;
+
 	std::string htmlContent = readHtmlFile("index.html");
 	if(htmlContent.empty())
 	{
@@ -165,7 +168,7 @@ void HttpRequest::handleGET(int fd)
 
 void HttpRequest::handlePOST(void)
 {
-	
+	std::cout << "POST is requested" << std::endl;
 }
 
 void HttpRequest::handleDELETE(void)

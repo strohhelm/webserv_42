@@ -25,8 +25,13 @@ _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterfac
 	// for instant restart of server
 	// |
 	// v
-	// int opt = 1;
-	// setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	int opt = 1;
+	if (setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+	{
+		perror("setsockopt(SO_REUSEADDR) failed");
+		exit(1);
+	}
+	
 	// // Set server to non blocking
 	// fcntl(_serverSocket_fd, F_SETFL, O_NONBLOCK);
 	
@@ -103,18 +108,32 @@ void SimpleServer::connectionTest(int item, std::string message)
 // 	}
 // }
 
+void SimpleServer::shutdown(void)
+{
+	// Close all client connections
+	for (auto& fd : _poll_fds)
+	{
+		close(fd.fd);
+	}
 
+	// Close the server socket
+	close(_serverSocket_fd);
+
+	// Optionally, cleanup or log shutdown status
+	std::cout << "Server has been shut down gracefully." << std::endl;
+	exit(1);
+}
 
 
 void SimpleServer::handler(int index, int fd)
 {
-	std::cout << "Received request:\n" << _recvBuffer[index - 1] << std::endl;
-	_request.parseInput(_recvBuffer[index - 1], fd);
-	// if(_request.getPath() == "/exit")
-	// {
-	// 	close(_serverSocket_fd);
-	// 	close(_clientSocket_fd);
-	// }
+	// std::cout << "Received request:\n" << _recvBuffer[index] << std::endl;
+	_request.parseInput(_recvBuffer[index], fd);
+	if(_request.getPath() == "/exit")
+	{
+		std::cout << "exit called" << std::endl;
+		shutdown();
+	}
 }
 
 
@@ -149,7 +168,6 @@ void SimpleServer::acceptNewConnection()
 	// make new fd and add it with the read and write flags to the poll_fds container(vector)
 	struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
 	_poll_fds.push_back(client_poll_fd);
-	// _recvBuffer.emplace(client_fd, "");
 	_recvBuffer[client_fd] = "";
 }
 
@@ -187,8 +205,6 @@ void SimpleServer::readDataFromClient(int fdIndex)
 
 	buffer[bytesReceived] = '\0';
 	_recvBuffer[fdIndex] = buffer;
-
-	std::cout << BLUE << "Received: " << RESET << buffer << std::endl;
 }
 
 
@@ -226,12 +242,11 @@ void SimpleServer::handlePolls(void)
 			else
 			{
 				readDataFromClient(fdIndex);
-				// continue; // Prevent `fdIndex--` since vector size changed
 			}
 		}
 		if(isDataToWrite(fdIndex))
 		{
-			// handler(fdIndex, _poll_fds[fdIndex].fd);
+			handler(fdIndex, _poll_fds[fdIndex].fd);
 			_recvBuffer[fdIndex].clear();
 		}
 		fdIndex--;
@@ -247,14 +262,14 @@ int SimpleServer::initPoll(void)
 	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 1000); // 1 second timeout or -1 to blocking mode
 	if (pollCount == 0)
 	{
-		std::cout << "No events occurred in the timeout period." << std::endl;
+		// std::cout << "No events occurred in the timeout period." << std::endl;
 	}
 	else if (pollCount < 0)
 	{
 		perror("Poll failed");
 		return 1;
 	}
-	std::cout << "Poll successful, " << pollCount << " events." << std::endl;
+	// std::cout << "Poll successful, " << pollCount << " events." << std::endl;
 	return 0;
 }
 

@@ -77,7 +77,7 @@ class SimpleServer
 
 		void	acceptNewConnection(void);
 
-
+		void	shutdown(void);
 
 
 
