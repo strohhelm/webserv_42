@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 
 #include"Colors.hpp"
 
@@ -39,12 +40,17 @@ class HttpRequest
 		std::string	_headers;
 		std::string	_body;
 		
+
+		std::unordered_map<std::string, std::string> headers;
+		std::unordered_map<std::string, std::string> body;
+
+
 		requestLine	_requestLine;
 
 		std::string _httpResponse;
 
 	public:
-		void	parseInput(const std::string& requestBuffer);
+		void	parseHttpRequest(const std::string& requestBuffer);
 		void	tokenizeHttpRequest(const std::string& requestBuffer);
 		void	tokenizeRequestLine();
 
@@ -64,7 +70,7 @@ class HttpRequest
 		void parseHeaders(const std::string& headerLines);
 		bool isValidRequest();
 		
-		void handleRequest(int fd);
+		void handleHttpRequest(int fd);
 		void handleGET(int fd);
 		void handlePOST(void);
 		void handleDELETE(void);
@@ -85,12 +91,16 @@ class HttpRequest
 		const std::string&	getHeader(void);
 		const std::string&	getBody(void);
 
+		void	eraseSpaceAndTab(std::string key, std::string value);
 
 		std::string	readHtmlFile(const std::string & filename);
 		void	serveIndex(int fd);
 		void	serveFavicon(int fd);
 		void	sendNotFound(int fd);
 
+
+		void	showHeader(void);
+		void	showBody(void);
 
 };
 

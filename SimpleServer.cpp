@@ -49,7 +49,7 @@ _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterfac
 	struct pollfd server_poll_fd = {_serverSocket_fd, POLLIN, 0};  // POLLIN means we're interested in reading
 	_poll_fds.push_back(server_poll_fd);
 
-	std::cout << BG_BRIGHT_CYAN << "starting Server" << RESET << std::endl;
+	std::cout << BG_BRIGHT_CYAN << "Starting Server" << RESET << std::endl;
 	launch();
 
 }
@@ -93,48 +93,34 @@ void SimpleServer::connectionTest(int item, std::string message)
 	}
 }
 
-
-// #include <fcntl.h> // For fcntl()
-
-// void SimpleServer::setNonBlocking(int fd)
+// void SimpleServer::shutdown(void)
 // {
-// 	int flags = fcntl(fd, F_GETFL, 0);
-// 	if (flags == -1) {
-// 		std::cerr << "fcntl GETFL failed!" << std::endl;
-// 		return;
+// 	// Close all client connections
+// 	for (auto& fd : _poll_fds)
+// 	{
+// 		close(fd.fd);
 // 	}
-// 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-// 		std::cerr << "fcntl SETFL O_NONBLOCK failed!" << std::endl;
-// 	}
+
+// 	// Close the server socket
+// 	close(_serverSocket_fd);
+
+// 	// Optionally, cleanup or log shutdown status
+// 	std::cout << "Server has been shut down gracefully." << std::endl;
+// 	exit(1);
 // }
-
-void SimpleServer::shutdown(void)
-{
-	// Close all client connections
-	for (auto& fd : _poll_fds)
-	{
-		close(fd.fd);
-	}
-
-	// Close the server socket
-	close(_serverSocket_fd);
-
-	// Optionally, cleanup or log shutdown status
-	std::cout << "Server has been shut down gracefully." << std::endl;
-	exit(1);
-}
 
 
 void SimpleServer::handler(int fdIndex)
 {
-	_request.parseInput(_recvBuffer[fdIndex]);
+	_request.parseHttpRequest(_recvBuffer[fdIndex]);
 
 	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
-	std::cout << BLUE << "headers: " << RESET << _request.getHeader() << std::endl;
-	std::cout << YELLOW << "body: " << RESET << _request.getBody()<< std::endl;
-	std::cout << std::endl;
+	std::cout << BLUE << "headers: " << RESET << std::endl;
+	_request.showHeader();
+	std::cout << YELLOW << "body: " << RESET << std::endl;
+	_request.showBody();
 
-	_request.handleRequest(_poll_fds[fdIndex].fd);
+	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
 
 
 	_recvBuffer[fdIndex].clear();

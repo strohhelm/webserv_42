@@ -54,7 +54,7 @@ class SimpleServer
 		HttpRequest			_request;
 
 	public:
-	SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
+		SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
 		~SimpleServer();
 		
 		int 	createSocket(void);
@@ -77,17 +77,13 @@ class SimpleServer
 
 		void	acceptNewConnection(void);
 
-		void	shutdown(void);
-
-
-
+		// void	shutdown(void);
 
 
 		// int acceptConnectionsFromSocket(void);
 
 		void	handler(int fdIndex);
 		void	responder(void);
-		void	parseHTTPRequest(void);
 		
 		void	connectionTest(int item, std::string message);
 

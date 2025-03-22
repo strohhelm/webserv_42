@@ -87,13 +87,13 @@ void HttpRequest::tokenizeRequestLine()
 
 void HttpRequest::tokenizeHttpRequest(const std::string& requestBuffer)
 {
-	std::istringstream stream(requestBuffer);
-	std::string line;
-	bool isHeaderSection = true;
+	std::istringstream requestLineStream(requestBuffer);
+	std::istringstream headerStream(requestBuffer);
+	std::istringstream bodyStream(requestBuffer);
 
-	setRawRequestLine(stream);
-	setHeaders(stream);
-	setBody(stream);
+	setRawRequestLine(requestLineStream);
+	setHeaders(headerStream);
+	setBody(bodyStream);
 }
 
 void HttpRequest::setRawRequestLine(std::istringstream& stream)
@@ -102,25 +102,56 @@ void HttpRequest::setRawRequestLine(std::istringstream& stream)
 }
 
 
+void HttpRequest::eraseSpaceAndTab(std::string key, std::string value)
+{
+	key.erase(key.find_last_not_of(" \t") + 1);
+	value.erase(0, value.find_first_not_of(" \t"));
+}
+
+
 void HttpRequest::setHeaders(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line))
 	{
-		if (line.empty())  // End of headers section
-			return;
-		_headers.append(line + "\n");
+		size_t delimiterPos = line.find(":");
+		if(delimiterPos != std::string::npos)
+		{
+			std::string key = line.substr(0, delimiterPos);
+			std::string value = line.substr(delimiterPos + 2);
+			eraseSpaceAndTab(key, value);
+			headers[key] = value;
+		}
 	}
 }
 
 void HttpRequest::setBody(std::istringstream& stream)
 {
 	std::string line;
+	bool messageFound = false;
+
 	while (std::getline(stream, line))
 	{
-		_body.append(line + "\n");
+		if (!messageFound && line.find("message") != std::string::npos)
+		{
+			std::cout << "message found" << std::endl;
+			messageFound = true;
+		}		
+		if (messageFound)
+		{
+			size_t delimiterPos = line.find("=");
+			if (delimiterPos != std::string::npos)
+			{
+				std::string key = line.substr(0, delimiterPos);
+				std::string value = line.substr(delimiterPos + 1); // Skip the '=' character
+				eraseSpaceAndTab(key, value);  // Clean up spaces and tabs from key and value
+				body[key] = value;  // Store key-value pair in the body map
+			}
+		}
 	}
 }
+
+
 
 void HttpRequest::clearRequest(void)
 {
@@ -130,7 +161,7 @@ void HttpRequest::clearRequest(void)
 	_requestLine = {}; // Set struct to default values as given in declaration
 }
 
-void HttpRequest::parseInput(const std::string& requestBuffer)
+void HttpRequest::parseHttpRequest(const std::string& requestBuffer)
 {
 	clearRequest();
 	tokenizeHttpRequest(requestBuffer);
@@ -146,7 +177,7 @@ HttpMethod HttpRequest::stringToHttpMethod(const std::string& method)
 	return HttpMethod::UNKNOWN;
 }
 
-void HttpRequest::handleRequest(int fd)
+void HttpRequest::handleHttpRequest(int fd)
 {
 	switch (getMethod())
 	{
@@ -171,7 +202,7 @@ void HttpRequest::handleGET(int fd)
 		serveFavicon(fd);
 		return;
 	}
-	else if (_requestLine._path == "/") {
+	else if (_requestLine._path == "/" || _requestLine._path == "/index.html") {
 		serveIndex(fd);
 		return;
 	}
@@ -244,4 +275,21 @@ const std::string& HttpRequest::getHeader(void)
 const std::string& HttpRequest::getBody(void)
 {
 	return _body;
+}
+
+
+void HttpRequest::showHeader(void)
+{
+	for (const auto& [key, value] : headers)
+	{
+		std::cout << key << ":" << value << "\n";
+	}
+}
+
+void HttpRequest::showBody(void)
+{
+	for (const auto& [key, value] : body)
+	{
+		std::cout << key << "=" << value << "\n";
+	}
 }
