@@ -1,5 +1,67 @@
 #include"HttpRequest.hpp"
 
+void HttpRequest::sendNotFound(int fd)
+{
+	std::string response = 
+		"HTTP/1.1 404 Not Found\r\n"
+		"Content-Type: text/plain\r\n"
+		"Content-Length: 13\r\n"
+		"Connection: close\r\n\r\n"
+		"404 Not Found";
+
+	send(fd, response.c_str(), response.size(), 0);
+}
+
+
+void HttpRequest::serveFavicon(int fd)
+{
+	std::ifstream file("favicon.ico", std::ios::binary);
+	if (!file) {
+		sendNotFound(fd);
+		return;
+	}
+
+	std::ostringstream response;
+	response << "HTTP/1.1 200 OK\r\n"
+			<< "Content-Type: image/x-icon\r\n"
+			<< "Content-Length: " << file.seekg(0, std::ios::end).tellg() << "\r\n"
+			<< "Connection: close\r\n\r\n";
+	
+	file.seekg(0, std::ios::beg);
+	std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	response.write(buffer.data(), buffer.size());
+
+	send(fd, response.str().c_str(), response.str().size(), 0);
+}
+
+
+std::string HttpRequest::readHtmlFile(const std::string & filename)
+{
+	std::ifstream file(filename);
+	if(!file)
+		return "";
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	return buffer.str();
+}
+
+
+void HttpRequest::serveIndex(int fd)
+{
+	std::string htmlContent = readHtmlFile("index.html");
+	if(htmlContent.empty())
+	{
+		_httpResponse = "HTTP/1.1 404 Not Found\r\nContent-Length: 13\r\n\r\n404 Not Found";
+	}
+	else
+	{
+		_httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " +
+					std::to_string(htmlContent.size()) + "\r\n\r\n" + htmlContent;
+	}
+	send(fd, _httpResponse.c_str(), _httpResponse.size(), 0);
+}
+
+
 // Format of the Request Line:
 // <HTTP_METHOD> <REQUEST_PATH> <HTTP_VERSION>
 // GET /index.html HTTP/1.1
@@ -60,11 +122,20 @@ void HttpRequest::setBody(std::istringstream& stream)
 	}
 }
 
+void HttpRequest::clearRequest(void)
+{
+	_rawRequestLine.clear();
+	_headers.clear();
+	_body.clear();
+	_requestLine = {}; // Set struct to default values as given in declaration
+}
 
 void HttpRequest::parseInput(const std::string& requestBuffer)
 {
+	clearRequest();
 	tokenizeHttpRequest(requestBuffer);
 	tokenizeRequestLine();
+	// validate ???
 }
 
 HttpMethod HttpRequest::stringToHttpMethod(const std::string& method)
@@ -93,43 +164,19 @@ void HttpRequest::handleRequest(int fd)
 	}
 }
 
-std::string readHtmlFile(const std::string & filename)
-{
-	std::ifstream file(filename);
-	if(!file)
-		return "";
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	return buffer.str();
-}
-
 
 void HttpRequest::handleGET(int fd)
 {
-	// std::cout << "GET is requested" << std::endl;
-
-	std::string htmlContent = readHtmlFile("index.html");
-	if(htmlContent.empty())
-	{
-		_httpResponse = "HTTP/1.1 404 Not Found\r\nContent-Length: 13\r\n\r\n404 Not Found";
+	if (_requestLine._path == "/favicon.ico") {
+		serveFavicon(fd);
+		return;
+	}
+	else if (_requestLine._path == "/") {
+		serveIndex(fd);
+		return;
 	}
 	else
-	{
-		_httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " +
-					std::to_string(htmlContent.size()) + "\r\n\r\n" + htmlContent;
-	}
-	send(fd, _httpResponse.c_str(), _httpResponse.size(), 0);
-
-	// write(_client_fd, httpResponse.c_str(), httpResponse.size());
-	// close(_client_fd);
-
-
-
-	// sendHtmlFile("index.html")
-
-	// sendFavicon();
-
-	// sendResponse(404, "NotFound");
+		sendNotFound(fd);
 }
 
 void HttpRequest::handlePOST(void)
@@ -176,4 +223,25 @@ void HttpRequest::setVersion(const std::string& version)
 const std::string& HttpRequest::getHttpResponse(void)
 {
 	return _httpResponse;
+}
+
+
+
+/************/
+/* Debugger */
+/************/
+
+const std::string& HttpRequest::getRawRequestLine(void)
+{
+	return _rawRequestLine;
+}
+
+const std::string& HttpRequest::getHeader(void)
+{
+	return _headers;
+}
+
+const std::string& HttpRequest::getBody(void)
+{
+	return _body;
 }

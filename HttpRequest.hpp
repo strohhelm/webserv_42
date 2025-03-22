@@ -26,9 +26,9 @@ enum class HttpMethod
 
 struct requestLine
 {
-	HttpMethod	_method;
-	std::string	_path;
-	std::string	_version;
+	HttpMethod _method = HttpMethod::UNKNOWN;
+	std::string _path = "";
+	std::string _version = "";
 };
 
 class HttpRequest
@@ -43,39 +43,54 @@ class HttpRequest
 
 		std::string _httpResponse;
 
-
 	public:
-		void parseInput(const std::string& requestBuffer);
-		void tokenizeHttpRequest(const std::string& requestBuffer);
-		void tokenizeRequestLine();
+		void	parseInput(const std::string& requestBuffer);
+		void	tokenizeHttpRequest(const std::string& requestBuffer);
+		void	tokenizeRequestLine();
 
 
-		void setRawRequestLine(std::istringstream& stream);
-		void setHeaders(std::istringstream& stream);
-		void setBody(std::istringstream& stream);
+		void	setRawRequestLine(std::istringstream& stream);
+		void	setHeaders(std::istringstream& stream);
+		void	setBody(std::istringstream& stream);
 
-		void setMethod(const std::string& method);
-		void setPath(const std::string& path);
-		const std::string& getPath(void);
-		void setVersion(const std::string& version);
+		void	setMethod(const std::string& method);
+		void	setPath(const std::string& path);
+		void	setVersion(const std::string& version);
 
+		void	clearRequest(void);
+		
+		
+		
 		void parseHeaders(const std::string& headerLines);
 		bool isValidRequest();
-
+		
 		void handleRequest(int fd);
 		void handleGET(int fd);
 		void handlePOST(void);
 		void handleDELETE(void);
-
-		const std::string& getHttpResponse(void);
-
-
+		
+		
+		
 		HttpMethod stringToHttpMethod(const std::string& method);
+		
+		
+		
+		
+		const HttpMethod&	getMethod(void);
+		const std::string&	getPath(void);
+		const std::string&	getHttpResponse(void);
+		
+		
+		const std::string&	getRawRequestLine(void);
+		const std::string&	getHeader(void);
+		const std::string&	getBody(void);
 
 
+		std::string	readHtmlFile(const std::string & filename);
+		void	serveIndex(int fd);
+		void	serveFavicon(int fd);
+		void	sendNotFound(int fd);
 
-
-		const HttpMethod& getMethod(void);
 
 };
 

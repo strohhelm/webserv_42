@@ -129,12 +129,10 @@ void SimpleServer::handler(int fdIndex)
 {
 	_request.parseInput(_recvBuffer[fdIndex]);
 
-
-
-	// std::cout << RED << "requestLine: " << RESET << requestLine << std::endl;
-	// std::cout << BLUE << "headers: " << RESET << headers << std::endl;
-	// std::cout << YELLOW << "body: " << RESET << body << RESET << std::endl;
-	// std::cout << std::endl;
+	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
+	std::cout << BLUE << "headers: " << RESET << _request.getHeader() << std::endl;
+	std::cout << YELLOW << "body: " << RESET << _request.getBody()<< std::endl;
+	std::cout << std::endl;
 
 	_request.handleRequest(_poll_fds[fdIndex].fd);
 
@@ -290,4 +288,6 @@ void SimpleServer::launch(void)
 		handlePolls();
 	}
 }
+
+
 
