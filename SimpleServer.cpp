@@ -125,15 +125,21 @@ void SimpleServer::shutdown(void)
 }
 
 
-void SimpleServer::handler(int index, int fd)
+void SimpleServer::handler(int fdIndex)
 {
-	// std::cout << "Received request:\n" << _recvBuffer[index] << std::endl;
-	_request.parseInput(_recvBuffer[index], fd);
-	if(_request.getPath() == "/exit")
-	{
-		std::cout << "exit called" << std::endl;
-		shutdown();
-	}
+	_request.parseInput(_recvBuffer[fdIndex]);
+
+
+
+	// std::cout << RED << "requestLine: " << RESET << requestLine << std::endl;
+	// std::cout << BLUE << "headers: " << RESET << headers << std::endl;
+	// std::cout << YELLOW << "body: " << RESET << body << RESET << std::endl;
+	// std::cout << std::endl;
+
+	_request.handleRequest(_poll_fds[fdIndex].fd);
+
+
+	_recvBuffer[fdIndex].clear();
 }
 
 
@@ -246,8 +252,8 @@ void SimpleServer::handlePolls(void)
 		}
 		if(isDataToWrite(fdIndex))
 		{
-			handler(fdIndex, _poll_fds[fdIndex].fd);
-			_recvBuffer[fdIndex].clear();
+			handler(fdIndex);
+			// _recvBuffer[fdIndex].clear();
 		}
 		fdIndex--;
 	}

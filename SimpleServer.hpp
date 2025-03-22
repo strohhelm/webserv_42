@@ -85,7 +85,7 @@ class SimpleServer
 
 		// int acceptConnectionsFromSocket(void);
 
-		void	handler(int index, int fd);
+		void	handler(int fdIndex);
 		void	responder(void);
 		void	parseHTTPRequest(void);
 		
