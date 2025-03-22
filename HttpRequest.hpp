@@ -72,8 +72,8 @@ class HttpRequest
 		
 		void handleHttpRequest(int fd);
 		void handleGET(int fd);
-		void handlePOST(void);
-		void handleDELETE(void);
+		void handlePOST(int fd);
+		void handleDELETE(int fd);
 		
 		
 		

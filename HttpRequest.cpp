@@ -134,7 +134,6 @@ void HttpRequest::setBody(std::istringstream& stream)
 	{
 		if (!messageFound && line.find("message") != std::string::npos)
 		{
-			std::cout << "message found" << std::endl;
 			messageFound = true;
 		}		
 		if (messageFound)
@@ -143,9 +142,9 @@ void HttpRequest::setBody(std::istringstream& stream)
 			if (delimiterPos != std::string::npos)
 			{
 				std::string key = line.substr(0, delimiterPos);
-				std::string value = line.substr(delimiterPos + 1); // Skip the '=' character
-				eraseSpaceAndTab(key, value);  // Clean up spaces and tabs from key and value
-				body[key] = value;  // Store key-value pair in the body map
+				std::string value = line.substr(delimiterPos + 1);
+				eraseSpaceAndTab(key, value);
+				body[key] = value;
 			}
 		}
 	}
@@ -185,10 +184,10 @@ void HttpRequest::handleHttpRequest(int fd)
 			handleGET(fd);
 			break;
 		case HttpMethod::POST:
-			handlePOST();
+			handlePOST(fd);
 			break;
 		case HttpMethod::DELETE:
-			handleDELETE();
+			handleDELETE(fd);
 			break;		
 		default:
 			break;
@@ -210,12 +209,19 @@ void HttpRequest::handleGET(int fd)
 		sendNotFound(fd);
 }
 
-void HttpRequest::handlePOST(void)
+void HttpRequest::handlePOST(int fd)
 {
-	std::cout << "POST is requested" << std::endl;
+	std::string response = 
+	"HTTP/1.1 404 Not Found\r\n"
+	"Content-Type: text/plain\r\n"
+	"Content-Length: 13\r\n"
+	"Connection: close\r\n\r\n"
+	"404 Not Found";
+
+	send(fd, response.c_str(), response.size(), 0);
 }
 
-void HttpRequest::handleDELETE(void)
+void HttpRequest::handleDELETE(int fd)
 {
 
 }
