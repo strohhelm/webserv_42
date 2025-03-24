@@ -42,14 +42,8 @@ class SimpleServer
 
 		char 						_buffer[3000];
 
-		// struct pollfd				_mypoll;
-
-		// struct pollfd				_server_poll_fd;
-
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
-
-		// std::map<std::string, std::string> meta;
 
 		HttpRequest			_request;
 

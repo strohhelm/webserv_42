@@ -4,6 +4,7 @@
 #define HTTPREQUEST_HPP
 
 #include <string>
+#include <string_view>
 #include <map>
 #include <vector>
 #include <fstream>
@@ -74,9 +75,8 @@ class HttpRequest
 		void handleGET(int fd);
 		void handlePOST(int fd);
 		void handleDELETE(int fd);
-		
-		
-		
+		void handleUNKNOWN(int fd);
+		void sendErrorResponse(int fd, int statusCode, const std::string& message);
 		HttpMethod stringToHttpMethod(const std::string& method);
 		
 		
@@ -93,14 +93,18 @@ class HttpRequest
 
 		void	eraseSpaceAndTab(std::string key, std::string value);
 
-		std::string	readHtmlFile(const std::string & filename);
-		void	serveIndex(int fd);
-		void	serveFavicon(int fd);
-		void	sendNotFound(int fd);
-
-
 		void	showHeader(void);
 		void	showBody(void);
+
+
+
+
+		std::string getRequestedFile();
+		std::string readFileContent(const std::string& path);
+
+		std::string getContentType(const std::string& path);
+		void sendResponse(int fd,const std::string& path, const std::string& message);
+
 
 };
 
