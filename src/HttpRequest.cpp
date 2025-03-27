@@ -1,4 +1,5 @@
-#include"HttpRequest.hpp"
+#include"../include/HttpRequest.hpp"
+
 
 /*
 400 Bad Request → Malformed request line, missing Host, or invalid headers.
@@ -93,7 +94,7 @@ void HttpRequest::handleUNKNOWN(int fd)
 
 void HttpRequest::handleDELETE(int fd)
 {
-
+	sendErrorResponse(fd, 101, "101 Delete");
 }
 
 
@@ -120,6 +121,7 @@ std::string HttpRequest::getContentType(const std::string& path)
 
 void HttpRequest::sendResponse(int fd,const std::string& path, const std::string& message)
 {
+	(void)path;
 	std::string response = "HTTP/1.1 200 OK\r\n";
 	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
 	response += "Content-Type: text/html\r\n";

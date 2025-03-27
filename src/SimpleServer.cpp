@@ -1,4 +1,4 @@
-#include "SimpleServer.hpp"
+#include "../include/SimpleServer.hpp"
 
 
 #include <signal.h>
@@ -206,7 +206,7 @@ int SimpleServer::isDataToRead(const int& fdIndex)
 int SimpleServer::isDataToWrite(const int& fdIndex)
 {
 	return (_poll_fds[fdIndex].revents & POLLOUT &&
-			fdIndex < _recvBuffer.size() &&
+			(size_t)fdIndex < _recvBuffer.size() &&
 			!_recvBuffer[fdIndex].empty());
 }
 
