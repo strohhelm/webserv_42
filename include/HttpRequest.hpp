@@ -36,40 +36,30 @@ struct requestLine
 class HttpRequest
 {
 	private:
-		
 		std::string	_rawRequestLine;
 		std::string	_rawBody;
 		
-
-		std::unordered_map<std::string, std::string> headers;
-		std::unordered_map<std::string, std::string> body;
-
+		std::unordered_map<std::string, std::string> _headers;
+		std::unordered_map<std::string, std::string> _body;
 
 		requestLine	_requestLine;
 
 		std::string _httpResponse;
 
 	public:
-		void	parseHttpRequest(const std::string& requestBuffer);
-		void	tokenizeHttpRequest(const std::string& requestBuffer);
-		void	tokenizeRequestLine();
-		void	extractBody(std::istringstream& stream);
-		void	tokenizeBody(const std::string& rawBody);
-
-		void	setRawRequestLine(std::istringstream& stream);
-		void	tokenizeHeader(std::istringstream& stream);
-		void	setBody(std::istringstream& stream);
-
-		void	setMethod(const std::string& method);
-		void	setPath(const std::string& path);
-		void	setVersion(const std::string& version);
-
-		void	clearRequest(void);
-		
-		
-		
-		void parseHeaders(const std::string& headerLines);
-		bool isValidRequest();
+		void parseHttpRequest(const std::string& requestBuffer);
+		void clearOldRequest(void);
+		void extractAndTokenizeHeader(const std::string& requestBuffer);
+		void extractRawBody(const std::string& requestBuffer);
+		void extractRawRequestLine(const std::string& requestBuffer);
+		void tokenizeRequestLine(void);
+		void tokenizeBody(void);
+	
+		void setMethod(const std::string& method);
+		void setPath(const std::string& path);
+		void setVersion(const std::string& version);
+ 	
+		bool isValidRequest(void);
 		
 		void handleHttpRequest(int fd);
 		void handleGET(int fd);

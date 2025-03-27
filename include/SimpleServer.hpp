@@ -40,8 +40,6 @@ class SimpleServer
 		int							_listenSocket;
 		int							_clientSocket_fd;
 
-		// char 						_buffer[3000];
-
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
 
@@ -70,9 +68,6 @@ class SimpleServer
 		void	removeClient(int fdIndex);
 
 		void	acceptNewConnection(void);
-
-		// void	shutdown(void);
-
 
 		// int acceptConnectionsFromSocket(void);
 

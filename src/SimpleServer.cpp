@@ -93,21 +93,6 @@ void SimpleServer::connectionTest(int item, std::string message)
 	}
 }
 
-// void SimpleServer::shutdown(void)
-// {
-// 	// Close all client connections
-// 	for (auto& fd : _poll_fds)
-// 	{
-// 		close(fd.fd);
-// 	}
-
-// 	// Close the server socket
-// 	close(_serverSocket_fd);
-
-// 	// Optionally, cleanup or log shutdown status
-// 	std::cout << "Server has been shut down gracefully." << std::endl;
-// 	exit(1);
-// }
 
 
 void SimpleServer::handler(int fdIndex)

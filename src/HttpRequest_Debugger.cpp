@@ -20,7 +20,7 @@ const std::string& HttpRequest::getRawBody(void)
 void HttpRequest::showHeader(void)
 {
 	std::cout << BLUE << "headers: " << RESET << std::endl;	
-	for (const auto& [key, value] : headers)
+	for (const auto& [key, value] : _headers)
 	{
 		std::cout << key << "=" << value << "\n";
 	}
@@ -30,7 +30,7 @@ void HttpRequest::showHeader(void)
 void HttpRequest::showBody(void)
 {
 	std::cout << YELLOW << "BODY: " << RESET << std::endl;
-	for (const auto& [key, value] : body)
+	for (const auto& [key, value] : _body)
 	{
 		std::cout << "[" << key << "]=[" << value << "]\n";
 	}

@@ -43,9 +43,9 @@ void HttpRequest::handleGET(int fd)
 
 std::string HttpRequest::getContentType()
 {
-	auto type = headers.find("Content-Type");
+	auto type = _headers.find("Content-Type");
 	
-	if(type == headers.end())
+	if(type == _headers.end())
 	{
 		return "";
 	}
