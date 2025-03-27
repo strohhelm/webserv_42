@@ -10,10 +10,11 @@ REMOVE		= rm -rf
 # INTERNAL FUNCTIONS
 FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/SimpleServer.cpp \
-				$(SRC_DIR)/HttpRequest/HttpRequest.cpp \
-				$(SRC_DIR)/HttpRequest/HttpRequest_Debugger.cpp \
-				$(SRC_DIR)/HttpRequest/HttpRequest_GetterSetter.cpp \
-				$(SRC_DIR)/HttpRequest/HttpRequest_ParsingTokenizer.cpp \
+				$(SRC_DIR)/HttpRequest_Helper.cpp \
+				$(SRC_DIR)/HttpRequest_Debugger.cpp \
+				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
+				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
+				$(SRC_DIR)/HttpRequest_Handler.cpp \
 
 
 # INTERNAL OBJECT

@@ -11,36 +11,14 @@
 414 URI Too Long → Request path too long.
 */
 
-void HttpRequest::handleHttpRequest(int fd)
-{
-	switch (getMethod())
-	{
-		case HttpMethod::GET:
-			handleGET(fd);
-			break;
-		case HttpMethod::POST:
-			handlePOST(fd);
-			break;
-		case HttpMethod::DELETE:
-			handleDELETE(fd);
-			break;		
-		default:
-			handleUNKNOWN(fd);
-			break;
-	}
-}
 
 std::string HttpRequest::getRequestedFile()
 {
-	std::string path;
-
 	if(_requestLine._path == "/")
-		path = "/index.html";
-
-	if(path.find("..") != std::string::npos)
+		return  "www/index.html";
+	if(_requestLine._path.find("..") != std::string::npos)
 		return "";
-
-	return "www" + path;
+	return "www" + _requestLine._path;
 }
 
 std::string HttpRequest::readFileContent(const std::string& path)
@@ -51,50 +29,6 @@ std::string HttpRequest::readFileContent(const std::string& path)
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
-}
-
-void HttpRequest::handleGET(int fd)
-{
-	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
-
-	std::string path = getRequestedFile();
-	if(path.empty())
-	{
-		sendErrorResponse(fd, 403, "403 Forbidden");
-		return;
-	}
-	std::string	content = readFileContent(path);
-	if(content.empty())
-	{
-		sendErrorResponse(fd, 404, "404 Not Found");
-		return;
-	}
-	sendResponse(fd, path, content);	
-}
-
-void HttpRequest::handlePOST(int fd)
-{
-	// If Content-Length is missing for a POST request, return 411 Length Required.
-	// If Content-Length does not match the actual body size, return 400 Bad Request
-
-	std::string response = 
-	"HTTP/1.1 404 Not Found\r\n"
-	"Content-Type: text/plain\r\n"
-	"Content-Length: 13\r\n"
-	"Connection: close\r\n\r\n"
-	"404 Not Found";
-
-	send(fd, response.c_str(), response.size(), 0);
-}
-
-void HttpRequest::handleUNKNOWN(int fd)
-{
-	sendErrorResponse(fd, 405, "405 Method Not Allowed");
-}
-
-void HttpRequest::handleDELETE(int fd)
-{
-	sendErrorResponse(fd, 101, "101 Delete");
 }
 
 

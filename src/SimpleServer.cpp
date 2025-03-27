@@ -122,7 +122,6 @@ void SimpleServer::handler(int fdIndex)
 
 	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
 
-
 	_recvBuffer[fdIndex].clear();
 }
 
@@ -164,7 +163,7 @@ void SimpleServer::acceptNewConnection()
 
 void SimpleServer::removeClient(int fdIndex)
 {
-	std::cout << "Closing connection: " << _poll_fds[fdIndex].fd << std::endl;
+	std::cout << BG_BRIGHT_RED << "Closing connection: " << RESET << _poll_fds[fdIndex].fd << std::endl;
 	
 	close(_poll_fds[fdIndex].fd);
 	
