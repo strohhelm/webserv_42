@@ -113,16 +113,12 @@ void SimpleServer::connectionTest(int item, std::string message)
 void SimpleServer::handler(int fdIndex)
 {
 	_request.parseHttpRequest(_recvBuffer[fdIndex]);
-
-	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
-	std::cout << BLUE << "headers: " << RESET << std::endl;
-	_request.showHeader();
-	std::cout << YELLOW << "body: " << RESET << std::endl;
-	_request.showBody();
-
 	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
-
 	_recvBuffer[fdIndex].clear();
+	
+	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
+	_request.showHeader();
+	_request.showBody();
 }
 
 
@@ -131,7 +127,7 @@ void SimpleServer::responder(void)
 {
 	write(_clientSocket_fd, _request.getHttpResponse().c_str(), _request.getHttpResponse().size());
 	close(_clientSocket_fd);	
-	// if keep-alive is requested dont close
+	// if keep-alive is requested dont close ?
 }
 
 

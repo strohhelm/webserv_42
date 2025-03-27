@@ -42,13 +42,13 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& m
 	send(fd, response.c_str(), response.size(), 0);
 }
 
-std::string HttpRequest::getContentType(const std::string& path)
+std::string HttpRequest::getFileType(const std::string& path)
 {
-	std::cout << RED << "path " << path << RESET << std::endl;
 	if(path.find(".ico"))
 		return "image/x-icon";
 	if(path.find(".html"))
 		return "text/html";
+
 	std::cout << "wrong path" << std::endl;
 	return "";
 }
@@ -59,7 +59,7 @@ void HttpRequest::sendResponse(int fd,const std::string& path, const std::string
 	std::string response = "HTTP/1.1 200 OK\r\n";
 	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
 	response += "Content-Type: text/html\r\n";
-	// response += "Content-Type: " + getContentType(path) + "\r\n";
+	// response += "Content-Type: " + getFileType(path) + "\r\n";
 	response += "\r\n";
 	response += message;
 	

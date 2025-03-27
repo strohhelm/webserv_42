@@ -102,7 +102,8 @@ class HttpRequest
 		std::string getRequestedFile();
 		std::string readFileContent(const std::string& path);
 
-		std::string getContentType(const std::string& path);
+		std::string getFileType(const std::string& path);
+		std::string getContentType();
 		void sendResponse(int fd,const std::string& path, const std::string& message);
 
 

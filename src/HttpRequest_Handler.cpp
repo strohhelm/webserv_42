@@ -41,19 +41,29 @@ void HttpRequest::handleGET(int fd)
 	sendResponse(fd, path, content);	
 }
 
+std::string HttpRequest::getContentType()
+{
+	auto type = headers.find("Content-Type");
+	
+	if(type == headers.end())
+	{
+		return "";
+	}
+	else
+	{
+		std::cout << BG_BRIGHT_BLACK << type->second << RESET << std::endl;
+		return type->second;
+	}
+}
+
 void HttpRequest::handlePOST(int fd)
 {
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
-	std::string response = 
-	"HTTP/1.1 404 Not Found\r\n"
-	"Content-Type: text/plain\r\n"
-	"Content-Length: 13\r\n"
-	"Connection: close\r\n\r\n"
-	"404 Not Found";
+	handleGET(fd);
+	getContentType();
 
-	send(fd, response.c_str(), response.size(), 0);
 }
 
 void HttpRequest::handleUNKNOWN(int fd)
