@@ -24,6 +24,14 @@ void HttpRequest::tokenizeRequestLine()
 	}
 }
 
+void HttpRequest::extractBody(std::istringstream& stream)
+{
+	std::string line;
+	while (std::getline(stream, line) && line != "\r"){}
+	std::getline(stream, _rawBody, '\0');	
+}
+
+
 void HttpRequest::tokenizeHttpRequest(const std::string& requestBuffer)
 {
 	std::istringstream requestLineStream(requestBuffer);
@@ -31,8 +39,11 @@ void HttpRequest::tokenizeHttpRequest(const std::string& requestBuffer)
 	std::istringstream bodyStream(requestBuffer);
 
 	setRawRequestLine(requestLineStream);
-	setHeaders(headerStream);
-	setBody(bodyStream);
+	tokenizeHeader(headerStream);
+
+	extractBody(bodyStream);
+	std::cout << "rawbody :" << _rawBody << std::endl;
+	tokenizeBody(_rawBody);
 }
 
 void HttpRequest::setRawRequestLine(std::istringstream& stream)
@@ -48,7 +59,7 @@ void HttpRequest::eraseSpaceAndTab(std::string key, std::string value)
 }
 
 
-void HttpRequest::setHeaders(std::istringstream& stream)
+void HttpRequest::tokenizeHeader(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line))
@@ -91,12 +102,38 @@ void HttpRequest::setBody(std::istringstream& stream)
 }
 
 
+void HttpRequest::tokenizeBody(const std::string& rawBody)
+{
+	std::istringstream stream(rawBody);
+	std::string pair;
+
+	while (getline(stream, pair, '&'))
+	{
+		size_t delimiterPos = pair.find("=");
+		if (delimiterPos != std::string::npos)
+		{
+			std::string key = pair.substr(0, delimiterPos);
+			std::string value = pair.substr(delimiterPos + 1);
+			eraseSpaceAndTab(key, value);
+			body[key] = value;
+		}
+	}
+}
+
+
 
 void HttpRequest::clearRequest(void)
 {
 	_rawRequestLine.clear();
-	_headers.clear();
-	_body.clear();
+
+	std::cout << "before clear\n" << _rawBody << "\n" << std::endl;
+	
+	_rawBody.clear();
+	body.clear();
+	
+	std::cout << "after clear\n"<< "[" << _rawBody << "]\n" << std::endl;
+
+
 	_requestLine = {}; // Set struct to default values as given in declaration
 }
 

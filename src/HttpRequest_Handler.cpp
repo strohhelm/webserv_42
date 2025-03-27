@@ -62,7 +62,8 @@ void HttpRequest::handlePOST(int fd)
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
 	handleGET(fd);
-	getContentType();
+	if(getContentType() != "")
+		sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
 
 }
 

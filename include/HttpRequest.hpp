@@ -38,8 +38,7 @@ class HttpRequest
 	private:
 		
 		std::string	_rawRequestLine;
-		std::string	_headers;
-		std::string	_body;
+		std::string	_rawBody;
 		
 
 		std::unordered_map<std::string, std::string> headers;
@@ -54,10 +53,11 @@ class HttpRequest
 		void	parseHttpRequest(const std::string& requestBuffer);
 		void	tokenizeHttpRequest(const std::string& requestBuffer);
 		void	tokenizeRequestLine();
-
+		void	extractBody(std::istringstream& stream);
+		void	tokenizeBody(const std::string& rawBody);
 
 		void	setRawRequestLine(std::istringstream& stream);
-		void	setHeaders(std::istringstream& stream);
+		void	tokenizeHeader(std::istringstream& stream);
 		void	setBody(std::istringstream& stream);
 
 		void	setMethod(const std::string& method);
@@ -88,8 +88,7 @@ class HttpRequest
 		
 		
 		const std::string&	getRawRequestLine(void);
-		const std::string&	getHeader(void);
-		const std::string&	getBody(void);
+		const std::string&	getRawBody(void);
 
 		void	eraseSpaceAndTab(std::string key, std::string value);
 

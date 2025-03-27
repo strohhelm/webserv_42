@@ -113,12 +113,13 @@ void SimpleServer::connectionTest(int item, std::string message)
 void SimpleServer::handler(int fdIndex)
 {
 	_request.parseHttpRequest(_recvBuffer[fdIndex]);
-	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
-	_recvBuffer[fdIndex].clear();
-	
+
 	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
 	_request.showHeader();
 	_request.showBody();
+
+	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
+	_recvBuffer[fdIndex].clear();	
 }
 
 

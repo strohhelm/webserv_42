@@ -11,14 +11,9 @@ const std::string& HttpRequest::getRawRequestLine(void)
 	return _rawRequestLine;
 }
 
-const std::string& HttpRequest::getHeader(void)
+const std::string& HttpRequest::getRawBody(void)
 {
-	return _headers;
-}
-
-const std::string& HttpRequest::getBody(void)
-{
-	return _body;
+	return _rawBody;
 }
 
 
@@ -37,7 +32,7 @@ void HttpRequest::showBody(void)
 	std::cout << YELLOW << "BODY: " << RESET << std::endl;
 	for (const auto& [key, value] : body)
 	{
-		std::cout << key << "=" << value << "\n";
+		std::cout << "[" << key << "]=[" << value << "]\n";
 	}
 	std::cout << YELLOW << "END OF BODY" << RESET << std::endl;
 }
