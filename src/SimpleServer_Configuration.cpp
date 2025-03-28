@@ -1,91 +1,54 @@
 #include "../include/SimpleServer.hpp"
 
-
 #include <signal.h>
 
-// fcntl - manipulate file descriptor
-// #include <fcntl.h>
-// int fcntl(int fd, int op, ... /* arg */ );
-
-/*
-
-F_SETFL (int)
-		Set the file status flags to the value specified by arg.
-		File access mode (O_RDONLY, O_WRONLY, O_RDWR) and file
-		creation flags (i.e., O_CREAT, O_EXCL, O_NOCTTY, O_TRUNC)
-		in arg are ignored.  On Linux, this operation can change
-		only the O_APPEND, O_ASYNC, O_DIRECT, O_NOATIME, and
-		O_NONBLOCK flags.  It is not possible to change the O_DSYNC
-		and O_SYNC flags; see BUGS, below.
-
-O_NONBLOCK
-       By default, both traditional (process-associated) and open file
-       description record locks are advisory.  Advisory locks are not
-       enforced and are useful only between cooperating processes.
-
-       Both lock types can also be mandatory.  Mandatory locks are
-       enforced for all processes.  If a process tries to perform an
-       incompatible access (e.g., read(2) or write(2)) on a file region
-       that has an incompatible mandatory lock, then the result depends
-       upon whether the O_NONBLOCK flag is enabled for its open file
-       description.  If the O_NONBLOCK flag is not enabled, then the
-       system call is blocked until the lock is removed or converted to a
-       mode that is compatible with the access.  If the O_NONBLOCK flag
-       is enabled, then the system call fails with the error EAGAIN.
-
-FD_CLOEXEC
-		The following operations manipulate the flags associated with a
-		file descriptor.  Currently, only one such flag is defined:
-		FD_CLOEXEC, the close-on-exec flag.  If the FD_CLOEXEC bit is set,
-		the file descriptor will automatically be closed during a
-		successful execve(2).  (If the execve(2) fails, the file
-		descriptor is left open.)  If the FD_CLOEXEC bit is not set, the
-		file descriptor will remain open across an execve(2).
-*/
 int SimpleServer::serverConfiguration(void)
 {
 	if(createSocket() < 0)
 	{
-		perror("Failed to create socket");
+		std::cout << RED << "FAILED TO CREATE SOCKET" << RESET << std::endl;	
 		return 1;
 	}
+	std::cout << GREEN << "SOCKET CREATED" << RESET << std::endl;	
 
 	initAddress();
 
-	// Allow reusing the address to avoid "Address already in use" errors
 	int opt = 1;
 	if (setsockopt(_serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
-		perror("setsockopt(SO_REUSEADDR) failed");
+		std::cout << RED << "SOCKET SET REUSABLE AFTER RESTART FAILED" << RESET << std::endl;	
 		return 1;
 	}
+	std::cout << GREEN << "SOCKET SET REUSABLE AFTER RESTART" << RESET << std::endl;	
 	
-	// set server to non blocking
 	if(fcntl(_serverSocket_fd, F_SETFL, O_NONBLOCK) < 0)
 	{
-		std::cout << RED << "error on serverConfiguration" << RESET << std::endl;	
+		std::cout << RED << "SOCKET SET TO NON BLOCKING FAILED" << RESET << std::endl;	
 		return 1;
 	}
-
-	// close socket on execve calls
+	std::cout << GREEN << "SOCKET SET TO NON BLOCKING" << RESET << std::endl;	
+	
 	if(fcntl(_serverSocket_fd, F_SETFD, FD_CLOEXEC) < 0)
 	{
-		std::cout << RED << "error on serverConfiguration" << RESET << std::endl;	
+		std::cout << RED << "SOCKET SET TO CLOSE ON EXECVE FAILED" << RESET << std::endl;	
 		return 1;
 	}
+	std::cout << GREEN << "SOCKET SET TO CLOSE ON EXECVE" << RESET << std::endl;	
+	
 	if(bindAddressToSocket() < 0)
 	{
-		// throw execption?
-		perror("Failed to bind socket");
+		std::cout << RED << "BINDING SOCKET TO ADRESS FAILED" << RESET << std::endl;	
 		return 1;
 	}
+	std::cout << GREEN << "BINDING SOCKET TO ADRESS SUCCESSFULL" << RESET << std::endl;	
 	
 	if(startListenOnSocket() < 0)
 	{
-		// throw execption?
-		perror("Failed to listen on socket");
+		std::cout << RED << "START TO LISTEN ON PORT FAILED" << RESET << std::endl;
 		return 1;
 	}
+	std::cout << GREEN << "START TO LISTEN ON PORT SUCCESSFULL" << RESET << std::endl;
+
 	if(_serverSocket_fd >= 0)
 	{
 		struct pollfd server_poll_fd = {_serverSocket_fd, POLLIN, 0};  // POLLIN means we're interested in reading
@@ -125,19 +88,5 @@ int SimpleServer::bindAddressToSocket()
 {
 	return bind(_serverSocket_fd, (struct sockaddr*)&_serviceAddress, sizeof(_serviceAddress));
 }
-
-void SimpleServer::connectionTest(int item, std::string message)
-{
-	if (item < 0)
-	{
-		std::cerr << "Failed to connect " << message << std::endl;
-		throw std::runtime_error("Socket connection failed.");
-	}
-	else
-	{
-		std::cout << "Connection successful" << std::endl;
-	}
-}
-
 
 

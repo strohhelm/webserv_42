@@ -1,6 +1,10 @@
 #include "../include/SimpleServer.hpp"
 
 
+void    printErrorMessage(const std::exception& e)
+{
+		std::cerr << RED << "Error: " << e.what() << RESET << std::endl;    
+}
 
 
 int main(void)
@@ -12,7 +16,7 @@ int main(void)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		printErrorMessage(e);
 	}
 
 

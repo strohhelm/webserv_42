@@ -10,6 +10,7 @@
 #include <poll.h>
 #include <fstream>
 #include <unordered_map>
+#include <exception>
 
 #include <fcntl.h>
 
@@ -72,14 +73,15 @@ class SimpleServer
 
 		void	acceptNewConnection(void);
 
-		// int acceptConnectionsFromSocket(void);
-
 		void	handler(int fdIndex);
+
+		class ServerConfigException : public std::exception
+		{
+			public:
+				const char* what() const noexcept override;
+		};
+
 		
-		void	connectionTest(int item, std::string message);
-
-
-		// void	setNonBlocking(int fd);
 };
 
 #endif

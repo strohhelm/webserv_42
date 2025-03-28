@@ -17,12 +17,15 @@ _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterfac
 	if(serverConfiguration())
 	{
 		close(_serverSocket_fd);
+		throw ServerConfigException();
 	}
 	
-	std::cout << BG_BRIGHT_CYAN << "Starting Server" << RESET << std::endl;
+	std::cout << BG_BRIGHT_GREEN << "STARTING SERVER" << RESET << std::endl;
 	launch();
-
 }
 
 
-
+const char* SimpleServer::ServerConfigException::what() const noexcept
+{
+	return "ServerConfigError";
+}
