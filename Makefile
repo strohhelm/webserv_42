@@ -10,6 +10,8 @@ REMOVE		= rm -rf
 # INTERNAL FUNCTIONS
 FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/SimpleServer.cpp \
+				$(SRC_DIR)/SimpleServer_Launch.cpp \
+				$(SRC_DIR)/SimpleServer_Configuration.cpp \
 				$(SRC_DIR)/HttpRequest_Helper.cpp \
 				$(SRC_DIR)/HttpRequest_Debugger.cpp \
 				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \

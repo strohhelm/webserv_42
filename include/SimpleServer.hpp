@@ -36,8 +36,8 @@ class SimpleServer
 		int							_maxAmountOfConnections;
 
 		int							_serverSocket_fd;
-		int							_bind;
-		int							_listenSocket;
+		// int							_bind;
+		// int							_listenSocket;
 		int							_clientSocket_fd;
 
 		std::vector<struct pollfd>				_poll_fds;
@@ -54,6 +54,9 @@ class SimpleServer
 		int 	bindAddressToSocket(void);
 		int		startListenOnSocket(void);
 		void	launch(void);
+
+
+		int		serverConfiguration(void);
 
 		int		initPoll(void);
 		void	handlePolls(void);
@@ -72,7 +75,6 @@ class SimpleServer
 		// int acceptConnectionsFromSocket(void);
 
 		void	handler(int fdIndex);
-		void	responder(void);
 		
 		void	connectionTest(int item, std::string message);
 
