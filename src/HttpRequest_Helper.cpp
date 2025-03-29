@@ -41,13 +41,18 @@ bool HttpRequest::directoryExists(const std::string& path)
 	return false;
 }
 
+bool HttpRequest::directoryListingIsOff()
+{
+	// check for config File
+	return false;
+}
 
 std::string HttpRequest::serveDirectory(std::string fullPath)
 {
-	(void)fullPath;
 	std::stringstream html;
-	std::cout << "serving Directory" << std::endl;
-
+	// std::cout << "serving Directory" << std::endl;
+	if(directoryListingIsOff())
+		return"";
 
 	html << "<!DOCTYPE html>\n"
 		 <<	"<html>\n"

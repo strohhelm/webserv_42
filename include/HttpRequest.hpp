@@ -95,8 +95,8 @@ class HttpRequest
 		std::string	buildFullPath(void);
 		bool	fileExists(const std::string& path);
 		bool	directoryExists(const std::string& path);
+		bool	directoryListingIsOff(void);
 		std::string	serveDirectory(std::string fullPath);
-
 
 		int deleteFile(const std::string& filename);
 
