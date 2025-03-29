@@ -129,7 +129,7 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& m
 	response += "Content-Type: text/plain\r\n\r\n";
 	response += message;
 
-	send(fd, response.c_str(), response.size(), 0);
+	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }
 
 
@@ -142,6 +142,6 @@ void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message
 	response += "\r\n";
 	response += message;
 	
-	send(fd, response.c_str(), response.size(), 0);
+	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
 
 }

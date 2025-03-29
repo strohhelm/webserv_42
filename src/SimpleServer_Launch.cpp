@@ -20,6 +20,10 @@ void SimpleServer::launch(void)
 /************************************************/
 int SimpleServer::initPoll(void)
 {
+/*
+	poll() returns the number of descriptors that are ready for I/O, or -1 if an error occurred.  If the time limit expires, poll() returns 0.  If poll() returns with
+    an error, including one due to an interrupted call, the fds array will be unmodified and the global variable errno will be set to indicate the error.
+*/
 	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 1000); // 1 second timeout or -1 to blocking mode
 	if (pollCount == 0)
 	{
@@ -27,7 +31,6 @@ int SimpleServer::initPoll(void)
 	}	
 	else if (pollCount < 0)
 	{
-		perror("Poll failed");
 		return 1;
 	}	
 	return 0;
@@ -155,6 +158,7 @@ void SimpleServer::removeClient(int fdIndex)
 
 int	SimpleServer::noDataReceived(int bytesReceived)
 {
+	// check -1 and 0 seperate !!! eval sheet
 	return (bytesReceived <= 0);
 }
 
