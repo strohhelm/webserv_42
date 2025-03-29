@@ -26,14 +26,14 @@ int SimpleServer::serverConfiguration(void)
 		std::cout << RED << "SOCKET SET TO NON BLOCKING FAILED" << RESET << std::endl;	
 		return 1;
 	}
-	std::cout << GREEN << "SOCKET SET TO NON BLOCKING" << RESET << std::endl;	
+	std::cout << GREEN << "SOCKET SET TO NON BLOCKING SUCCESSFULL" << RESET << std::endl;	
 	
 	if(fcntl(_serverSocket_fd, F_SETFD, FD_CLOEXEC) < 0)
 	{
 		std::cout << RED << "SOCKET SET TO CLOSE ON EXECVE FAILED" << RESET << std::endl;	
 		return 1;
 	}
-	std::cout << GREEN << "SOCKET SET TO CLOSE ON EXECVE" << RESET << std::endl;	
+	std::cout << GREEN << "SOCKET SET TO CLOSE ON EXECVE SUCCESSFULL" << RESET << std::endl;	
 	
 	if(bindAddressToSocket() < 0)
 	{
@@ -57,7 +57,7 @@ int SimpleServer::serverConfiguration(void)
 	}
 	else
 	{
-		std::cout << "Unknwon error" << std::endl;
+		std::cout << "UNKNWON SERVER ERROR" << std::endl;
 		return 1;
 	}
 }
@@ -73,14 +73,13 @@ int SimpleServer::startListenOnSocket(void)
 	return listen(_serverSocket_fd, _maxAmountOfConnections);
 }
 
-int SimpleServer::initAddress(void)
+void SimpleServer::initAddress(void)
 {
 	_serviceAddressLen = sizeof(_serviceAddress);
 	memset((char*)&_serviceAddress, 0, _serviceAddressLen);
 	_serviceAddress.sin_family = _domain;
 	_serviceAddress.sin_port = htons(_port);
 	_serviceAddress.sin_addr.s_addr = htonl(_networkInterface);
-	return 0;
 }
 
 

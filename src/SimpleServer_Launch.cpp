@@ -23,7 +23,6 @@ int SimpleServer::initPoll(void)
 	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 1000); // 1 second timeout or -1 to blocking mode
 	if (pollCount == 0)
 	{
-		// std::cout << "No events occurred in the timeout period" << std::endl;
 		return 0;
 	}	
 	else if (pollCount < 0)
@@ -31,7 +30,6 @@ int SimpleServer::initPoll(void)
 		perror("Poll failed");
 		return 1;
 	}	
-	// std::cout << "Poll successful " << pollCount << " events" << std::endl;
 	return 0;
 }	
 
@@ -40,7 +38,6 @@ void SimpleServer::handlePolls(void)
 	int fdIndex = _poll_fds.size() - 1;
 	while (fdIndex >= 0)
 	{
-		// std::cout << "fdIndex " << fdIndex << std::endl;
 		if(isDataToRead(fdIndex))
 		{
 			if(isNewConnection(fdIndex))
@@ -50,11 +47,13 @@ void SimpleServer::handlePolls(void)
 			else
 			{
 				readDataFromClient(fdIndex);
+				continue; //if client was removed fdIndex could be accessed
 			}
 		}
 		if(isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
+			continue;  // Prevent further access if client is removed
 		}
 		fdIndex--;
 	}
@@ -72,27 +71,38 @@ int SimpleServer::isNewConnection(const int& fdIndex)
 
 void SimpleServer::acceptNewConnection()
 {
-	// error handling !?!?!?
+
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
-	int client_fd = accept(_serverSocket_fd, (struct sockaddr*)&client_addr, &client_len);
 
+	int client_fd = accept(_serverSocket_fd, (struct sockaddr*)&client_addr, &client_len);
 	if (client_fd < 0)
 	{
-		std::cerr << RED << "Error accepting connection: " << strerror(errno) << RESET<< std::endl;
+		std::cerr << RED << "new Client connection FAILED" << strerror(errno) << RESET<< std::endl;
 		return;
 	}
+	std::cout << GREEN << "new Client connection SUCCESSFULL: " << RESET << client_fd << std::endl;
 	
 	if(fcntl(client_fd, F_SETFL, O_NONBLOCK))
-		std::cout << RED << "error on clientConfiguration acceptNewConnection" << RESET << std::endl;	
-
-
-	std::cout << GREEN << "New connection accepted: " << RESET << client_fd << std::endl;
-
-	// make new fd and add it with the read and write flags to the poll_fds container(vector)
-	struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
-	_poll_fds.push_back(client_poll_fd);
-	_recvBuffer[client_fd] = "";
+	{
+		std::cout << RED << "clientConfiguration FAILED" << RESET << std::endl;	
+		return;
+	}
+	std::cout << GREEN << "clientConfiguration SUCCESSFULL" << RESET << std::endl;
+	
+	if(client_fd >= 0)
+	{
+		// make new fd and add it with the read and write flags to the poll_fds container(vector)
+		struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
+		_poll_fds.push_back(client_poll_fd);
+		_recvBuffer[client_fd] = "";
+		return;
+	}
+	else
+	{
+		std::cout << RED << "UNKNWON CLIENT ERROR" << RESET << std::endl;			
+		return;
+	}
 }
 
 void SimpleServer::readDataFromClient(int fdIndex)
@@ -112,19 +122,20 @@ void SimpleServer::readDataFromClient(int fdIndex)
 	}
 
 	buffer[bytesReceived] = '\0';
-	_recvBuffer[fdIndex] = buffer;
+	_recvBuffer[client_fd] = buffer;
 }
 
 void SimpleServer::removeClient(int fdIndex)
 {
 	// if keep-alive is requested dont close ?
+	int client_fd = _poll_fds[fdIndex].fd;
 
 	std::cout << BG_BRIGHT_RED << "Closing connection: " << RESET << _poll_fds[fdIndex].fd << std::endl;
 	
-	close(_poll_fds[fdIndex].fd);
+	close(client_fd);
 	
 	_poll_fds.erase(_poll_fds.begin() + fdIndex);
-	_recvBuffer.erase(fdIndex);
+	_recvBuffer.erase(client_fd);
 }
 
 int	SimpleServer::noDataReceived(int bytesReceived)
@@ -149,4 +160,6 @@ void SimpleServer::handler(int fdIndex)
 	_request.showBody();
 
 	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
+	removeClient(fdIndex);
+
 }

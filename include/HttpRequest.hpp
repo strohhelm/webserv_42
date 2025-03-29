@@ -62,10 +62,10 @@ class HttpRequest
 		bool isValidRequest(void);
 		
 		void handleHttpRequest(int fd);
-		void handleGET(int fd);
-		void handlePOST(int fd);
-		void handleDELETE(int fd);
-		void handleUNKNOWN(int fd);
+		void handleGet(int fd);
+		void handlePost(int fd);
+		void handleDelete(int fd);
+		void handleUnknown(int fd);
 		void sendErrorResponse(int fd, int statusCode, const std::string& message);
 		HttpMethod stringToHttpMethod(const std::string& method);
 		
@@ -86,14 +86,17 @@ class HttpRequest
 		void	showBody(void);
 
 
-
-
 		std::string getRequestedFile();
 		std::string readFileContent(const std::string& path);
 
-		std::string getFileType(const std::string& path);
 		std::string getContentType();
-		void sendResponse(int fd,const std::string& path, const std::string& message);
+		void sendResponse(int fd,int statusCode, const std::string& message);
+
+
+		int	fileExists(const std::string& path);
+		int	directoryExists(const std::string& path);
+
+		int deleteFile(const std::string& filename);
 
 
 };

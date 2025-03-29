@@ -1,4 +1,5 @@
 #include"../include/HttpRequest.hpp"
+#include <sys/stat.h> //stat
 
 
 void HttpRequest::handleHttpRequest(int fd)
@@ -6,21 +7,21 @@ void HttpRequest::handleHttpRequest(int fd)
 	switch (getMethod())
 	{
 		case HttpMethod::GET:
-			handleGET(fd);
+			handleGet(fd);
 			break;
 		case HttpMethod::POST:
-			handlePOST(fd);
+			handlePost(fd);
 			break;
 		case HttpMethod::DELETE:
-			handleDELETE(fd);
+			handleDelete(fd);
 			break;		
 		default:
-			handleUNKNOWN(fd);
+			handleUnknown(fd);
 			break;
 	}
 }
 
-void HttpRequest::handleGET(int fd)
+void HttpRequest::handleGet(int fd)
 {
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 
@@ -38,7 +39,7 @@ void HttpRequest::handleGET(int fd)
 		sendErrorResponse(fd, 404, "404 Not Found");
 		return;
 	}
-	sendResponse(fd, path, content);	
+	sendResponse(fd, 200, content);	
 }
 
 std::string HttpRequest::getContentType()
@@ -56,23 +57,64 @@ std::string HttpRequest::getContentType()
 	}
 }
 
-void HttpRequest::handlePOST(int fd)
+void HttpRequest::handlePost(int fd)
 {
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
-	handleGET(fd);
+	handleGet(fd);
 	if(getContentType() != "")
 		sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
 
 }
 
-void HttpRequest::handleUNKNOWN(int fd)
+void HttpRequest::handleUnknown(int fd)
 {
 	sendErrorResponse(fd, 405, "405 Method Not Allowed");
 }
 
-void HttpRequest::handleDELETE(int fd)
+
+
+int HttpRequest::fileExists(const std::string& path)
 {
-	sendErrorResponse(fd, 101, "101 Delete");
+	struct stat buffer;
+	return (stat(path.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode));
+}
+
+
+int HttpRequest::directoryExists(const std::string& path)
+{
+	struct stat buffer;
+	return (stat(path.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode));
+}
+
+
+int HttpRequest::deleteFile(const std::string& filename)
+{
+	return (remove(filename.c_str()) == 0);
+}
+
+
+
+void HttpRequest::handleDelete(int fd)
+{
+	std::string path = getPath();
+	if (path.front() == '/') {
+        path.erase(path.begin());  // Remove the leading "/"
+    }
+	std::cout << BG_BRIGHT_BLACK << path << RESET << std::endl;
+
+	if(!fileExists(path))
+	{
+		sendErrorResponse(fd, 404, "404 Not Found");
+		return;		
+	}
+	if(!deleteFile(path))
+	{
+		sendErrorResponse(fd, 500, "500 Failed to delete resource");
+		return;
+	}
+	sendResponse(fd,204, "Resource deleted successfully");
+
+
 }

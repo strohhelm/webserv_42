@@ -50,15 +50,13 @@ class SimpleServer
 		SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
 		~SimpleServer();
 		
+		int		serverConfiguration(void);
 		int 	createSocket(void);
-		int 	initAddress(void);
+		void 	initAddress(void);
 		int 	bindAddressToSocket(void);
 		int		startListenOnSocket(void);
+
 		void	launch(void);
-
-
-		int		serverConfiguration(void);
-
 		int		initPoll(void);
 		void	handlePolls(void);
 
@@ -66,12 +64,12 @@ class SimpleServer
 		int		isDataToRead(const int& fdIndex);
 		int		isDataToWrite(const int& fdIndex);
 		int		isNewConnection(const int& fdIndex);
-
+		void	acceptNewConnection(void);
+		
 		void	readDataFromClient(int fdIndex);
 		int		noDataReceived(int bytesReceived);
 		void	removeClient(int fdIndex);
 
-		void	acceptNewConnection(void);
 
 		void	handler(int fdIndex);
 
