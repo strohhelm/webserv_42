@@ -42,7 +42,8 @@ void HttpRequest::handleGet(int fd)
 		content = path;
 	}
 
-	std::cout << BG_BRIGHT_BLUE << "content [" << content << "]" << RESET << std::endl;
+	// std::cout << BG_BRIGHT_BLUE << "content [" << content << "]" << RESET << std::endl;
+
 	if(content.empty())
 	{
 		sendErrorResponse(fd, 404, "404 Not Found");

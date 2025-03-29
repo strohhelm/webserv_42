@@ -55,9 +55,16 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 		 <<	"	<title> Directory Listing for " << "</title>\n"
 		 << "</head>\n"
 		 <<	"<body>\n"
-		 << "<h1>\n" << " Directory Listing for " << fullPath << "</h1>\n"
-		 << ""
-		 <<	"</body>\n"
+		 << "<h1>\n" << " Directory Listing for " << fullPath << "</h1>\n";
+
+	for (const auto& entry : std::filesystem::directory_iterator(fullPath))
+	{
+		std::cout << entry.path().filename() << std::endl;
+		html << "<p>" << entry.path().filename();
+	}
+	html << "</p>";
+		
+	html <<	"</body>\n"
 		 <<	"</html>\n";
 
 
