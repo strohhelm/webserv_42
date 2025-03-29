@@ -170,9 +170,9 @@ void SimpleServer::handler(int fdIndex)
 	_request.parseHttpRequest(_recvBuffer[fdIndex]);
 	_recvBuffer[fdIndex].clear();
 
-	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
-	_request.showHeader();
-	_request.showBody();
+	// std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
+	// _request.showHeader();
+	// _request.showBody();
 
 	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
 	removeClient(fdIndex); //???

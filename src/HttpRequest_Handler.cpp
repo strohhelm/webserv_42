@@ -1,5 +1,5 @@
 #include"../include/HttpRequest.hpp"
-#include <sys/stat.h> //stat
+
 
 
 void HttpRequest::handleHttpRequest(int fd)
@@ -24,16 +24,25 @@ void HttpRequest::handleHttpRequest(int fd)
 void HttpRequest::handleGet(int fd)
 {
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
-
-	std::string path = getRequestedFile();
+	bool isFile = true;
+	std::string	content;
+	std::string path = getRequestedFile(isFile);
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
 	if(path.empty())
 	{
 		sendErrorResponse(fd, 403, "403 Forbidden");
 		return;
 	}
-	std::string	content = readFileContent(path);
-	// std::cout << BG_BRIGHT_BLUE << "content " << content << RESET << std::endl;
+	if(isFile)
+	{
+		content = readFileContent(path);
+	}
+	else
+	{
+		content = path;
+	}
+
+	std::cout << BG_BRIGHT_BLUE << "content [" << content << "]" << RESET << std::endl;
 	if(content.empty())
 	{
 		sendErrorResponse(fd, 404, "404 Not Found");
@@ -75,18 +84,6 @@ void HttpRequest::handleUnknown(int fd)
 
 
 
-int HttpRequest::fileExists(const std::string& path)
-{
-	struct stat buffer;
-	return (stat(path.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode));
-}
-
-
-int HttpRequest::directoryExists(const std::string& path)
-{
-	struct stat buffer;
-	return (stat(path.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode));
-}
 
 
 int HttpRequest::deleteFile(const std::string& filename)

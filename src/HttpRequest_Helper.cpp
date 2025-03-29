@@ -1,5 +1,6 @@
 #include"../include/HttpRequest.hpp"
 
+#include <sys/stat.h> //stat
 
 /*
 400 Bad Request → Malformed request line, missing Host, or invalid headers.
@@ -12,48 +13,97 @@
 */
 
 
-std::string HttpRequest::getRequestedFile()
+bool HttpRequest::fileExists(const std::string& path)
 {
-	/*
-	TODO
-	if paht is file and no directory
-		server file
-	if is directory and "active dir" flag in config file on
-		serve directory
-	*/
+	
+	std::cout << "file exists function path " << path << std::endl;
+	struct stat buffer;
+	if(stat(path.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode))
+	{
+		std::cout << "file exists" << std::endl;
+		return true;
+	}
+	std::cout << "file exists not" << std::endl;
+	return false;
+	
+}
 
+
+bool HttpRequest::directoryExists(const std::string& path)
+{
+	struct stat buffer;
+	if(stat(path.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))
+	{
+		std::cout << "dir exists" << std::endl;
+		return true;
+	}
+	std::cout << "dir exists not" << std::endl;
+	return false;
+}
+
+
+std::string HttpRequest::serveDirectory(std::string fullPath)
+{
+	(void)fullPath;
+	std::stringstream html;
+	std::cout << "serving Directory" << std::endl;
+
+
+	html << "<!DOCTYPE html>\n"
+		 <<	"<html>\n"
+		 << "<head>\n"
+		 <<	"	<title> Directory Listing for " << "</title>\n"
+		 << "</head>\n"
+		 <<	"<body>\n"
+		 << "<h1>\n" << " Directory Listing for " << fullPath << "</h1>\n"
+		 << ""
+		 <<	"</body>\n"
+		 <<	"</html>\n";
+
+
+
+
+	return html.str();
+}
+
+std::string HttpRequest::buildFullPath(void)
+{
+	std::string _rootDir = "www"; // extract from config file object
+	std::string fullPath = _rootDir + _requestLine._path;
 	if(_requestLine._path == "/")
 	{
-		/*
-		TODO
-		get root directory from config
-		get index files from config
-		check which index file exists
-		return root + indexfile
-		*/
-	return  "www/index.html";
+		return fullPath + "index.html"; //extract from config. if 2 indexes are availiable check all and give first that fits?
 	}
-	if(_requestLine._path.find("..") != std::string::npos) //to avoid forbidden access
-	return "";
-	else
+	if(fullPath.find("..") != std::string::npos) //to avoid forbidden access
 	{
-		/*
-		TODO
-		check if _requestLine.path exists
-		get index files from requested path from config
-		check which index file exists
-		return path + indexfile
-		*/
-		
-		return "www" + _requestLine._path;
+		return "";
 	}
+	return fullPath;
+}
+
+
+std::string HttpRequest::getRequestedFile(bool& isFile)
+{
+	std::string fullPath = buildFullPath();
+	if(fileExists(fullPath) && !directoryExists(fullPath))
+		return(fullPath);
+	if(directoryExists(fullPath))
+	{
+		isFile = false;
+		return(serveDirectory(fullPath));
+	}
+	return "";
 }
 
 std::string HttpRequest::readFileContent(const std::string& path)
 {
+	std::cout << "path:::\n" << path << std::endl;
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
+	{
+
 		return "";
+	}
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
