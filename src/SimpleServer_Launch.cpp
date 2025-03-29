@@ -33,11 +33,13 @@ int SimpleServer::initPoll(void)
 	return 0;
 }	
 
+
 void SimpleServer::handlePolls(void)
 {
 	int fdIndex = _poll_fds.size() - 1;
 	while (fdIndex >= 0)
 	{
+		// std::cout << "fdIndex " << fdIndex << std::endl;
 		if(isDataToRead(fdIndex))
 		{
 			if(isNewConnection(fdIndex))
@@ -47,17 +49,16 @@ void SimpleServer::handlePolls(void)
 			else
 			{
 				readDataFromClient(fdIndex);
-				continue; //if client was removed fdIndex could be accessed
 			}
 		}
 		if(isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
-			continue;  // Prevent further access if client is removed
 		}
 		fdIndex--;
 	}
 }
+
 
 int SimpleServer::isDataToRead(const int& fdIndex)
 {
@@ -105,6 +106,7 @@ void SimpleServer::acceptNewConnection()
 	}
 }
 
+
 void SimpleServer::readDataFromClient(int fdIndex)
 {
 	std::cout << "readDataFromClient" << std::endl;
@@ -122,8 +124,9 @@ void SimpleServer::readDataFromClient(int fdIndex)
 	}
 
 	buffer[bytesReceived] = '\0';
-	_recvBuffer[client_fd] = buffer;
+	_recvBuffer[fdIndex] = buffer;
 }
+
 
 void SimpleServer::removeClient(int fdIndex)
 {
@@ -137,6 +140,18 @@ void SimpleServer::removeClient(int fdIndex)
 	_poll_fds.erase(_poll_fds.begin() + fdIndex);
 	_recvBuffer.erase(client_fd);
 }
+
+// void SimpleServer::removeClient(int fdIndex)
+// {
+// 	// if keep-alive is requested dont close ?
+
+// 	std::cout << BG_BRIGHT_RED << "Closing connection: " << RESET << _poll_fds[fdIndex].fd << std::endl;
+	
+// 	close(_poll_fds[fdIndex].fd);
+	
+// 	_poll_fds.erase(_poll_fds.begin() + fdIndex);
+// 	_recvBuffer.erase(fdIndex);
+// }
 
 int	SimpleServer::noDataReceived(int bytesReceived)
 {
@@ -160,6 +175,5 @@ void SimpleServer::handler(int fdIndex)
 	_request.showBody();
 
 	_request.handleHttpRequest(_poll_fds[fdIndex].fd);
-	removeClient(fdIndex);
-
+	removeClient(fdIndex); //???
 }
