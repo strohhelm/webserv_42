@@ -37,9 +37,7 @@ class SimpleServer
 		int							_maxAmountOfConnections;
 
 		int							_serverSocket_fd;
-		// int							_bind;
-		// int							_listenSocket;
-		int							_clientSocket_fd;
+
 
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;

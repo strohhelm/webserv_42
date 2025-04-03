@@ -13,7 +13,6 @@ SimpleServer::~SimpleServer()
 SimpleServer::SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections) :
 _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterface(networkInterface), _maxAmountOfConnections(maxAmountOfConnections)
 {
-	// try catch?
 	if(serverConfiguration())
 	{
 		close(_serverSocket_fd);
