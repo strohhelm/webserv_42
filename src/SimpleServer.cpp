@@ -8,6 +8,7 @@ SimpleServer::~SimpleServer()
 	{
 		close(fd.fd);
 	}
+	closeAllSockets();
 }
 
 SimpleServer::SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections,std::vector<ServerConfig> configs) :

@@ -1,12 +1,12 @@
 #include "../include/SimpleServer.hpp"
 
-#include <signal.h>
+#include "../include/SignalHandler.hpp"
 
 void SimpleServer::launch(void)
 {
-	while(true)
+	while(true && !g_stopFlag)
 	{
-		if(initPoll())
+		if(initPoll() && !g_stopFlag)
 		{
 			std::cerr << RED << "Poll error, retrying..." << RESET << std::endl;
 			continue;  // Skip all after and start with while loop again;

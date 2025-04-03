@@ -1,18 +1,30 @@
 #include "../include/SimpleServer.hpp"
 #include "../include/ServerConfig.hpp"
 #include "../include/HttpRequest.hpp"
+#include "../include/SignalHandler.hpp"
 
 
-void    printErrorMessage(const std::exception& e)
+volatile sig_atomic_t g_stopFlag = 0;
+
+
+static void    printErrorMessage(const std::exception& e)
 {
 		std::cerr << RED << "Error: " << e.what() << RESET << std::endl;    
+}
+
+static void handleSignalINT(int signal)
+{
+	(void)signal;
+	std::cout << RED << "shutting Server down ..." << RESET << std::endl;
+	g_stopFlag = 1;
 }
 
 
 int main(void)
 {
 
-	
+	signal(SIGINT, handleSignalINT);
+
 	std::vector<ServerConfig> configs;
 	
 	ServerConfig config1;
@@ -31,11 +43,6 @@ int main(void)
 
 	configs.push_back(config1);
 	configs.push_back(config2);
-
-
-
-
-
 
 	try
 	{
