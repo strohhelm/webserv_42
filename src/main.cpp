@@ -39,7 +39,7 @@ int main(void)
 
 	try
 	{
-		SimpleServer server(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY, 10, configs);
+		SimpleServer server(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 10, configs);
 	}
 	catch(const std::exception& e)
 	{

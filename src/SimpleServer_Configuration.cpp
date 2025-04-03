@@ -4,6 +4,12 @@
 
 int SimpleServer::serverConfiguration(void)
 {
+
+	for(auto conf : _configs)
+	{
+		std::cout << "PORT " << conf.getPort() << std::endl;
+
+	}
 	for(auto conf : _configs)
 	{
 		int					serverSocket_fd;
@@ -16,6 +22,7 @@ int SimpleServer::serverConfiguration(void)
 			return 1;
 		}
 		std::cout << GREEN << "SOCKET CREATED" << RESET << std::endl;	
+		std::cout << "PORT " << conf.getPort() << std::endl;
 
 		serviceAddress = initAddress(conf.getPort());
 
@@ -57,9 +64,9 @@ int SimpleServer::serverConfiguration(void)
 
 		if(serverSocket_fd >= 0)
 		{
+			_serverSocket_fds.insert(serverSocket_fd);
 			struct pollfd server_poll_fd = {serverSocket_fd, POLLIN, 0};  // POLLIN means we're interested in reading
 			_poll_fds.push_back(server_poll_fd);
-			return 0;
 		}
 		else
 		{

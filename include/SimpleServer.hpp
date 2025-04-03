@@ -14,7 +14,7 @@
 
 #include <fcntl.h>
 
-
+#include <unordered_set>
 
 #include"HttpRequest.hpp"
 #include"ServerConfig.hpp"
@@ -37,19 +37,18 @@ class SimpleServer
 		socklen_t					_serviceAddressLen;
 		int							_maxAmountOfConnections; // from config?
 
-		// int							_serverSocket_fd;
-
-
+		
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
-
-
+		
+		
 		HttpRequest		_request;
 		std::vector<ServerConfig>		_configs;
-		std::vector<int>				_serverSockets;
+		std::unordered_set<int>			_serverSocket_fds;
+
 
 	public:
-		SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);
+		SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);
 		~SimpleServer();
 		
 		int		serverConfiguration(void);
@@ -69,8 +68,8 @@ class SimpleServer
 
 		int		isDataToRead(const int& fdIndex);
 		int		isDataToWrite(const int& fdIndex);
-		int		isNewConnection(const int& fdIndex);
-		void	acceptNewConnection(void);
+		bool	isNewConnection(const int& fdIndex);
+		void	acceptNewConnection(const int& fdIndex);
 		
 		void	readDataFromClient(int fdIndex);
 		int		noDataReceived(int bytesReceived);

@@ -47,7 +47,7 @@ void SimpleServer::handlePolls(void)
 		{
 			if(isNewConnection(fdIndex))
 			{
-				acceptNewConnection();
+				acceptNewConnection(fdIndex);
 			}
 			else
 			{
@@ -68,19 +68,22 @@ int SimpleServer::isDataToRead(const int& fdIndex)
 	return (_poll_fds[fdIndex].revents & POLLIN);
 }
 
-int SimpleServer::isNewConnection(const int& fdIndex)
+bool SimpleServer::isNewConnection(const int& fdIndex)
 {
-	return (_poll_fds[fdIndex].fd == _serverSocket_fd);
+	if(_serverSocket_fds.count(_poll_fds[fdIndex].fd) > 0)
+		return true;
+	else
+		return false;
 }
 
 
-void SimpleServer::acceptNewConnection()
+void SimpleServer::acceptNewConnection(const int& fdIndex)
 {
 
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 
-	int client_fd = accept(_serverSocket_fd, (struct sockaddr*)&client_addr, &client_len);
+	int client_fd = accept(_poll_fds[fdIndex].fd, (struct sockaddr*)&client_addr, &client_len);
 	if (client_fd < 0)
 	{
 		std::cerr << RED << "new Client connection FAILED" << strerror(errno) << RESET<< std::endl;
