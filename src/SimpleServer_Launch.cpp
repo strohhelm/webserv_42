@@ -4,7 +4,7 @@
 
 void SimpleServer::launch(void)
 {
-	while(true && !g_stopFlag)
+	while(!g_stopFlag)
 	{
 		if(initPoll() && !g_stopFlag)
 		{
@@ -27,6 +27,7 @@ int SimpleServer::initPoll(void)
 	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 1000); // 1 second timeout or -1 to blocking mode
 	if (pollCount == 0)
 	{
+		std::cout << "pollCount = 0" << std::endl;
 		return 0;
 	}	
 	else if (pollCount < 0)
