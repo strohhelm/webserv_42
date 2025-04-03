@@ -17,3 +17,9 @@ void ServerConfig::setUrl(const std::vector<std::string>& serverNames ,const int
 	_serverNames = serverNames;
 	_port = port;
 }
+
+
+int		ServerConfig::getPort(void)
+{
+	return _port;
+}

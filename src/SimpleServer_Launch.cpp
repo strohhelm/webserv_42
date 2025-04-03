@@ -73,6 +73,7 @@ int SimpleServer::isNewConnection(const int& fdIndex)
 	return (_poll_fds[fdIndex].fd == _serverSocket_fd);
 }
 
+
 void SimpleServer::acceptNewConnection()
 {
 

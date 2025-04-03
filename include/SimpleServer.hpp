@@ -17,6 +17,7 @@
 
 
 #include"HttpRequest.hpp"
+#include"ServerConfig.hpp"
 
 
 #ifndef SOCKET_HPP
@@ -30,29 +31,36 @@ class SimpleServer
 		int							_domain;
 		int							_type;
 		int							_protocol;
-		int							_port;
+		// int							_port;
 		u_long						_networkInterface;
 		struct sockaddr_in			_serviceAddress;
 		socklen_t					_serviceAddressLen;
-		int							_maxAmountOfConnections;
+		int							_maxAmountOfConnections; // from config?
 
-		int							_serverSocket_fd;
+		// int							_serverSocket_fd;
 
 
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
 
-		HttpRequest			_request;
+
+		HttpRequest		_request;
+		std::vector<ServerConfig>		_configs;
+		std::vector<int>				_serverSockets;
 
 	public:
-		SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
+		SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);
 		~SimpleServer();
 		
 		int		serverConfiguration(void);
-		int 	createSocket(void);
-		void 	initAddress(void);
-		int 	bindAddressToSocket(void);
-		int		startListenOnSocket(void);
+		int 	createSocket();
+		struct sockaddr_in 	initAddress(int port);
+		int 	bindAddressToSocket(int serverSocket_fd, struct sockaddr_in serviceAddress);
+		int		startListenOnSocket(int serverSocket_fd);
+
+		void	setHostnamesToSystem(); //TODO
+		void	removeHostnamesFromSystem(); //TODO
+
 
 		void	launch(void);
 		int		initPoll(void);
@@ -67,6 +75,8 @@ class SimpleServer
 		void	readDataFromClient(int fdIndex);
 		int		noDataReceived(int bytesReceived);
 		void	removeClient(int fdIndex);
+
+		void	closeAllSockets(void);
 
 
 		void	handler(int fdIndex);
