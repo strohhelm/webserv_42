@@ -14,8 +14,8 @@ void SimpleServer::checkIdleConnections(void)
 		if (elapsed.count() > 10)
 		{
 			std::cout << "Closing idle connection on fd: " << it->first << std::endl;
-			close(it->first); // Close idle connection
-			it = _clientLastActivityTimes.erase(it); // Remove from the map
+			close(it->first);
+			it = _clientLastActivityTimes.erase(it);
 		}
 		else
 		{
@@ -32,10 +32,10 @@ void SimpleServer::launch(void)
 		if(initPoll() && !g_stopFlag)
 		{
 			std::cerr << RED << "Poll error, retrying..." << RESET << std::endl;
-			continue;  // Skip all after and start with while loop again;
+			continue; 
 		}
 		handlePolls();
-		// checkIdleConnections();
+		checkIdleConnections();
 	}
 }
 
@@ -48,16 +48,18 @@ int SimpleServer::initPoll(void)
 	poll() returns the number of descriptors that are ready for I/O, or -1 if an error occurred.  If the time limit expires, poll() returns 0.  If poll() returns with
     an error, including one due to an interrupted call, the fds array will be unmodified and the global variable errno will be set to indicate the error.
 */
-	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), -1);
+	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 0);
 	if (pollCount == 0)
 	{
-		std::cout << "pollCount = 0" << std::endl;
+		// std::cout << "pollCount = 0" << std::endl;
 		return 0;
 	}	
 	else if (pollCount < 0)
 	{
+		//std::cout << "pollCount = <1" << std::endl;
 		return 1;
 	}	
+	//std::cout << "else poll" << std::endl;
 	return 0;
 }	
 
@@ -79,7 +81,7 @@ void SimpleServer::handlePolls(void)
 				readDataFromClient(fdIndex);
 			}
 		}
-		else if(isDataToWrite(fdIndex))
+		if(isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
 		}
@@ -139,7 +141,7 @@ int SimpleServer::readDataFromClient(int fdIndex)
 	std::cout << "readDataFromClient" << std::endl;
 	int		client_fd = _poll_fds[fdIndex].fd;
 
-	char	buffer[BUFFER_SIZE];
+	static char	buffer[BUFFER_SIZE];
 	int		bytesReceived;
 	memset(&buffer, '\0', sizeof(buffer));
 	
@@ -152,6 +154,7 @@ int SimpleServer::readDataFromClient(int fdIndex)
 		return 0;
 	}
 
+	// std::cout << std::string(buffer, bytesReceived) << std::endl;
 	if (bytesReceived == 0)
 	{
 		// Connection was closed by the client
@@ -160,7 +163,9 @@ int SimpleServer::readDataFromClient(int fdIndex)
 		return 0;
 	}
 	
-	buffer[bytesReceived] = '\0';
+
+
+
 	_recvBuffer[fdIndex] = std::string(buffer, bytesReceived);
 	_clientLastActivityTimes[client_fd] = std::chrono::steady_clock::now();
 
@@ -193,18 +198,27 @@ int	SimpleServer::noDataReceived(int bytesReceived)
 	return (bytesReceived <= 0);
 }
 
+// int SimpleServer::isDataToWrite(const int& fdIndex)
+// {
+// 	return (_poll_fds[fdIndex].revents & POLLOUT &&
+// 			(size_t)fdIndex < _recvBuffer.size() &&
+// 			!_recvBuffer[fdIndex].empty());
+// }
+
 int SimpleServer::isDataToWrite(const int& fdIndex)
 {
-	return (_poll_fds[fdIndex].revents & POLLOUT &&
-			(size_t)fdIndex < _recvBuffer.size() &&
-			!_recvBuffer[fdIndex].empty());
+    return (_poll_fds[fdIndex].revents & POLLOUT && !_recvBuffer[fdIndex].empty());
 }
+
+
+
+
 
 void SimpleServer::handler(int fdIndex)
 {
 	_request.parseHttpRequest(_recvBuffer[fdIndex]);
 	_recvBuffer[fdIndex].clear();
-
+	
 	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
 	_request.showHeader();
 	_request.showBody();

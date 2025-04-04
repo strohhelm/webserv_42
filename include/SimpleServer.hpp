@@ -24,7 +24,7 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 1024 * 100000
 
 class SimpleServer
 {
