@@ -4,7 +4,7 @@
 
 int SimpleServer::serverConfiguration(void)
 {
-	for(auto conf : _configs)
+	for(auto conf : _rawConfigs)
 	{
 		int					serverSocket_fd;
 		struct sockaddr_in	serviceAddress;
@@ -67,6 +67,9 @@ int SimpleServer::serverConfiguration(void)
 			std::cout << "UNKNWON SERVER ERROR" << std::endl;
 			return 1;
 		}
+
+		_serverConfigs[serverSocket_fd] = conf;
+		
 		std::cout << GREEN << "SERVER SETUP SUCCESSFUL" << RESET << std::endl;
 	}
 	return 0;

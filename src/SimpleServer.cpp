@@ -12,7 +12,7 @@ SimpleServer::~SimpleServer()
 }
 
 SimpleServer::SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections,std::vector<ServerConfig> configs) :
-_domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInterface), _maxAmountOfConnections(maxAmountOfConnections), _configs(configs)
+_domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInterface), _maxAmountOfConnections(maxAmountOfConnections), _rawConfigs(configs)
 {
 
 	if(serverConfiguration())

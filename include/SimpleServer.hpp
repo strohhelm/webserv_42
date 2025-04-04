@@ -44,10 +44,16 @@ class SimpleServer
 		
 		
 		HttpRequest		_request;
-		std::vector<ServerConfig>		_configs;
+		std::vector<ServerConfig>		_rawConfigs;
+		std::map<int, ServerConfig>		_serverConfigs;
+
+
 		std::unordered_set<int>			_serverSocket_fds;
 
 		std::unordered_map<int, std::chrono::steady_clock::time_point> _clientLastActivityTimes;
+
+		std::unordered_map<int, int>	_listeningServerFromClient;
+
 
 	public:
 		SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);

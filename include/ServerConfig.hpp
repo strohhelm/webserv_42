@@ -57,8 +57,8 @@ class ServerConfig
 		~ServerConfig();
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
 		int		getPort(void);
-
-
+		void	setRootDir(const std::string& rootDir);
+		const std::string& getRootDir(void);
 };
 
 #endif
