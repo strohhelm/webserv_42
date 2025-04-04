@@ -4,12 +4,6 @@
 
 int SimpleServer::serverConfiguration(void)
 {
-
-	for(auto conf : _configs)
-	{
-		std::cout << "PORT " << conf.getPort() << std::endl;
-
-	}
 	for(auto conf : _configs)
 	{
 		int					serverSocket_fd;
@@ -61,7 +55,7 @@ int SimpleServer::serverConfiguration(void)
 			return 1;
 		}
 		std::cout << GREEN << "START TO LISTEN ON PORT SUCCESSFULL" << RESET << std::endl;
-
+		
 		if(serverSocket_fd >= 0)
 		{
 			_serverSocket_fds.insert(serverSocket_fd);
@@ -73,6 +67,7 @@ int SimpleServer::serverConfiguration(void)
 			std::cout << "UNKNWON SERVER ERROR" << std::endl;
 			return 1;
 		}
+		std::cout << GREEN << "SERVER SETUP SUCCESSFUL" << RESET << std::endl;
 	}
 	return 0;
 }
@@ -92,20 +87,13 @@ int SimpleServer::startListenOnSocket(int serverSocket_fd)
 struct sockaddr_in SimpleServer::initAddress(int port)
 {
 	struct sockaddr_in	serviceAddress;
-	socklen_t			serviceAddressLen;
 
-	serviceAddressLen = sizeof(serviceAddress);
-	memset((char*)&serviceAddress, 0, serviceAddressLen);
+	memset((char*)&serviceAddress, 0, sizeof(serviceAddress));
 	serviceAddress.sin_family = _domain; //AF_INET
 	serviceAddress.sin_port = htons(port);
 	serviceAddress.sin_addr.s_addr = htonl(_networkInterface); // INADDR_ANY
 
 	return serviceAddress;
-	// _serviceAddressLen = sizeof(_serviceAddress);
-	// memset((char*)&_serviceAddress, 0, _serviceAddressLen);
-	// _serviceAddress.sin_family = _domain; //AF_INET
-	// _serviceAddress.sin_port = htons(_port);
-	// _serviceAddress.sin_addr.s_addr = htonl(_networkInterface); // INADDR_ANY
 }
 
 

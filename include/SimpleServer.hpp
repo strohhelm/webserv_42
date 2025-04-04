@@ -13,6 +13,7 @@
 #include <exception>
 
 #include <fcntl.h>
+#include <chrono>
 
 #include <unordered_set>
 
@@ -46,6 +47,7 @@ class SimpleServer
 		std::vector<ServerConfig>		_configs;
 		std::unordered_set<int>			_serverSocket_fds;
 
+		std::unordered_map<int, std::chrono::steady_clock::time_point> _clientLastActivityTimes;
 
 	public:
 		SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);
@@ -71,7 +73,7 @@ class SimpleServer
 		bool	isNewConnection(const int& fdIndex);
 		void	acceptNewConnection(const int& fdIndex);
 		
-		void	readDataFromClient(int fdIndex);
+		int		readDataFromClient(int fdIndex);
 		int		noDataReceived(int bytesReceived);
 		void	removeClient(int fdIndex);
 
@@ -86,7 +88,13 @@ class SimpleServer
 				const char* what() const noexcept override;
 		};
 
-		
+		void	closeConnection(int fdIndex);
+		bool	shouldCloseConnection(int fdIndex);
+		void	resetIdleTimeout(int fdIndex);
+
+		void	checkIdleConnections(void);
+
+
 };
 
 #endif

@@ -21,8 +21,6 @@ _domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInter
 		closeAllSockets();
 		throw ServerConfigException();
 	}
-	
-	std::cout << BG_BRIGHT_GREEN << "STARTING SERVER" << RESET << std::endl;
 	launch();
 }
 

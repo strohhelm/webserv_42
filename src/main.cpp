@@ -29,20 +29,24 @@ int main(void)
 	
 	ServerConfig config1;
 	std::vector<std::string> hostname1;
-	
-	ServerConfig config2;
-	std::vector<std::string> hostname2;
-
 	hostname1.push_back("example.com");
 	hostname1.push_back("www.example.com");
 	config1.setUrl(hostname1, 8080);
-
+	configs.push_back(config1);
+	
+	ServerConfig config2;
+	std::vector<std::string> hostname2;
 	hostname2.push_back("test.com");
 	hostname2.push_back("www.test.com");
 	config2.setUrl(hostname2, 8081);
-
-	configs.push_back(config1);
 	configs.push_back(config2);
+	
+	// ServerConfig config3;
+	// std::vector<std::string> hostname3;
+	// hostname3.push_back("test1.com");
+	// hostname3.push_back("www.test1.com");
+	// config3.setUrl(hostname3, 8082);
+	// configs.push_back(config3);
 
 	try
 	{
