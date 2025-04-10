@@ -1,5 +1,6 @@
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++17
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 
+# -g -fsanitize=address	
 
 NAME		= webserv
 OBJ_DIR		= obj
@@ -11,12 +12,14 @@ REMOVE		= rm -rf
 FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/SimpleServer.cpp \
 				$(SRC_DIR)/SimpleServer_Launch.cpp \
+				$(SRC_DIR)/SimpleServer_test.cpp \
 				$(SRC_DIR)/SimpleServer_Configuration.cpp \
 				$(SRC_DIR)/HttpRequest_Helper.cpp \
 				$(SRC_DIR)/HttpRequest_Debugger.cpp \
 				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
 				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
+				$(SRC_DIR)/ServerConfig.cpp \
 
 
 # INTERNAL OBJECT

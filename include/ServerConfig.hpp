@@ -4,6 +4,11 @@
 #include <fstream>
 #include <map>
 #include <vector>
+#include <unordered_map>
+
+
+#ifndef SERVERCONFIG
+#define SERVERCONFIG
 
 
 struct routeConfig
@@ -37,7 +42,8 @@ class ServerConfig
 {
 	private:
 		int							_port; //default set to 80
-		std::vector<std::string>	_serverNames; //default set to 127.0.0.1?
+		std::vector<std::string>	_serverNames; //default set to localhost?
+		// std::unordered_map<std::string, int> urls;
 
 		std::string 				_rootDir;
 		std::string 				_indexFile; //default set to index.html?
@@ -48,8 +54,10 @@ class ServerConfig
 	public:
 		ServerConfig();
 		~ServerConfig();
-		void setUrl(const std::vector<std::string>& serverNames ,const int& port);
-		class ConfigurationFileException : public std::exception
+		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
+		int		getPort(void);
+		void	setRootDir(const std::string& rootDir);
+		const std::string& getRootDir(void);		class ConfigurationFileException : public std::exception
 		{
 			public:
 				const char* what() const noexcept override;
@@ -65,8 +73,9 @@ class ServerConfig
 				const char* what() const noexcept override;
 		};
 };
-
 void getConfiguration(std::vector<ServerConfig> &config);
+
+#endif
 
 /*
 server {

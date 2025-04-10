@@ -8,7 +8,7 @@ void getConfiguration(std::vector<ServerConfig> &Config)
 	if (! file.is_open())
 	{
 		throw "Error, couldnt open file: "<<filename<<std::endl;
-		return 
+		return ;
 	}
 	
 }

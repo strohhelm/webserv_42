@@ -147,3 +147,45 @@ int main() {
 
     return 0;
 }
+
+
+
+void HttpRequest::handleGet(int server_fd, int client_fd)
+{
+    // Determine the server config based on the accepted connection's server_fd (port)
+    if (serverConfigs.find(server_fd) == serverConfigs.end()) {
+        sendErrorResponse(client_fd, 404, "404 Not Found");
+        return;
+    }
+    
+    // Retrieve the server configuration for this server_fd
+    ServerConfig config = serverConfigs[server_fd];
+    std::string serverName = config.server_name;
+    std::string rootDirectory = config.root_directory;
+
+    // Now handle the request dynamically based on the server configuration
+    std::string content;
+    bool isFile = true;
+    std::string path = getRequestedFile(isFile); // Get the requested file based on path from HTTP request
+
+    if (path.empty()) {
+        sendErrorResponse(client_fd, 403, "403 Forbidden");
+        return;
+    }
+
+    // Make sure to prepend the root directory for the requested file
+    path = rootDirectory + path;
+
+    if (isFile) {
+        content = readFileContent(path);
+    } else {
+        content = path;  // If it's not a file, just return the path as a response
+    }
+
+    if (content.empty()) {
+        sendErrorResponse(client_fd, 404, "404 Not Found");
+        return;
+    }
+
+    sendResponse(client_fd, 200, content);
+}

@@ -1,6 +1,7 @@
 #include"../include/HttpRequest.hpp"
 
 #include <sys/stat.h> //stat
+#include <filesystem>
 
 /*
 400 Bad Request → Malformed request line, missing Host, or invalid headers.
@@ -78,9 +79,9 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 	return html.str();
 }
 
-std::string HttpRequest::buildFullPath(void)
+std::string HttpRequest::buildFullPath(ServerConfig config)
 {
-	std::string _rootDir = "www"; // extract from config file object
+	std::string _rootDir = config.getRootDir(); // extract from config file object
 	std::string fullPath = _rootDir + _requestLine._path;
 	if(_requestLine._path == "/")
 	{
@@ -94,9 +95,9 @@ std::string HttpRequest::buildFullPath(void)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile)
+std::string HttpRequest::getRequestedFile(bool& isFile,  ServerConfig config)
 {
-	std::string fullPath = buildFullPath();
+	std::string fullPath = buildFullPath(config);
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
@@ -113,7 +114,6 @@ std::string HttpRequest::readFileContent(const std::string& path)
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
-
 		return "";
 	}
 	std::stringstream buffer;
