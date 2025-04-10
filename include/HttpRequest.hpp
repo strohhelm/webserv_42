@@ -70,9 +70,7 @@ class HttpRequest
 		void sendErrorResponse(int fd, int statusCode, const std::string& message);
 		HttpMethod stringToHttpMethod(const std::string& method);
 		
-		
-		
-		
+
 		const HttpMethod&	getMethod(void);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
@@ -100,6 +98,13 @@ class HttpRequest
 		std::string	serveDirectory(std::string fullPath);
 
 		int deleteFile(const std::string& filename);
+
+		/********************************************************/
+		void testCGI(int client_fd);
+		const std::unordered_map<std::string, std::string>& getHeaders() const {
+			return _headers;
+		}
+		void runCgiScript(int& client_fd, const std::string& scriptPath);
 
 
 };

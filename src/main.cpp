@@ -34,22 +34,23 @@ int main(void)
 	config1.setUrl(hostname1, 8080);
 	config1.setRootDir("www");
 	configs.push_back(config1);
+	config1.setCGI("cgi");
 	
-	ServerConfig config2;
-	std::vector<std::string> hostname2;
-	hostname2.push_back("test.com");
-	hostname2.push_back("www.test.com");
-	config2.setUrl(hostname2, 8081);
-	config2.setRootDir("www2");
-	configs.push_back(config2);
+	// ServerConfig config2;
+	// std::vector<std::string> hostname2;
+	// hostname2.push_back("test.com");
+	// hostname2.push_back("www.test.com");
+	// config2.setUrl(hostname2, 8081);
+	// config2.setRootDir("www2");
+	// configs.push_back(config2);
 	
-	ServerConfig config3;
-	std::vector<std::string> hostname3;
-	hostname3.push_back("test1.com");
-	hostname3.push_back("www.test1.com");
-	config3.setUrl(hostname3, 8082);
-	config3.setRootDir("www3");
-	configs.push_back(config3);
+	// ServerConfig config3;
+	// std::vector<std::string> hostname3;
+	// hostname3.push_back("test1.com");
+	// hostname3.push_back("www.test1.com");
+	// config3.setUrl(hostname3, 8082);
+	// config3.setRootDir("www3");
+	// configs.push_back(config3);
 
 	try
 	{

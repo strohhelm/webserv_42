@@ -44,18 +44,20 @@ class ServerConfig
 	private:
 		int							_port; //default set to 80
 		std::vector<std::string>	_serverNames; //default set to localhost?
-		// std::unordered_map<std::string, int> urls;
 
 		std::string 				_rootDir;   
 		std::string 				_indexFile; //default set to index.html?
 
 		std::map<int, std::string>	_errorPage; // 404 ./var/www/html/40x.html
-		std::map<std::string, routeConfig> _routes; // path and config
+		std::map<std::string, routeConfig> _locations; // path and config
+
+		std::string					_cgiPath;
 
 	public:
 		ServerConfig();
 		~ServerConfig();
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
+		void	setCGI(const std::string& path);
 		int		getPort(void);
 		void	setRootDir(const std::string& rootDir);
 		const std::string& getRootDir(void);
