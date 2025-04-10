@@ -11,13 +11,10 @@ void    printErrorMessage(const std::exception& e)
 
 int main(void)
 {
-	// ServerConfig config;
-
-	// config.setUrl()
-
-
 	try
 	{
+		std::vector<ServerConfig> config;
+		getConfiguration(config);
 		SimpleServer server(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY, 10);
 	}
 	catch(const std::exception& e)

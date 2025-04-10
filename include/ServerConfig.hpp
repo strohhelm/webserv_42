@@ -1,6 +1,7 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <map>
 #include <vector>
 
@@ -32,15 +33,13 @@ from the CGI, EOF will mark the end of the returned data.
 
 */
 
-
-
 class ServerConfig
 {
 	private:
 		int							_port; //default set to 80
 		std::vector<std::string>	_serverNames; //default set to 127.0.0.1?
 
-		std::string 				_rootDir;   
+		std::string 				_rootDir;
 		std::string 				_indexFile; //default set to index.html?
 
 		std::map<int, std::string>	_errorPage; // 404 ./var/www/html/40x.html
@@ -50,10 +49,24 @@ class ServerConfig
 		ServerConfig();
 		~ServerConfig();
 		void setUrl(const std::vector<std::string>& serverNames ,const int& port);
-
+		class ConfigurationFileException : public std::exception
+		{
+			public:
+				const char* what() const noexcept override;
+		};
+		class ConfigurationException : public std::exception
+		{
+			public:
+				const char* what() const noexcept override;
+		};
+		class ConfigurationException : public std::exception
+		{
+			public:
+				const char* what() const noexcept override;
+		};
 };
 
-
+void getConfiguration(std::vector<ServerConfig> &config);
 
 /*
 server {
