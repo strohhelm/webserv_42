@@ -114,7 +114,6 @@ std::string HttpRequest::readFileContent(const std::string& path)
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
-
 		return "";
 	}
 	std::stringstream buffer;

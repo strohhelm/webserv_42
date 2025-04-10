@@ -32,7 +32,7 @@ int main(void)
 	hostname1.push_back("example.com");
 	hostname1.push_back("www.example.com");
 	config1.setUrl(hostname1, 8080);
-	config1.setRootDir("wwww");
+	config1.setRootDir("www");
 	configs.push_back(config1);
 	
 	ServerConfig config2;
@@ -48,7 +48,7 @@ int main(void)
 	hostname3.push_back("test1.com");
 	hostname3.push_back("www.test1.com");
 	config3.setUrl(hostname3, 8082);
-	config3.setRootDir("www");
+	config3.setRootDir("www3");
 	configs.push_back(config3);
 
 	try

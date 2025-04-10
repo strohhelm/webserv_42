@@ -33,7 +33,7 @@ void HttpRequest::handleGet(int client_fd, int server_fd, ServerConfig config)
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
 	if(path.empty())
 	{
-		sendErrorResponse(client_fd, 403, "403 Forbidden");
+		sendErrorResponse(client_fd, 404, "404 Not Found");
 		return;
 	}
 	if(isFile)
@@ -44,12 +44,12 @@ void HttpRequest::handleGet(int client_fd, int server_fd, ServerConfig config)
 	{
 		content = path;
 	}
-
+	
 	// std::cout << BG_BRIGHT_BLUE << "content [" << content << "]" << RESET << std::endl;
-
+	
 	if(content.empty())
 	{
-		sendErrorResponse(client_fd, 404, "404 Not Found");
+		sendErrorResponse(client_fd, 403, "403 Forbidden");
 		return;
 	}
 	sendResponse(client_fd, 200, content);	
