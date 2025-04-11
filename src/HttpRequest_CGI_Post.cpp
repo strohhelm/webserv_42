@@ -6,20 +6,24 @@
 #include<stdio.h>
 
 
-void HttpRequest::runCgiScriptGet(int& client_fd, const std::string& fullPath)
+// PARENT                        CHILD
+// ------                        -----
+// |                            execve("php-cgi", ...)
+// |                          
+// |------ pipefdStdin[1] ---> stdin
+// |                          
+// stdout <--- pipefdStdout[1] --------|
+
+
+void HttpRequest::runCgiScriptPost(int& client_fd, const std::string& fullPath, const std::string& path)
 {
-	std::string scriptPath = fullPath;
-	std::string queryString;
 
-	size_t pos = fullPath.find('?');
-	if (pos != std::string::npos) {
-		scriptPath = fullPath.substr(0, pos); // "/index2.php"
-		queryString = fullPath.substr(pos + 1); // "name=Alice&lang=de"
-	}
+	int pipefdStdout[2];
+	int pipefdStdin[2];
+	pipe(pipefdStdout);  // for CGI output
+	pipe(pipefdStdin);   // for CGI input (POST data)
 
-
-	int pipefd[2];
-	if (pipe(pipefd) == -1)
+	if (pipe(pipefdStdout) == -1 || pipe(pipefdStdin) == -1 )
 	{
 		sendErrorResponse(client_fd, 500, "Pipe creation failed"); //???
 		return;
@@ -31,40 +35,45 @@ void HttpRequest::runCgiScriptGet(int& client_fd, const std::string& fullPath)
 		sendErrorResponse(client_fd, 500, "Fork failed"); //???
 		return;
 	}
-
 	std::cout << BG_BRIGHT_MAGENTA << fullPath.c_str() << RESET << std::endl;
-	std::cout << BG_BRIGHT_MAGENTA << scriptPath.c_str() << RESET << std::endl;
-	std::cout << BG_BRIGHT_MAGENTA << queryString.c_str() << RESET << std::endl;
 	if (pid == 0)
 	{
 		// CHILD: send stdout to pipe
-		dup2(pipefd[1], STDOUT_FILENO);
-		close(pipefd[0]);
-		close(pipefd[1]);
+		dup2(pipefdStdout[1], STDOUT_FILENO);
+		dup2(pipefdStdin[0], STDIN_FILENO);
+		close(pipefdStdout[0]); // we only write, don't read
+		close(pipefdStdin[1]);  // we only read, don't write
 
-		// char* argv[3];
-		// argv[0] = (char*)scriptPath.c_str();
-		// argv[1] = "/usr/bin/php-cgi";
-		// argv[2] = nullptr;
-
-
+		
+	
+		
 		const char* phpCgiPath = "/usr/bin/php-cgi";
 		char* argv[] =
 		{
 			(char*)phpCgiPath,
-			(char*)scriptPath.c_str(),
+			(char*)fullPath.c_str(),
 			NULL
 		};
 		
-	
+		
+		auto it = _headers.find("Content-Length");
+		if(it == _headers.end())
+			sendErrorResponse(client_fd, 500, "Content-Lenght missing"); //???
+		
+		std::cout << BG_BRIGHT_RED << it->second << RESET << std::endl;
+
 		std::vector<std::string> envStrings = {
-			"REQUEST_METHOD=GET",
-			"SCRIPT_FILENAME=" + scriptPath,
-			"SCRIPT_NAME=" + scriptPath,
-			"QUERY_STRING=" + queryString,
+			"REQUEST_METHOD=POST",
+			"CONTENT_LENGTH=" + it->second, // from header
+			"CONTENT_TYPE=application/x-www-form-urlencoded",
+			"SCRIPT_FILENAME=" + fullPath,
+			"SCRIPT_NAME=" + path,
 			"GATEWAY_INTERFACE=CGI/1.1",
 			"SERVER_PROTOCOL=HTTP/1.1",
 			"REDIRECT_STATUS=200"
+
+			// "SCRIPT_FILENAME=www/index.php",
+			// "SCRIPT_NAME=/index.php",
 		};
 		
 		std::vector<char*> envp;

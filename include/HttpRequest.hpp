@@ -62,9 +62,9 @@ class HttpRequest
  	
 		bool isValidRequest(void);
 		
-		void handleHttpRequest(int client_fd, int server_fd, ServerConfig config);
-		void handleGet(int client_fd, int server_fd, ServerConfig config);
-		void handlePost(int fd);
+		void handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config);
+		void handleGet(const int& client_fd, const int& server_fd, ServerConfig& config);
+		void handlePost(const int& client_fd, const int& server_fd, ServerConfig& config);
 		void handleDelete(int fd);
 		void handleUnknown(int fd);
 		void sendErrorResponse(int fd, int statusCode, const std::string& message);
@@ -72,6 +72,7 @@ class HttpRequest
 		
 
 		const HttpMethod&	getMethod(void);
+		const std::string	getMethodString(void);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
 		
@@ -85,13 +86,13 @@ class HttpRequest
 		void	showBody(void);
 
 
-		std::string getRequestedFile(bool& isFile, ServerConfig config);
+		std::string getRequestedFile(bool& isFile, ServerConfig& config);
 		std::string readFileContent(const std::string& path);
 
 		std::string getContentType();
 		void sendResponse(int fd,int statusCode, const std::string& message);
 
-		std::string	buildFullPath(ServerConfig config);
+		std::string	buildFullPath(ServerConfig& config);
 		bool	fileExists(const std::string& path);
 		bool	directoryExists(const std::string& path);
 		bool	directoryListingIsOff(void);
@@ -103,7 +104,11 @@ class HttpRequest
 		const std::unordered_map<std::string, std::string>& getHeaders() const {
 			return _headers;
 		}
-		void runCgiScript(int& client_fd, const std::string& fullPath);
+		// void runCgiScriptGet(int& client_fd, const std::string& fullPath);
+		// void runCgiScriptPost(int& client_fd, const std::string& fullPath, const std::string& path);
+
+
+		void executeCGI(const int& client_fd, ServerConfig& config);
 
 
 };

@@ -5,7 +5,7 @@ echo "Content-Type: text/html\n\n";
 // Start HTML
 echo "<!DOCTYPE html>";
 echo "<html><head><title>PHP CGI Test</title></head><body>";
-echo "<h1>👋 Hello from PHP-CGI!</h1>";
+echo "<h1>Hello from PHP-CGI!</h1>";
 
 // Show current server time
 echo "<p><strong>Server Time:</strong> " . date("Y-m-d H:i:s") . "</p>";

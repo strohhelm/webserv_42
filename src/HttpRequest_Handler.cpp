@@ -2,7 +2,7 @@
 
 
 
-void HttpRequest::handleHttpRequest(int client_fd, int server_fd, ServerConfig config)
+void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config)
 {
 	switch (getMethod())
 	{
@@ -10,7 +10,7 @@ void HttpRequest::handleHttpRequest(int client_fd, int server_fd, ServerConfig c
 			handleGet(client_fd, server_fd, config);
 			break;
 		case HttpMethod::POST:
-			handlePost(client_fd);
+			handlePost(client_fd, server_fd, config);
 			break;
 		case HttpMethod::DELETE:
 			handleDelete(client_fd);
@@ -21,7 +21,7 @@ void HttpRequest::handleHttpRequest(int client_fd, int server_fd, ServerConfig c
 	}
 }
 
-void HttpRequest::handleGet(int client_fd, int server_fd, ServerConfig config)
+void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config)
 {
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 	bool isFile = true;
@@ -31,14 +31,12 @@ void HttpRequest::handleGet(int client_fd, int server_fd, ServerConfig config)
 
 	if(_requestLine._path.find("php"))
 	{	
+		// std::string fullPath = config.getRootDir() + _requestLine._path;
+		// runCgiScriptGet(client_fd, fullPath);
 		
-		std::string fullPath = config.getRootDir() + _requestLine._path;
-		runCgiScript(client_fd, fullPath);
+		executeCGI(client_fd, config);
 		return;
 	}
-
-	
-
 
 	std::cout << BG_BRIGHT_BLUE << config.getRootDir() << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
@@ -84,25 +82,22 @@ std::string HttpRequest::getContentType()
 
 
 
-void HttpRequest::handlePost(int fd)
+void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerConfig& config)
 {
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
-	// handleGet(fd);
-	
-	// pathToCGI
-	auto it = _body.find("CGI");
-	// std::cout << it.first << std::endl;	
+	(void)server_fd;
 
-	// if(getContentType() != "")
-	if(it->first == "CGI")
-	{
-		// runCgiScript(fd, "cgi-bin");
-		// sendErrorResponse(fd, 405, "405 CGI   " + it->second);// wrong Code 
+	if(_requestLine._path.find("php"))
+	{	
+		
+		std::string fullPath = config.getRootDir() + _requestLine._path;
+		// runCgiScriptPost(client_fd, fullPath, _requestLine._path);
+		return;
 	}
-	else
-		sendErrorResponse(fd, 405, "405 NO CGI");// wrong Code 
+
+	sendErrorResponse(client_fd, 405, "405 NO CGI");// wrong Code 
 	
 }
 
