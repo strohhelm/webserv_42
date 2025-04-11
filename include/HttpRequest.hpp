@@ -100,11 +100,10 @@ class HttpRequest
 		int deleteFile(const std::string& filename);
 
 		/********************************************************/
-		void testCGI(int client_fd);
 		const std::unordered_map<std::string, std::string>& getHeaders() const {
 			return _headers;
 		}
-		void runCgiScript(int& client_fd, const std::string& scriptPath);
+		void runCgiScript(int& client_fd, const std::string& fullPath);
 
 
 };

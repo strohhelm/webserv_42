@@ -19,6 +19,7 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
 				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
+				$(SRC_DIR)/HttpRequest_CGI_Get.cpp \
 				$(SRC_DIR)/ServerConfig.cpp \
 
 

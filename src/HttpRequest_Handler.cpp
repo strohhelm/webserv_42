@@ -21,85 +21,6 @@ void HttpRequest::handleHttpRequest(int client_fd, int server_fd, ServerConfig c
 	}
 }
 
-#include<unistd.h>
-#include<stdio.h>
-
-
-void HttpRequest::runCgiScript(int& client_fd, const std::string& scriptPath)
-{
-	std::string scriptPath2 =  "/src" + scriptPath;
-	
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        sendErrorResponse(client_fd, 500, "Pipe creation failed");
-        return;
-    }
-
-    pid_t pid = fork();
-    if (pid < 0) {
-        sendErrorResponse(client_fd, 500, "Fork failed");
-        return;
-    }
-
-	std::cout << BG_BRIGHT_MAGENTA << scriptPath2.c_str() << RESET << std::endl;
-    if (pid == 0) {
-        // CHILD: send stdout to pipe
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[0]);
-        close(pipefd[1]);
-
-		char* argv[] = { (char*)scriptPath2.c_str(), NULL };
-		char* envp[] = { NULL }; // or fill with CGI env
-	
-		execve(scriptPath2.c_str(), argv, envp);
-		exit(1); // only reached if exec fails
-        // execl(scriptPath2.c_str(), scriptPath2.c_str(), NULL);
-
-        // // if execl fails
-		// std::cout << "exel failed" << std::endl;
-        // perror("execl");
-        // exit(1);
-    } else {
-        // PARENT: read from pipe
-        // close(pipefd[1]);
-
-        // std::string output;
-        // char buffer[1024];
-        // ssize_t bytesRead;
-        // while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-        //     output.append(buffer, bytesRead);
-        // }
-        // close(pipefd[0]);
-
-        // if (output.empty()) {
-        //     sendErrorResponse(client_fd, 500, "CGI script produced no output");
-        //     return;
-        // }
-
-        // send(client_fd, output.c_str(), output.size(), 0);
-
-		close(pipefd[1]); // close write end
-
-		std::string cgiOutput;
-		char buffer[1024];
-		ssize_t bytesRead;
-		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-			cgiOutput.append(buffer, bytesRead);
-		}
-		close(pipefd[0]);
-	
-		std::string httpResponse = "HTTP/1.1 200 OK\r\n";
-		httpResponse += "Content-Type: text/html\r\n";
-		httpResponse += "Content-Length: " + std::to_string(cgiOutput.size()) + "\r\n";
-		httpResponse += "\r\n";
-		httpResponse += cgiOutput;
-	
-		send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
-    }
-}
-
-
-
 void HttpRequest::handleGet(int client_fd, int server_fd, ServerConfig config)
 {
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
@@ -108,13 +29,11 @@ void HttpRequest::handleGet(int client_fd, int server_fd, ServerConfig config)
 	std::string path = getRequestedFile(isFile, config);
 	(void)server_fd;
 
-	if(_requestLine._path == "/cgi")
+	if(_requestLine._path.find("php"))
 	{	
 		
-		std::string scriptPath = "/cgi-bin/test.cgi";
-		runCgiScript(client_fd, scriptPath);
-
-		// testCGI(client_fd);
+		std::string fullPath = config.getRootDir() + _requestLine._path;
+		runCgiScript(client_fd, fullPath);
 		return;
 	}
 
