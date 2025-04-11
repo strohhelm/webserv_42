@@ -6,7 +6,7 @@
 #include<stdio.h>
 
 
-void HttpRequest::runCgiScriptGet(int& client_fd, const std::string& fullPath)
+void HttpRequest::runCgiScriptGet(const int& client_fd, const std::string& fullPath)
 {
 	std::string scriptPath = fullPath;
 	std::string queryString;

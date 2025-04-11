@@ -31,10 +31,10 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 
 	if(_requestLine._path.find("php"))
 	{	
-		// std::string fullPath = config.getRootDir() + _requestLine._path;
-		// runCgiScriptGet(client_fd, fullPath);
+		std::string fullPath = config.getRootDir() + _requestLine._path;
+		runCgiScriptGet(client_fd, fullPath);
 		
-		executeCGI(client_fd, config);
+		// executeCGI(client_fd, config);
 		return;
 	}
 
@@ -98,16 +98,12 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	}
 
 	sendErrorResponse(client_fd, 405, "405 NO CGI");// wrong Code 
-	
 }
 
 void HttpRequest::handleUnknown(int fd)
 {
 	sendErrorResponse(fd, 405, "405 Method Not Allowed");
 }
-
-
-
 
 
 int HttpRequest::deleteFile(const std::string& filename)
