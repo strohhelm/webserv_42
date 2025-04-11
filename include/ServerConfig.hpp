@@ -1,15 +1,37 @@
 
-
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <vector>
 #include <unordered_map>
-
+#include <stdexcept>
+#include <algorithm>
+#include <cctype>
+#include <sstream>
+#include <regex>
+#include <string>
 
 #ifndef SERVERCONFIG
 #define SERVERCONFIG
+#define DEFAULT_CONFIG_PATH "../../config/webserv.conf"
+#define DEFAULT_ERROR_LOG 
+#define DEFAULT_ACCESS_LOG
 
+enum ConfTokenType {
+	DIRECTIVE,
+	VALUE,
+	STOP,
+	BLOCK_START,
+	BLOCK_END,
+};
+
+struct confToken
+{
+	std::string		str;
+	ConfTokenType	type;
+	size_t			lineNum;
+	confToken(const std::string& word, size_t line) : str(word), type(DIRECTIVE), lineNum(line) {};
+};
 
 struct routeConfig
 {
@@ -21,7 +43,7 @@ struct routeConfig
 	std::string					_defaultFile; //Set a default file to answer if the request is a directory.
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
 	std::vector<std::string>	_cgiExtension; //Execute CGI based on certain file extension (for example .php)
-
+	routeConfig(std::vector<confToken> context);
 };
 
 /*
@@ -45,46 +67,50 @@ class ServerConfig
 		std::vector<std::string>	_serverNames; //default set to localhost?
 		// std::unordered_map<std::string, int> urls;
 
-		std::string 				_rootDir;
-		std::string 				_indexFile; //default set to index.html?
+		std::string					_rootDir;
+		std::string					_indexFile; //default set to index.html?
 
 		std::map<int, std::string>	_errorPage; // 404 ./var/www/html/40x.html
 		std::map<std::string, routeConfig> _routes; // path and config
 
 	public:
-		ServerConfig();
-		~ServerConfig();
+		ServerConfig() = delete;
+		// ServerConfig(std::vector<confToken> context);
+		// ~ServerConfig();
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
 		int		getPort(void);
 		void	setRootDir(const std::string& rootDir);
-		const std::string& getRootDir(void);		class ConfigurationFileException : public std::exception
-		{
-			public:
-				const char* what() const noexcept override;
-		};
-		class ConfigurationException : public std::exception
-		{
-			public:
-				const char* what() const noexcept override;
-		};
-		class ConfigurationException : public std::exception
-		{
-			public:
-				const char* what() const noexcept override;
-		};
+		const std::string& getRootDir(void);
 };
-void getConfiguration(std::vector<ServerConfig> &config);
+
+class MainConfig
+{
+	private:
+		std::string error_log;
+		std::string access_log;
+		size_t worker_connections;
+		size_t keepalive_timeout;
+		std::vector<ServerConfig> http;
+		void tokenizeConfig(std::vector<confToken> &tokens);
+		void printConfTokens(std::vector<confToken>	&tokens);
+		void rmComment(std::string &line);
+		void prepareLine(std::string &line);
+		void typesortTokens(std::vector<confToken> &tokens);
+		void setErrorLog(std::vector<confToken> &tokens);
+		void setAccessLog(std::vector<confToken> &tokens);
+		void setWorkConn(std::vector<confToken> &tokens);
+		void setTimeout(std::vector<confToken> &tokens);
+		void setHttp(std::vector<confToken> &tokens);
+		void parseTokens(std::vector<confToken>	&tokens, std::string directives[], void(MainConfig::*funcs[])(std::vector<confToken> &tokens));
+		
+		public:
+		MainConfig();
+		// ~MainConfig();
+		MainConfig(MainConfig& src) = delete;
+		MainConfig& operator=(MainConfig &src) = delete;
+		void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator &it, std::vector<confToken> &context);
+		void checkValues(void);
+};
+
 
 #endif
-
-/*
-server {
-    listen 80;
-    server_name www.example.com example.com;
-
-    location / {
-        root /var/www/example;
-        index index.html;
-    }
-}
-*/

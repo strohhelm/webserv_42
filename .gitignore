@@ -2,3 +2,5 @@
 .DS_Store
 webserv.pdf
 *.o
+a.out
+a.out.dSYM

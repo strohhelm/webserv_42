@@ -76,6 +76,7 @@
 		"ratio": "cpp",
 		"stack": "cpp",
 		"filesystem": "cpp",
-		"unordered_set": "cpp"
+		"unordered_set": "cpp",
+		"regex": "cpp"
 	}
 }
