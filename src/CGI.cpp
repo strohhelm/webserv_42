@@ -29,6 +29,15 @@ void	CGI::closeAllPipes(void)
 	close(_child[WRITE_FD]);	
 }
 
+void	CGI::setArgv(void)
+{
+	_phpCgiPath = "/usr/bin/php-cgi"; // get from config
+	_argv = {
+		(char*)_phpCgiPath,
+		(char*)fullPath.c_str(), // get from config?
+		nullptr
+	};
+}
 
 int	CGI::createPipes()
 {
@@ -44,9 +53,23 @@ int	CGI::createPipes()
 	return 0;
 }
 
+void	CGI::setPipeToRead(int fd)
+{
+	dup2(fd, STDIN_FILENO);
+}
+
+void	CGI::setPipeToWrite(int fd)
+{
+	dup2(fd, STDOUT_FILENO);	
+}
+
 
 void CGI::handleChildProcess(void)
 {
+	setPipeToRead(_parent[READ_FD]);
+	setPipeToWrite(_child[WRITE_FD]);
+
+	closeAllPipes();
 
 }
 

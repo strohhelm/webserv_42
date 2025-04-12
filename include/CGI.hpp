@@ -18,6 +18,9 @@ class CGI
 	private:
 		std::array<int, 2> _parent;
 		std::array<int, 2> _child;
+		char** _argv;
+		char* _phpCgiPath;
+
 	public:
 		void	closePipesFromFd(std::array<int, 2>& fd);
 		void	closeAllPipes(void);
@@ -25,6 +28,10 @@ class CGI
 		void	handleChildProcess(void);
 		void	handleParentProcess(void);
 		void	execute(void);
+
+		void	setPipeToRead(int fd);
+		void	setPipeToWrite(int fd);
+		void	setArgv(void);
 
 
 };
