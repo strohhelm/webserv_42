@@ -8,6 +8,7 @@
 #include<unistd.h>
 #include<stdio.h>
 #include<array>
+#include"../include/ServerConfig.hpp"
 
 
 #define READ_FD 0
@@ -33,6 +34,7 @@ class CGI
 		void	setPipeToWrite(int fd);
 		void	setArgv(void);
 
+		CGI(int client_fd, ServerConfig config); //TODO
 
 };
 
