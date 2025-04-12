@@ -72,6 +72,8 @@ void HttpRequest::handlePost(int fd)
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
+	std::cout << "POST request incoming" << std::endl;
+	
 	handleGet(fd);
 	if(getContentType() != "")
 		sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 

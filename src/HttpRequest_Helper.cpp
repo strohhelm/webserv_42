@@ -1,6 +1,7 @@
 #include"../include/HttpRequest.hpp"
 
 #include <sys/stat.h> //stat
+#include <filesystem>
 
 /*
 400 Bad Request → Malformed request line, missing Host, or invalid headers.
