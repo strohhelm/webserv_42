@@ -29,7 +29,10 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::string path = getRequestedFile(isFile, config);
 	(void)server_fd;
 
-	if(_requestLine._path.find("php"))
+	std::cout << BG_BRIGHT_BLUE << "-> " << _requestLine._path.find("php") << RESET << std::endl;
+	
+
+	if(_requestLine._path.find("php") != std::string::npos)
 	{	
 		std::string fullPath = config.getRootDir() + _requestLine._path;
 		runCgiScriptGet(client_fd, fullPath);
@@ -89,11 +92,11 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 
 	(void)server_fd;
 
-	if(_requestLine._path.find("php"))
+	if(_requestLine._path.find("php") != std::string::npos)
 	{	
 		
 		std::string fullPath = config.getRootDir() + _requestLine._path;
-		// runCgiScriptPost(client_fd, fullPath, _requestLine._path);
+		runCgiScriptPost(client_fd, fullPath, _requestLine._path);
 		return;
 	}
 

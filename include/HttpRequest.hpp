@@ -105,7 +105,7 @@ class HttpRequest
 			return _headers;
 		}
 		void runCgiScriptGet(const int& client_fd, const std::string& fullPath);
-		void runCgiScriptPost(int& client_fd, const std::string& fullPath, const std::string& path);
+		void runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path);
 
 
 		void executeCGI(const int& client_fd, ServerConfig& config);

@@ -15,16 +15,17 @@
 // stdout <--- pipefdStdout[1] --------|
 
 
-void HttpRequest::runCgiScriptPost(int& client_fd, const std::string& fullPath, const std::string& path)
+void HttpRequest::runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path)
 {
 
 	int pipefdStdout[2];
 	int pipefdStdin[2];
-	pipe(pipefdStdout);  // for CGI output
-	pipe(pipefdStdin);   // for CGI input (POST data)
+	// pipe(pipefdStdout);  // for CGI output
+	// pipe(pipefdStdin);   // for CGI input (POST data)
 
 	if (pipe(pipefdStdout) == -1 || pipe(pipefdStdin) == -1 )
 	{
+		// close alll pipes before that!!!!!
 		sendErrorResponse(client_fd, 500, "Pipe creation failed"); //???
 		return;
 	}
@@ -32,6 +33,7 @@ void HttpRequest::runCgiScriptPost(int& client_fd, const std::string& fullPath, 
 	pid_t pid = fork();
 	if (pid < 0)
 	{
+		// close alll pipes before that!!!!!
 		sendErrorResponse(client_fd, 500, "Fork failed"); //???
 		return;
 	}
@@ -88,16 +90,16 @@ void HttpRequest::runCgiScriptPost(int& client_fd, const std::string& fullPath, 
 	else
 	{
 		// PARENT: read from pipe
-		close(pipefd[1]); // close write end
+		// close(pipefd[1]); // close write end
 
 		std::string cgiOutput;
 		char buffer[1024];
 		ssize_t bytesRead;
-		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0)
+		while ((bytesRead = read(pipefdStdin[0], buffer, sizeof(buffer))) > 0)
 		{
 			cgiOutput.append(buffer, bytesRead);
 		}
-		close(pipefd[0]);
+		// close(pipefd[0]);
 	
 		std::string httpResponse = "HTTP/1.1 200 OK\r\n";
 		httpResponse += "Content-Type: text/html\r\n";

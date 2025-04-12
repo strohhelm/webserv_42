@@ -4,13 +4,9 @@
 
 #include<unistd.h>
 #include<stdio.h>
+#include<array>
 
 
-/*
-#define STDIN_FILENO  0  // standard input
-#define STDOUT_FILENO 1  // standard output
-#define STDERR_FILENO 2  // standard error
-*/
 
 #define CHILD 0
 
@@ -131,63 +127,3 @@ void HttpRequest::executeCGI(const int& client_fd, ServerConfig& config)
     }
 }
 
-
-
-
-/*
-
-         ┌─────────────────────────────┐
-         │         Parent             │
-         └─────────────────────────────┘
-                    │
-     ┌──────────────┼──────────────────────────┐
-     │              │                          │
-     ▼              ▼                          ▼
-[pipeParentToChild] [pipeChildToParent]    [fork()]
- Write end (1) ─────┐   Read end (0) <─────┐
-                    │                      │
-                    │                      ▼
-               Write POST body        ┌──────────────┐
-               to CGI's stdin         │    Child     │
-                    │                 └──────────────┘
-                    ▼                        │
-          (after writing POST)               ▼
-              close(1)          ┌────────────────────────────┐
-                                │ Setup stdin/out redirection│
-                                │ with dup2:                 │
-                                │                            │
-                                │  dup2(pipeParentToChild[0],│
-                                │       STDIN_FILENO);       │
-                                │                            │
-                                │  dup2(pipeChildToParent[1],│
-                                │       STDOUT_FILENO);      │
-                                └────────────────────────────┘
-                                           │
-            ┌──────────────────────────────┴────────────────────────────┐
-            │ Close unused ends after dup2 (important for EOF & cleanup)│
-            └───────────────────────────────────────────────────────────┘
-                                           │
-                         ┌─────────────────┴──────────────────┐
-                         ▼                                    ▼
-              Child reads from stdin (pipe)         CGI output is written
-              (POST body sent from parent)           to stdout (pipe to parent)
-                         │                                    │
-                         ▼                                    ▼
-                   CGI logic                            Parent reads
-                         ▼                               CGI output
-                         ▼                                    ▼
-                     exit(0)                           send() to client
-
-
-
-
-*/
-
-
-/*
-Pipe End				Parent Uses?	Child Uses?		Closed in?
-pipeParentToChild[0]	❌				✅ (stdin)		Parent
-pipeParentToChild[1]	✅ (write)		❌				Child
-pipeChildToParent[0]	✅ (read)		❌				Child
-pipeChildToParent[1]	❌				✅ (stdout)		Parent
-*/

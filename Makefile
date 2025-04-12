@@ -22,7 +22,7 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/HttpRequest_CGI.cpp \
 				$(SRC_DIR)/ServerConfig.cpp \
 				$(SRC_DIR)/HttpRequest_CGI_Get.cpp \
-				# $(SRC_DIR)/HttpRequest_CGI_Post.cpp \
+				$(SRC_DIR)/HttpRequest_CGI_Post.cpp \
 
 
 # INTERNAL OBJECT
