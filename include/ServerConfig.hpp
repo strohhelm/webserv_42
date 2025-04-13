@@ -1,4 +1,7 @@
 
+#ifndef SERVERCONFIG
+#define SERVERCONFIG
+
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -11,11 +14,9 @@
 #include <regex>
 #include <string>
 
-#ifndef SERVERCONFIG
-#define SERVERCONFIG
-#define DEFAULT_CONFIG_PATH "../../config/webserv.conf"
-#define DEFAULT_ERROR_LOG 
-#define DEFAULT_ACCESS_LOG
+#define DEFAULT_CONFIG_PATH "../../config/test.conf"
+#define DEFAULT_ERROR_LOG "./error_log"
+#define DEFAULT_ACCESS_LOG "./access_log"
 
 enum ConfTokenType {
 	DIRECTIVE,
@@ -75,24 +76,32 @@ class ServerConfig
 
 	public:
 		ServerConfig() = delete;
-		// ServerConfig(std::vector<confToken> context);
+		ServerConfig(std::vector<confToken> context);
 		// ~ServerConfig();
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
 		int		getPort(void);
 		void	setRootDir(const std::string& rootDir);
-		const std::string& getRootDir(void);
+		const	std::string& getRootDir(void);
+		void	parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(ServerConfig::*)(std::vector<confToken> &)> directives);
+		void	collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
+		void	setPort(std::vector<confToken>				&context);
+		void	setServerNames(std::vector<confToken>		&context);
+		void	setErrorPages(std::vector<confToken>		&context);
+		void	setClientBodySize(std::vector<confToken>	&context);
+		void	setIndex(std::vector<confToken>	&context);
+		void	setRoute(std::vector<confToken>	&context);
+
 };
 
 class MainConfig
 {
-	private:
+	public:
 		std::string error_log;
 		std::string access_log;
 		size_t worker_connections;
 		size_t keepalive_timeout;
 		std::vector<ServerConfig> http;
 		void tokenizeConfig(std::vector<confToken> &tokens);
-		void printConfTokens(std::vector<confToken>	&tokens);
 		void rmComment(std::string &line);
 		void prepareLine(std::string &line);
 		void typesortTokens(std::vector<confToken> &tokens);
@@ -101,16 +110,17 @@ class MainConfig
 		void setWorkConn(std::vector<confToken> &tokens);
 		void setTimeout(std::vector<confToken> &tokens);
 		void setHttp(std::vector<confToken> &tokens);
-		void parseTokens(std::vector<confToken>	&tokens, std::string directives[], void(MainConfig::*funcs[])(std::vector<confToken> &tokens));
+		void parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(MainConfig::*)(std::vector<confToken> &)> directives);
 		
 		public:
-		MainConfig();
+		MainConfig(void);
 		// ~MainConfig();
 		MainConfig(MainConfig& src) = delete;
 		MainConfig& operator=(MainConfig &src) = delete;
-		void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator &it, std::vector<confToken> &context);
+		void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
 		void checkValues(void);
-};
-
+	};
+	void printConfTokens(std::vector<confToken>	&tokens);
+	
 
 #endif
