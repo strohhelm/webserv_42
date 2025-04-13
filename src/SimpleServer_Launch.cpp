@@ -222,13 +222,8 @@ void SimpleServer::handler(int fdIndex)
 	
 	int client_fd = _poll_fds[fdIndex].fd;
 	int server_fd = _listeningServerFromClient[client_fd];
-	// ServerConfig test;
-
-	
 
 	_request.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd]);
-
-
 
 
 

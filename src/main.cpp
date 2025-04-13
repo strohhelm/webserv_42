@@ -1,6 +1,7 @@
+#include "../include/CGI.hpp"
+#include "../include/HttpRequest.hpp"
 #include "../include/SimpleServer.hpp"
 #include "../include/ServerConfig.hpp"
-#include "../include/HttpRequest.hpp"
 #include "../include/SignalHandler.hpp"
 
 
@@ -22,8 +23,9 @@ static void handleSignalINT(int signal)
 
 int main(void)
 {
-
 	signal(SIGINT, handleSignalINT);
+
+	// std::string cgipath = "/usr/bin/php-cgi";
 
 	std::vector<ServerConfig> configs;
 	
@@ -33,8 +35,11 @@ int main(void)
 	hostname1.push_back("www.example.com");
 	config1.setUrl(hostname1, 8080);
 	config1.setRootDir("www");
+	config1.setCgiPath("/usr/bin/php-cgi");
+
 	configs.push_back(config1);
-	config1.setCGI("cgi");
+
+	std::cout << BG_BRIGHT_CYAN << config1.getCgiPath() << RESET << std::endl;
 	
 	// ServerConfig config2;
 	// std::vector<std::string> hostname2;
@@ -42,6 +47,7 @@ int main(void)
 	// hostname2.push_back("www.test.com");
 	// config2.setUrl(hostname2, 8081);
 	// config2.setRootDir("www2");
+
 	// configs.push_back(config2);
 	
 	// ServerConfig config3;
@@ -50,6 +56,7 @@ int main(void)
 	// hostname3.push_back("www.test1.com");
 	// config3.setUrl(hostname3, 8082);
 	// config3.setRootDir("www3");
+	
 	// configs.push_back(config3);
 
 	try

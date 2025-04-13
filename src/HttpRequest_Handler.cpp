@@ -29,15 +29,13 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::string path = getRequestedFile(isFile, config);
 	(void)server_fd;
 
-	std::cout << BG_BRIGHT_BLUE << "-> " << _requestLine._path.find("php") << RESET << std::endl;
-	
-
 	if(_requestLine._path.find("php") != std::string::npos)
 	{	
-		std::string fullPath = config.getRootDir() + _requestLine._path;
-		runCgiScriptGet(client_fd, fullPath);
-		
-		// executeCGI(client_fd, config);
+		_cgi.setCgiParameter(client_fd, config, _requestLine._path);
+		_cgi.tokenizePath();
+		_cgi.execute("GET", _rawBody);
+
+		// sendErrorResponse(client_fd, 404, "404 Not Found");
 		return;
 	}
 

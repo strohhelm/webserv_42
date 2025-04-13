@@ -42,12 +42,6 @@ void HttpRequest::runCgiScriptGet(const int& client_fd, const std::string& fullP
 		close(pipefd[0]);
 		close(pipefd[1]);
 
-		// char* argv[3];
-		// argv[0] = (char*)scriptPath.c_str();
-		// argv[1] = "/usr/bin/php-cgi";
-		// argv[2] = nullptr;
-
-
 		const char* phpCgiPath = "/usr/bin/php-cgi";
 		char* argv[] =
 		{

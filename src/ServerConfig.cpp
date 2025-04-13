@@ -35,7 +35,12 @@ const std::string& ServerConfig::getRootDir(void)
 	return _rootDir;
 }
 
-void	ServerConfig::setCGI(const std::string& path)
+void	ServerConfig::setCgiPath(std::string path)
 {
 	_cgiPath = path;
+}
+
+std::string& ServerConfig::getCgiPath(void)
+{
+	return _cgiPath;
 }

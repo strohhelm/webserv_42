@@ -13,6 +13,8 @@
 #include <unordered_map>
 
 #include"Colors.hpp"
+
+#include"CGI.hpp"
 #include"ServerConfig.hpp"
 
 
@@ -46,6 +48,8 @@ class HttpRequest
 		requestLine	_requestLine;
 
 		std::string _httpResponse;
+
+		CGI	_cgi;
 
 	public:
 		void parseHttpRequest(const std::string& requestBuffer);

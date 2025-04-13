@@ -57,10 +57,11 @@ class ServerConfig
 		ServerConfig();
 		~ServerConfig();
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
-		void	setCGI(const std::string& path);
+		void	setCgiPath(std::string path);
 		int		getPort(void);
 		void	setRootDir(const std::string& rootDir);
 		const std::string& getRootDir(void);
+		std::string& getCgiPath(void);
 };
 
 #endif
