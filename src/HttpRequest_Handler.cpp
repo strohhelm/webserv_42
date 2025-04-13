@@ -1,5 +1,7 @@
 #include"../include/HttpRequest.hpp"
 
+#include "../include/Post.hpp"
+
 
 
 void HttpRequest::handleHttpRequest(int fd)
@@ -73,10 +75,21 @@ void HttpRequest::handlePost(int fd)
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
 	std::cout << "POST request incoming" << std::endl;
+	std::cout << "---" << std::endl;
+	std::cout << _rawRequestLine << std::endl;
+	std::cout << _rawBody << std::endl;
+	std::cout << _requestLine._path << std::endl;
+	std::cout << "---" << std::endl;
 	
-	handleGet(fd);
-	if(getContentType() != "")
-		sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
+	auto it = _headers.find("Content-Type");
+	if (it != _headers.end())
+	{
+		std::cout << it->second << std::endl;
+		Post p(_requestLine._path, _rawBody, it->second, fd);
+	}
+
+	// if(getContentType() != "")
+	// 	sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
 
 }
 

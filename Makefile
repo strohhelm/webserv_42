@@ -17,6 +17,8 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
 				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
+				$(SRC_DIR)/Post.cpp \
+
 
 
 # INTERNAL OBJECT

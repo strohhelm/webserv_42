@@ -31,3 +31,11 @@ Things to look into:
 - Implementing Size limts to avoid overload such as DoS
 - CSRF protection for forms?
 - Idempotency
+
+
+TO DO:
+
+- parse the body of post depending on the content type specified in the header
+- validate the data for empty fields (like nothing being sent for a pw or username field)
+- process data depending on the context, storing in database, comparing with database for login
+- route depending on URL endpoint for example sign up or login
