@@ -1,17 +1,25 @@
-# pragma once
+#pragma once
 
-#include"../include/HttpRequest.hpp"
+#include "../include/HttpRequest.hpp"
+
+struct userdata
+{
+	std::string username;
+	std::string password;
+
+};
 
 class Post : public HttpRequest
 {
-    private:
-        std::string path;
-        std::string body;
-        int fd;
+  private:
+	std::string path;
+	std::string body;
+	int fd;
 
-    public:
-        Post(std::string path, std::string body, std::string encoding, int fd);
+  public:
+	Post(std::string path, std::string body, std::string encoding, int fd);
 
-        std::string urlDecode(const std::string &str);
-        void handleSignup();
+	userdata urlDecode();
+	void handleSignup();
+	void handleLogin();
 };
