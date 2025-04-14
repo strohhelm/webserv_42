@@ -13,15 +13,15 @@ void parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(typ
 				(obj.*directives[it->str])(context, it->lineNum);
 				it += context.size() + 1;
 			}
-			else			{
-				throw std::runtime_error("[parsetokens]: Unknown directive in config file: \""
+			else{
+				throw std::runtime_error("[parseTokens]: Unknown directive in config file: \""
 									+ it->str + "\"" + " line: "
 									+ std::to_string(it->lineNum));
 			}
 		}
 		else
 		{
-			throw std::runtime_error("Unknown token in config file: \""
+			throw std::runtime_error("[parseTokens]: Unknown token in config file: \""
 									+ it->str + "\"" + " line: "
 									+ std::to_string(it->lineNum));
 		}

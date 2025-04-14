@@ -37,18 +37,27 @@ struct confToken
 	confToken(const std::string& word, size_t line) : str(word), type(DIRECTIVE), lineNum(line) {};
 };
 
-struct routeConfig
+class routeConfig
 {
-	std::vector<std::string>	_methods; //Define a list of accepted HTTP methods for the route
+	bool						_methods[3]; //Define a list of accepted HTTP methods for the route
 	int 						_redirectCode;
 	std::string					_redirectPath; //Define a HTTP redirection
 	std::string					_rootDir; //Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
 	bool						_dirListing; //Turn on or off directory listing.
-	std::string					_defaultFile; //Set a default file to answer if the request is a directory.
-	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
-	std::vector<std::string>	_cgiExtension; //Execute CGI based on certain file extension (for example .php)
-	routeConfig(std::vector<confToken> context);
-	void	setMethods(std::vector<confToken>			&context, size_t lineNum);
+	std::vector<std::string>	_defaultFile; //Set a default file to answer if the request is a directory.
+	std::string					_uploadPah; //Make the route able to accept uploaded files and configure where they should be saved.
+	std::vector<std::string>	_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
+	public:
+		routeConfig(std::vector<confToken> &context);
+		void	setDefaultValues();
+		void	setMethods(std::vector<confToken>		&context, size_t lineNum);
+		void	setRedirectCode(std::vector<confToken>	&context, size_t lineNum);
+		void	setRedirectPath(std::vector<confToken>	&context, size_t lineNum);
+		void	setRootDir(std::vector<confToken>		&context, size_t lineNum);
+		void	setDirListing(std::vector<confToken>	&context, size_t lineNum);
+		void	setDefaultFiles(std::vector<confToken>	&context, size_t lineNum);
+		void	setUploadPath(std::vector<confToken>	&context, size_t lineNum);
+		void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
 
 };
 
@@ -108,7 +117,7 @@ class MainConfig
 		std::vector<ServerConfig> http;
 		void tokenizeConfig(std::vector<confToken> &tokens);
 		void rmComment(std::string &line);
-		void prepareLine(std::string &line);
+		void prepareLine(std::string &line, size_t lineNum);
 		void typesortTokens(std::vector<confToken> &tokens);
 		void setErrorLog(std::vector<confToken> &tokens, size_t lineNum);
 		void setAccessLog(std::vector<confToken> &tokens, size_t lineNum);

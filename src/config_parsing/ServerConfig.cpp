@@ -108,15 +108,19 @@ void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 
 void	ServerConfig::setRoute(std::vector<confToken>	&context, size_t lineNum)
 {
-	std::cout<<"Route Tokens:"<<std::endl;
-	printConfTokens(context);
-
+	if (context.size() < 3)
+	throw std::runtime_error("[setRoute]: not enough arguments in directive 'location' line: " + std::to_string(lineNum));
+	std::string path = context[0].str;
+	std::vector<confToken> routeContext;
+	routeContext.insert(routeContext.begin(), context.begin() + 2, context.end() - 1);
+	std::cout<<"Setting Route: " <<path<<std::endl;
+	_routes.insert({path, routeConfig(routeContext)});
 }
 
 void ServerConfig::setDefaultValues(void)
 {
-
 }
+
 ServerConfig::ServerConfig(std::vector<confToken> context)
 {
 	setDefaultValues();

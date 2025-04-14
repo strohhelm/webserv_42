@@ -1,10 +1,16 @@
 #include "../../include/ServerConfig.hpp"
 
-void MainConfig::prepareLine(std::string &line)
+void MainConfig::prepareLine(std::string &line, size_t lineNum)
 {
 	line = std::regex_replace(line, std::regex(R"(\{)"), " {");
 	line = std::regex_replace(line, std::regex(R"(\})"), " }");
 	line = std::regex_replace(line, std::regex(R"(\;)"), " ;");
+
+	std::smatch match;
+	if (!std::regex_match(line, match, std::regex("^\\s*$|.*[;{}]\\s*$" )))
+	{
+		throw std::runtime_error("Missing delimiter in line: " + std::to_string(lineNum));
+	}
 }
 
 void MainConfig::rmComment(std::string &line)
@@ -51,7 +57,7 @@ void MainConfig::tokenizeConfig(std::vector<confToken> &tokens)
 	{
 		lineNum++;
 		rmComment(line);
-		prepareLine(line);
+		prepareLine(line, lineNum);
 		buffer.clear();
 		buffer<<line;
 		while (buffer>>word)
