@@ -127,6 +127,7 @@ void SimpleServer::readDataFromClient(int fdIndex)
 	}
 
 	buffer[bytesReceived] = '\0';
+	write(1, buffer, bytesReceived);
 	_recvBuffer[fdIndex] = buffer;
 }
 

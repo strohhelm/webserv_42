@@ -65,4 +65,6 @@ Post::Post(std::string path, std::string body, std::string encoding,
 		handleSignup();
 	if (path == "/login")
 		handleLogin();
+	if (path == "/upload")
+		sendErrorResponse(fd, 420, "Under construction");
 }
