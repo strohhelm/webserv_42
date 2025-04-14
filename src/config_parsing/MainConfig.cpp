@@ -33,7 +33,7 @@ void printConfTokens(std::vector<confToken>	&tokens)
 			std::cout <<" | ";
 		std::cout<<lol[p.type]<<"("<<p.str<<")";
 	}
-	std::cout<<"\n----------------end----------------"<<std::endl;
+	std::cout<<"\n---------"<<std::endl;
 }
 
 void MainConfig::tokenizeConfig(std::vector<confToken> &tokens)
@@ -86,34 +86,34 @@ void MainConfig::typesortTokens(std::vector<confToken>& tokens)
 	}
 }
 
-void MainConfig::setErrorLog(std::vector<confToken> &context)
+void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
 {
 	std::cout<<"Error_log Tokens:"<<std::endl;
 	printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive error_log");
+		throw std::runtime_error("Syntax error in directive error_log line: " + std::to_string(lineNum));
 	else
 		error_log = context[0].str;
 }
 
 
-void MainConfig::setAccessLog(std::vector<confToken> &context)
+void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
 {
 	std::cout<<"Access_log  Tokens:"<<std::endl;
 	printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive access_log");
+		throw std::runtime_error("Syntax error in directive access_log line:" + std::to_string(lineNum));
 	else
 		access_log = context[0].str;
 }
 
 
-void MainConfig::setWorkConn(std::vector<confToken> &context)
+void MainConfig::setWorkConn(std::vector<confToken> &context, size_t lineNum)
 {
 	std::cout<<"Worker connect Tokens:"<<std::endl;
 	printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive worker_connections");
+		throw std::runtime_error("Syntax error in directive worker_connections line:" + std::to_string(lineNum));
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
 		throw std::runtime_error("Value error in directive worker_connections: \"" + context[0].str + "\" not a number");
 	else
@@ -121,7 +121,7 @@ void MainConfig::setWorkConn(std::vector<confToken> &context)
 }
 
 
-void MainConfig::setTimeout(std::vector<confToken> &context)
+void MainConfig::setTimeout(std::vector<confToken> &context, size_t lineNum)
 {
 	std::cout<<"Timeout Tokens:"<<std::endl;
 	printConfTokens(context);
@@ -134,31 +134,29 @@ void MainConfig::setTimeout(std::vector<confToken> &context)
 }
 
 
-void MainConfig::setHttp(std::vector<confToken> &context)
+void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 {
 	if (context.begin()->type == BLOCK_START && (context.end() - 1)->type == BLOCK_END)
 	{
 		std::cout<<"Http Tokens:"<<std::endl;
 		printConfTokens(context);
-		auto start = context.begin();
-		auto test =  context.end();
-		for(auto it = context.begin() + 1; it != context.end(); it++)
+		for(auto it = context.begin() + 1; it < (context.end() - 1); it++)
 		{
 			if (!(it->type == DIRECTIVE && it->str == "server"))
 			{
-				throw std::runtime_error("Syntax Error: \""
+				throw std::runtime_error("[setHttp]: Syntax Error: \""
 					+ it->str + "\"" + " line: "
 					+ std::to_string(it->lineNum)
-					+ " -> directive not valid!\"");
+					+ " -> directive not valid!");
 				}
 				else
 				{
 					std::vector<confToken>servercontext;
 					collectContext(context, it, servercontext);
+					servercontext.erase(servercontext.begin());
 					http.push_back(ServerConfig(servercontext));
 					
 					it += servercontext.size() + 1;
-					// i += servercontext.size() + 1;
 				}
 			}
 		}
@@ -166,7 +164,7 @@ void MainConfig::setHttp(std::vector<confToken> &context)
 			throw std::runtime_error("WTF that shouldnt happen at all");
 }
 
-void MainConfig::collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context)
+void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context)
 {
 	auto	stopIt = it + 1;
 	int	blocks = -1;
@@ -182,6 +180,8 @@ void MainConfig::collectContext(std::vector<confToken> &tokens, std::vector<conf
 				blocks--;
 		if (!blocks || (stopIt->type == STOP && blocks < 0))
 		{
+			if (!blocks)
+				stopIt++;
 			for (auto i = it + 1; i != stopIt; i++)
 				context.push_back(*i);
 			return;
@@ -195,45 +195,21 @@ void MainConfig::collectContext(std::vector<confToken> &tokens, std::vector<conf
 							+ it->str + "\"" + " line: "
 							+ std::to_string((it-1)->lineNum));
 }
+
+
 void MainConfig::checkValues(void)
 {
 	
 }
-void MainConfig::parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(MainConfig::*)(std::vector<confToken> &)> directives)
-{
-	for (auto it = tokens.begin(); it != tokens.end(); it++)
-	{
-		if (it->type == DIRECTIVE)
-		{
-			auto dir = directives.find(it->str);
-			if (dir != directives.end())
-			{
-				std::vector<confToken> context;
-				collectContext(tokens, it, context);
-				(this->*directives[it->str])(context);
-				it += context.size() + 1;
-			}
-			else			{
-				throw std::runtime_error("Unknown directive in config file: \""
-									+ it->str + "\"" + " line: "
-									+ std::to_string(it->lineNum));
-			}
-		}
-		else
-		{
-			throw std::runtime_error("Unknown token in config file: \""
-									+ it->str + "\"" + " line: "
-									+ std::to_string(it->lineNum));
-		}
-	}
-}
+
+
 
  MainConfig::MainConfig(void):	error_log(DEFAULT_ERROR_LOG),
 							access_log(DEFAULT_ACCESS_LOG),
 							worker_connections(10),
 							keepalive_timeout(75)
 {
-	std::map <std::string, void(MainConfig::*)(std::vector<confToken> &)> directives;
+	std::map <std::string, void(MainConfig::*)(std::vector<confToken> &, size_t lineNum)> directives;
 	directives.insert({std::string("error_log"), &MainConfig::setErrorLog});
 	directives.insert({std::string("access_log"), &MainConfig::setAccessLog});
 	directives.insert({std::string("worker_connections"), &MainConfig::setWorkConn});
@@ -245,7 +221,7 @@ void MainConfig::parseTokens(std::vector<confToken>	&tokens, std::map <std::stri
 	typesortTokens(tokens);
 	std::cout<<"All Tokens:"<<std::endl;
 	printConfTokens(tokens);
-	parseTokens(tokens, directives);
+	parseTokens<MainConfig>(tokens, directives, *this);
 	checkValues();
 }
 
