@@ -10,9 +10,12 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <sstream>
 #include <regex>
 #include <string>
+#include "./StatusCodes.hpp"
+#include <sys/stat.h>
 
 #define DEFAULT_CONFIG_PATH "../../config/test.conf"
 #define DEFAULT_ERROR_LOG "./error_log"
@@ -45,6 +48,8 @@ struct routeConfig
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
 	std::vector<std::string>	_cgiExtension; //Execute CGI based on certain file extension (for example .php)
 	routeConfig(std::vector<confToken> context);
+	void	setMethods(std::vector<confToken>			&context, size_t lineNum);
+
 };
 
 /*
@@ -64,33 +69,33 @@ from the CGI, EOF will mark the end of the returned data.
 class ServerConfig
 {
 	private:
-		int							_port; //default set to 80
-		std::vector<std::string>	_serverNames; //default set to localhost?
+		int									_port; //default set to 80
+		std::vector<std::string>			_serverNames; //default set to localhost?
 		// std::unordered_map<std::string, int> urls;
 
-		std::string					_rootDir;
-		std::string					_indexFile; //default set to index.html?
+		std::string							_rootDir;
+		std::vector<std::string>			_indexFile; //default set to index.html?
 
-		std::map<int, std::string>	_errorPage; // 404 ./var/www/html/40x.html
-		std::map<std::string, routeConfig> _routes; // path and config
+		std::map<int, std::string>			_errorPage; // 404 ./var/www/html/40x.html
+		size_t								_maxBody;
+		std::map<std::string, routeConfig>	_routes; // path and config
 
 	public:
 		ServerConfig() = delete;
 		ServerConfig(std::vector<confToken> context);
-		// ~ServerConfig();
+		~ServerConfig(){};
+		void	setDefaultValues(void);
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
 		int		getPort(void);
 		void	setRootDir(const std::string& rootDir);
 		const	std::string& getRootDir(void);
-		void	parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(ServerConfig::*)(std::vector<confToken> &)> directives);
-		void	collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
-		void	setPort(std::vector<confToken>				&context);
-		void	setServerNames(std::vector<confToken>		&context);
-		void	setErrorPages(std::vector<confToken>		&context);
-		void	setClientBodySize(std::vector<confToken>	&context);
-		void	setIndex(std::vector<confToken>	&context);
-		void	setRoute(std::vector<confToken>	&context);
-
+		void	setPort(std::vector<confToken>				&context, size_t lineNum);
+		void	setServerNames(std::vector<confToken>		&context, size_t lineNum);
+		void	setErrorPages(std::vector<confToken>		&context, size_t lineNum);
+		void	setClientBodySize(std::vector<confToken>	&context, size_t lineNum);
+		void	setIndex(std::vector<confToken>				&context, size_t lineNum);
+		void	setRoute(std::vector<confToken>				&context, size_t lineNum);
+		void	setRootDir(std::vector<confToken>			&context, size_t lineNum);
 };
 
 class MainConfig
@@ -105,22 +110,23 @@ class MainConfig
 		void rmComment(std::string &line);
 		void prepareLine(std::string &line);
 		void typesortTokens(std::vector<confToken> &tokens);
-		void setErrorLog(std::vector<confToken> &tokens);
-		void setAccessLog(std::vector<confToken> &tokens);
-		void setWorkConn(std::vector<confToken> &tokens);
-		void setTimeout(std::vector<confToken> &tokens);
-		void setHttp(std::vector<confToken> &tokens);
-		void parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(MainConfig::*)(std::vector<confToken> &)> directives);
+		void setErrorLog(std::vector<confToken> &tokens, size_t lineNum);
+		void setAccessLog(std::vector<confToken> &tokens, size_t lineNum);
+		void setWorkConn(std::vector<confToken> &tokens, size_t lineNum);
+		void setTimeout(std::vector<confToken> &tokens, size_t lineNum);
+		void setHttp(std::vector<confToken> &tokens, size_t lineNum);
 		
 		public:
 		MainConfig(void);
-		// ~MainConfig();
+		~MainConfig(){};
 		MainConfig(MainConfig& src) = delete;
 		MainConfig& operator=(MainConfig &src) = delete;
-		void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
 		void checkValues(void);
 	};
+	void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
 	void printConfTokens(std::vector<confToken>	&tokens);
-	
+
+	template <typename type> void parseTokens(std::vector<confToken> &tokens, std::map <std::string, void(type::*)(std::vector<confToken> &, size_t lineNum)> directives, type &obj);
+	#include "../src/config_parsing/tokens.tpp"
 
 #endif
