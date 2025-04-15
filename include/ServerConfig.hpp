@@ -16,7 +16,7 @@
 #include <string>
 #include "./StatusCodes.hpp"
 #include <sys/stat.h>
-
+#include "./Colors.hpp"
 #define DEFAULT_CONFIG_PATH "../../config/test.conf"
 #define DEFAULT_ERROR_LOG "./error_log"
 #define DEFAULT_ACCESS_LOG "./access_log"
@@ -45,16 +45,16 @@ class routeConfig
 	std::string					_rootDir; //Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
 	bool						_dirListing; //Turn on or off directory listing.
 	std::vector<std::string>	_defaultFile; //Set a default file to answer if the request is a directory.
-	std::string					_uploadPah; //Make the route able to accept uploaded files and configure where they should be saved.
-	std::vector<std::string>	_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
+	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
+	std::string					_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
 	public:
 		routeConfig(std::vector<confToken> &context);
+		void	printConfig();
 		void	setDefaultValues();
 		void	setMethods(std::vector<confToken>		&context, size_t lineNum);
-		void	setRedirectCode(std::vector<confToken>	&context, size_t lineNum);
-		void	setRedirectPath(std::vector<confToken>	&context, size_t lineNum);
+		void	setRedirect(std::vector<confToken>		&context, size_t lineNum);
 		void	setRootDir(std::vector<confToken>		&context, size_t lineNum);
-		void	setDirListing(std::vector<confToken>	&context, size_t lineNum);
+		void	setAutoIndex(std::vector<confToken>		&context, size_t lineNum);
 		void	setDefaultFiles(std::vector<confToken>	&context, size_t lineNum);
 		void	setUploadPath(std::vector<confToken>	&context, size_t lineNum);
 		void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
@@ -93,6 +93,7 @@ class ServerConfig
 		ServerConfig() = delete;
 		ServerConfig(std::vector<confToken> context);
 		~ServerConfig(){};
+		void	printConfig();
 		void	setDefaultValues(void);
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
 		int		getPort(void);
@@ -110,11 +111,11 @@ class ServerConfig
 class MainConfig
 {
 	public:
-		std::string error_log;
-		std::string access_log;
-		size_t worker_connections;
-		size_t keepalive_timeout;
-		std::vector<ServerConfig> http;
+		std::string _error_log;
+		std::string _access_log;
+		size_t _worker_connections;
+		size_t _keepalive_timeout;
+		std::vector<ServerConfig> _http;
 		void tokenizeConfig(std::vector<confToken> &tokens);
 		void rmComment(std::string &line);
 		void prepareLine(std::string &line, size_t lineNum);
@@ -130,7 +131,10 @@ class MainConfig
 		~MainConfig(){};
 		MainConfig(MainConfig& src) = delete;
 		MainConfig& operator=(MainConfig &src) = delete;
-		void checkValues(void);
+		void	checkValues(void);
+		void	setDefaultValues(void);
+		void	printConfig();
+
 	};
 	void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
 	void printConfTokens(std::vector<confToken>	&tokens);

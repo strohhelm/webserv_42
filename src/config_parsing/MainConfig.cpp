@@ -19,28 +19,6 @@ void MainConfig::rmComment(std::string &line)
 	if (pos != std::string::npos)
 		line.erase(line.begin() + pos, line.end());
 }
-void printConfTokens(std::vector<confToken>	&tokens)
-{
-	size_t tmp = 0;
-	std::string lol[] = {"DIRECTIVE", "VALUE", "STOP", "BLOCK_START", "BLOCK_END"};
-	int f = 0;
-	// std::cout<<"\n";
-	for (auto p :tokens)
-	{	if (tmp < p.lineNum)
-		{
-			if (f > 0)
-				std::cout<<std::endl;
-			else
-				f = 1;
-			std::cout<<p.lineNum<<" ";
-			tmp = p.lineNum;
-		}
-		else
-			std::cout <<" | ";
-		std::cout<<lol[p.type]<<"("<<p.str<<")";
-	}
-	std::cout<<"\n---------"<<std::endl;
-}
 
 void MainConfig::tokenizeConfig(std::vector<confToken> &tokens)
 {
@@ -65,6 +43,7 @@ void MainConfig::tokenizeConfig(std::vector<confToken> &tokens)
 	}
 	// printConfTokens(tokens);
 }
+
 void MainConfig::typesortTokens(std::vector<confToken>& tokens)
 {
 	int start = 0;
@@ -94,58 +73,54 @@ void MainConfig::typesortTokens(std::vector<confToken>& tokens)
 
 void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
 {
-	std::cout<<"Error_log Tokens:"<<std::endl;
-	printConfTokens(context);
+	// std::cout<<"Error_log Tokens:"<<std::endl;
+	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive error_log line: " + std::to_string(lineNum));
 	else
-		error_log = context[0].str;
+		_error_log = context[0].str;
 }
-
 
 void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
 {
-	std::cout<<"Access_log  Tokens:"<<std::endl;
-	printConfTokens(context);
+	// std::cout<<"Access_log  Tokens:"<<std::endl;
+	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive access_log line:" + std::to_string(lineNum));
 	else
-		access_log = context[0].str;
+		_access_log = context[0].str;
 }
-
 
 void MainConfig::setWorkConn(std::vector<confToken> &context, size_t lineNum)
 {
-	std::cout<<"Worker connect Tokens:"<<std::endl;
-	printConfTokens(context);
+	// std::cout<<"Worker connect Tokens:"<<std::endl;
+	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive worker_connections line:" + std::to_string(lineNum));
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
 		throw std::runtime_error("Value error in directive worker_connections: \"" + context[0].str + "\" not a number");
 	else
-		worker_connections = std::stoul(context[0].str);
+		_worker_connections = std::stoul(context[0].str);
 }
-
 
 void MainConfig::setTimeout(std::vector<confToken> &context, size_t lineNum)
 {
-	std::cout<<"Timeout Tokens:"<<std::endl;
-	printConfTokens(context);
+	// std::cout<<"Timeout Tokens:"<<std::endl;
+	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive keepalive_timeout");
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
 		throw std::runtime_error("Value error in directive keepalive_timeout: \"" + context[0].str + "\" not a number");
 	else
-		keepalive_timeout = std::stoul(context[0].str);
+		_keepalive_timeout = std::stoul(context[0].str);
 }
-
 
 void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 {
 	if (context.begin()->type == BLOCK_START && (context.end() - 1)->type == BLOCK_END)
 	{
-		std::cout<<"Http Tokens:"<<std::endl;
-		printConfTokens(context);
+		// std::cout<<"Http Tokens:"<<std::endl;
+		// printConfTokens(context);
 		for(auto it = context.begin() + 1; it < (context.end() - 1); it++)
 		{
 			if (!(it->type == DIRECTIVE && it->str == "server"))
@@ -159,10 +134,10 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 				{
 					std::vector<confToken>servercontext;
 					collectContext(context, it, servercontext);
+					it += servercontext.size();
 					servercontext.erase(servercontext.begin());
-					http.push_back(ServerConfig(servercontext));
-					
-					it += servercontext.size() + 1;
+					servercontext.erase(servercontext.end() - 1);
+					_http.push_back(ServerConfig(servercontext));
 				}
 			}
 		}
@@ -170,51 +145,37 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 			throw std::runtime_error("WTF that shouldnt happen at all");
 }
 
-void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context)
-{
-	auto	stopIt = it + 1;
-	int	blocks = -1;
-	while (stopIt != tokens.end())
-	{
-		if (stopIt->type == BLOCK_START)
-		{
-			if (blocks < 0)
-				blocks = 0;
-			blocks++;
-		}
-		else if (stopIt->type == BLOCK_END)
-				blocks--;
-		if (!blocks || (stopIt->type == STOP && blocks < 0))
-		{
-			if (!blocks)
-				stopIt++;
-			for (auto i = it + 1; i != stopIt; i++)
-				context.push_back(*i);
-			return;
-		}
-		stopIt++;
-	}
-	throw std::runtime_error("Unexpected End of Tokens: \""
-							+ (stopIt-1)->str + "\"" + " line: "
-							+ std::to_string((stopIt-1)->lineNum)
-							+ " -> unclosed context for directive: \""
-							+ it->str + "\"" + " line: "
-							+ std::to_string((it-1)->lineNum));
-}
-
-
 void MainConfig::checkValues(void)
 {
 	
 }
 
-
-
- MainConfig::MainConfig(void):	error_log(DEFAULT_ERROR_LOG),
-							access_log(DEFAULT_ACCESS_LOG),
-							worker_connections(10),
-							keepalive_timeout(75)
+void MainConfig::setDefaultValues(void)
 {
+	_error_log = DEFAULT_ERROR_LOG;
+	_access_log = DEFAULT_ACCESS_LOG;
+	_worker_connections = 10;
+	_keepalive_timeout = 75;
+	_http.clear();
+}
+
+void MainConfig::printConfig(void)
+{
+	std::stringstream print;
+	print<<MAGENTA<<UNDERLINE<<"MAIN CONFIG:"<<RESET<<"\n";
+	print<<"Error Log: "<<BLUE<<_error_log<<RESET<<"\n";
+	print<<"Access Log: "<<BLUE<<_access_log<<RESET<<"\n";
+	print<<"Worker Connections: "<<BLUE<<_worker_connections<<RESET<<"\n";
+	print<<"Keepalive Timeout: "<<BLUE<<_keepalive_timeout<<RESET<<"\n";
+	std::cout<<print.str()<<std::endl;
+	for (auto i: _http)
+		i.printConfig();
+}
+
+MainConfig::MainConfig(void)
+{
+	setDefaultValues();
+
 	std::map <std::string, void(MainConfig::*)(std::vector<confToken> &, size_t lineNum)> directives;
 	directives.insert({std::string("error_log"), &MainConfig::setErrorLog});
 	directives.insert({std::string("access_log"), &MainConfig::setAccessLog});
@@ -225,21 +186,11 @@ void MainConfig::checkValues(void)
 	std::vector<confToken> tokens;
 	tokenizeConfig(tokens);
 	typesortTokens(tokens);
-	std::cout<<"All Tokens:"<<std::endl;
-	printConfTokens(tokens);
+	// std::cout<<"All Tokens:"<<std::endl;
+	// printConfTokens(tokens);
 	parseTokens<MainConfig>(tokens, directives, *this);
 	checkValues();
+	printConfig();
 }
 
-int main (void)
-{
-	try{
-		MainConfig config;
 
-	}
-	catch (std::exception &e)
-	{
-		std::cout<<"ERROR: "<<e.what()<<std::endl;
-	}	// config.checkValues();
-	return 0;
-}

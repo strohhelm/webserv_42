@@ -11,7 +11,9 @@ void parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(typ
 				std::vector<confToken> context;
 				collectContext(tokens, it, context);
 				(obj.*directives[it->str])(context, it->lineNum);
-				it += context.size() + 1;
+				if (!(it->str == "location"))
+					it++;
+				it += context.size();
 			}
 			else{
 				throw std::runtime_error("[parseTokens]: Unknown directive in config file: \""
