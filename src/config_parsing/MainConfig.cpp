@@ -1,75 +1,6 @@
 #include "../../include/ServerConfig.hpp"
 
-void MainConfig::prepareLine(std::string &line, size_t lineNum)
-{
-	line = std::regex_replace(line, std::regex(R"(\{)"), " {");
-	line = std::regex_replace(line, std::regex(R"(\})"), " }");
-	line = std::regex_replace(line, std::regex(R"(\;)"), " ;");
 
-	std::smatch match;
-	if (!std::regex_match(line, match, std::regex("^\\s*$|.*[;{}]\\s*$" )))
-	{
-		throw std::runtime_error("Missing delimiter in line: " + std::to_string(lineNum));
-	}
-}
-
-void MainConfig::rmComment(std::string &line)
-{
-	size_t pos = line.find_first_of("#");
-	if (pos != std::string::npos)
-		line.erase(line.begin() + pos, line.end());
-}
-
-void MainConfig::tokenizeConfig(std::vector<confToken> &tokens)
-{
-	std::string				filename = DEFAULT_CONFIG_PATH;
-	std::ifstream			file (filename, std::fstream::in);
-	std::stringstream		buffer;
-	std::string				line;
-	std::string				word;
-	size_t					lineNum = 0;
-
-	if (! file.is_open() || file.bad())
-		throw std::runtime_error("Error, couldnt open file: " + filename);
-	while (getline(file, line))
-	{
-		lineNum++;
-		rmComment(line);
-		prepareLine(line, lineNum);
-		buffer.clear();
-		buffer<<line;
-		while (buffer>>word)
-			tokens.push_back(confToken(word, lineNum));
-	}
-	// printConfTokens(tokens);
-}
-
-void MainConfig::typesortTokens(std::vector<confToken>& tokens)
-{
-	int start = 0;
-	for (auto &token :tokens)
-	{
-		if (token.str == ";")
-		{
-			token.type = STOP;
-			start = 0;
-		}
-		else if (token.str == "{")
-		{
-			token.type = BLOCK_START;
-			start = 0;
-		}
-		else if (token.str == "}")
-		{
-			token.type = BLOCK_END;
-			start = 0;
-		}
-		else if (!start++)
-			token.type = DIRECTIVE;
-		else
-			token.type = VALUE;
-	}
-}
 
 void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
 {
@@ -78,7 +9,7 @@ void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive error_log line: " + std::to_string(lineNum));
 	else
-		_error_log.first = context[0].str;
+		_error_log = context[0].str;
 }
 
 void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
@@ -88,7 +19,7 @@ void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive access_log line:" + std::to_string(lineNum));
 	else
-		_access_log.first = context[0].str;
+		_access_log = context[0].str;
 }
 
 void MainConfig::setWorkConn(std::vector<confToken> &context, size_t lineNum)
@@ -148,8 +79,8 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 
 void MainConfig::setDefaultValues(void)
 {
-	_error_log.first = DEFAULT_ERROR_LOG;
-	_access_log.first = DEFAULT_ACCESS_LOG;
+	_error_log = DEFAULT_ERROR_LOG;
+	_access_log = DEFAULT_ACCESS_LOG;
 	_worker_connections = 10;
 	_keepalive_timeout = 75;
 	_http.clear();
@@ -157,8 +88,6 @@ void MainConfig::setDefaultValues(void)
 
 void MainConfig::checkValues(void)
 {
-	OpenFile(_error_log);
-	OpenFile(_access_log);
 	if (_worker_connections < 1)
 		throw std::runtime_error("Value worker_connections in main context not valid, must be bigger than 1.");
 	if (! _http.size())
@@ -171,8 +100,8 @@ void MainConfig::printConfig(void)
 {
 	std::stringstream print;
 	print<<MAGENTA<<UNDERLINE<<"MAIN CONFIG:"<<RESET<<"\n";
-	print<<"Error Log: "<<BLUE<<_error_log.first<<RESET<<"\n";
-	print<<"Access Log: "<<BLUE<<_access_log.first<<RESET<<"\n";
+	print<<"Error Log: "<<BLUE<<_error_log<<RESET<<"\n";
+	print<<"Access Log: "<<BLUE<<_access_log<<RESET<<"\n";
 	print<<"Worker Connections: "<<BLUE<<_worker_connections<<RESET<<"\n";
 	print<<"Keepalive Timeout: "<<BLUE<<_keepalive_timeout<<RESET<<"\n";
 	std::cout<<print.str()<<std::endl;

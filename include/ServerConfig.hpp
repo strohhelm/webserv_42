@@ -21,7 +21,9 @@
 #define DEFAULT_CONFIG_PATH "../../config/test.conf"
 #define DEFAULT_ERROR_LOG "../../logs/error.log"
 #define DEFAULT_ACCESS_LOG "../../logs/access.log"
-
+#define ACCESS "access"
+#define ERROR "error"
+#define CLOSE "close"
 enum ConfTokenType {
 	DIRECTIVE,
 	VALUE,
@@ -115,15 +117,11 @@ class ServerConfig
 class MainConfig
 {
 	public:
-		std::pair<std::string, std::ofstream> _error_log;
-		std::pair<std::string, std::ofstream> _access_log;
+		std::string _error_log;
+		std::string _access_log;
 		size_t _worker_connections;
 		size_t _keepalive_timeout;
 		std::vector<ServerConfig> _http;
-		void tokenizeConfig(std::vector<confToken> &tokens);
-		void rmComment(std::string &line);
-		void prepareLine(std::string &line, size_t lineNum);
-		void typesortTokens(std::vector<confToken> &tokens);
 		void setErrorLog(std::vector<confToken>		&tokens, size_t lineNum);
 		void setAccessLog(std::vector<confToken>	&tokens, size_t lineNum);
 		void setWorkConn(std::vector<confToken>		&tokens, size_t lineNum);
@@ -138,11 +136,15 @@ class MainConfig
 		void	checkValues(void);
 		void	setDefaultValues(void);
 		void	printConfig();
-
+		
 	};
+	void tokenizeConfig(std::vector<confToken> &tokens);
+	void rmComment(std::string &line);
+	void prepareLine(std::string &line, size_t lineNum);
 	void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
 	void printConfTokens(std::vector<confToken>	&tokens);
-	void OpenFile(std::pair<std::string, std::ofstream> &file);
+	void typesortTokens(std::vector<confToken> &tokens);
+	void OpenLogFile(std::string path, std::ofstream &file);
 
 	template <typename type> void parseTokens(std::vector<confToken> &tokens, std::map <std::string, void(type::*)(std::vector<confToken> &, size_t lineNum)> directives, type &obj);
 	#include "../src/config_parsing/tokens.tpp"

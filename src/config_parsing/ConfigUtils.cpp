@@ -1,5 +1,74 @@
 #include "../../include/HttpRequest.hpp"
 
+void prepareLine(std::string &line, size_t lineNum)
+{
+	line = std::regex_replace(line, std::regex(R"(\{)"), " {");
+	line = std::regex_replace(line, std::regex(R"(\})"), " }");
+	line = std::regex_replace(line, std::regex(R"(\;)"), " ;");
+
+	std::smatch match;
+	if (!std::regex_match(line, match, std::regex("^\\s*$|.*[;{}]\\s*$" )))
+	{
+		throw std::runtime_error("Missing delimiter in line: " + std::to_string(lineNum));
+	}
+}
+
+void rmComment(std::string &line)
+{
+	size_t pos = line.find_first_of("#");
+	if (pos != std::string::npos)
+		line.erase(line.begin() + pos, line.end());
+}
+
+void tokenizeConfig(std::vector<confToken> &tokens)
+{
+	std::string				filename = DEFAULT_CONFIG_PATH;
+	std::ifstream			file (filename, std::fstream::in);
+	std::stringstream		buffer;
+	std::string				line;
+	std::string				word;
+	size_t					lineNum = 0;
+
+	if (! file.is_open() || file.bad())
+		throw std::runtime_error("Error, couldnt open file: " + filename);
+	while (getline(file, line))
+	{
+		lineNum++;
+		rmComment(line);
+		prepareLine(line, lineNum);
+		buffer.clear();
+		buffer<<line;
+		while (buffer>>word)
+			tokens.push_back(confToken(word, lineNum));
+	}
+	// printConfTokens(tokens);
+}
+void typesortTokens(std::vector<confToken>& tokens)
+{
+	int start = 0;
+	for (auto &token :tokens)
+	{
+		if (token.str == ";")
+		{
+			token.type = STOP;
+			start = 0;
+		}
+		else if (token.str == "{")
+		{
+			token.type = BLOCK_START;
+			start = 0;
+		}
+		else if (token.str == "}")
+		{
+			token.type = BLOCK_END;
+			start = 0;
+		}
+		else if (!start++)
+			token.type = DIRECTIVE;
+		else
+			token.type = VALUE;
+	}
+}
 
 void printConfTokens(std::vector<confToken>	&tokens)
 {
@@ -56,34 +125,27 @@ void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iter
 							+ std::to_string((it-1)->lineNum));
 }
 
-int main (void)
-{
-	try{
-		MainConfig config;
+// int main (void)
+// {
+// 	try{
+// 		MainConfig config;
 
-	}
-	catch (std::exception &e)
-	{
-		std::cout<<"ERROR: "<<e.what()<<std::endl;
-	}	// config.checkValues();
-	return 0;
-}
+// 	}
+// 	catch (std::exception &e)
+// 	{
+// 		std::cout<<"ERROR: "<<e.what()<<std::endl;
+// 	}	// config.checkValues();
+// 	return 0;
+// }
 
-void OpenFile(std::pair<std::string, std::ofstream> &file)
+void OpenLogFile(std::string path, std::ofstream &ofile)
 {
-	std::ofstream& ofile = file.second;
-	std::string& path = file.first;
-	
 	struct stat sb;
 	int err = stat(path.data(), &sb);
 
 	if (S_ISDIR(sb.st_mode))
-		throw std::runtime_error("[OpenFile]: \"" + path + "\" is a directory");
+		throw std::runtime_error("[OpenLogFile]: \"" + path + "\" is a directory");
 	ofile.open(path, std::ios::app);
 	if (!ofile.is_open() || ofile.bad())
-		throw std::runtime_error("[OpenFile]: Failed to create file \"" + path + "\"");
-	std::chrono::duration<int,std::ratio<60*60*24> > one_day;
-	std::chrono::system_clock::time_point today = std::chrono::system_clock::now();
-	time_t tt = std::chrono::system_clock::to_time_t ( today );
-	ofile<<"SESSION STARTED -- " << ctime(&tt);
+		throw std::runtime_error("[OpenLogFile]: Failed to create file \"" + path + "\"");
 }
