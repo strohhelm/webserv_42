@@ -17,6 +17,7 @@ int SimpleServer::serverConfiguration(void)
 		}
 		std::cout << GREEN << "SOCKET CREATED" << RESET << std::endl;	
 		std::cout << "PORT " << conf.getPort() << std::endl;
+		std::cout << "CGI " << conf.getCgiPath() << std::endl;
 
 		serviceAddress = initAddress(conf.getPort());
 

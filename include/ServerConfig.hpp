@@ -102,6 +102,7 @@ class ServerConfig
 		void	setDefaultValues(void);
 		void	checkValues(void);
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
+		void	setCgiPath(std::string path);
 		int		getPort(void);
 		void	setRootDir(const std::string& rootDir);
 		const	std::string& getRootDir(void);

@@ -19,11 +19,15 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
 				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
+				$(SRC_DIR)/HttpRequest_CGI.cpp \
 				$(SRC_DIR)/ServerConfig.cpp \
 				$(SRC_DIR)/config_parsing/MainConfig.cpp \
 				$(SRC_DIR)/config_parsing/RouteCongig.cpp \
 				$(SRC_DIR)/config_parsing/ServerConfig.cpp
 				$(SRC_DIR)/config_parsing/ConfigUtils.cpp \
+				$(SRC_DIR)/HttpRequest_CGI_Get.cpp \
+				$(SRC_DIR)/HttpRequest_CGI_Post.cpp \
+				$(SRC_DIR)/CGI.cpp \
 
 
 # INTERNAL OBJECT

@@ -79,7 +79,7 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 	return html.str();
 }
 
-std::string HttpRequest::buildFullPath(ServerConfig config)
+std::string HttpRequest::buildFullPath(ServerConfig& config)
 {
 	std::string _rootDir = config.getRootDir(); // extract from config file object
 	std::string fullPath = _rootDir + _requestLine._path;
@@ -95,7 +95,7 @@ std::string HttpRequest::buildFullPath(ServerConfig config)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile,  ServerConfig config)
+std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
 {
 	std::string fullPath = buildFullPath(config);
 	if(fileExists(fullPath) && !directoryExists(fullPath))

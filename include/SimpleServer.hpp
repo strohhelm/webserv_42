@@ -39,6 +39,7 @@ class SimpleServer
 		int							_maxAmountOfConnections; // from config?
 
 		
+
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
 		

@@ -1,6 +1,7 @@
+#include "../include/CGI.hpp"
+#include "../include/HttpRequest.hpp"
 #include "../include/SimpleServer.hpp"
 #include "../include/ServerConfig.hpp"
-#include "../include/HttpRequest.hpp"
 #include "../include/SignalHandler.hpp"
 
 
@@ -48,8 +49,9 @@ void	myLog(std::string type, std::string message)
 
 int main(void)
 {
-
 	signal(SIGINT, handleSignalINT);
+
+	// std::string cgipath = "/usr/bin/php-cgi";
 
 	std::vector<ServerConfig> configs;
 	
