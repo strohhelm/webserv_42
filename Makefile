@@ -20,6 +20,10 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
 				$(SRC_DIR)/ServerConfig.cpp \
+				$(SRC_DIR)/config_parsing/MainConfig.cpp \
+				$(SRC_DIR)/config_parsing/RouteCongig.cpp \
+				$(SRC_DIR)/config_parsing/ServerConfig.cpp
+				$(SRC_DIR)/config_parsing/ConfigUtils.cpp \
 
 
 # INTERNAL OBJECT

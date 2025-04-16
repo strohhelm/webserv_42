@@ -16,10 +16,11 @@
 #include <string>
 #include "./StatusCodes.hpp"
 #include <sys/stat.h>
+#include <chrono>
 #include "./Colors.hpp"
 #define DEFAULT_CONFIG_PATH "../../config/test.conf"
-#define DEFAULT_ERROR_LOG "./error_log"
-#define DEFAULT_ACCESS_LOG "./access_log"
+#define DEFAULT_ERROR_LOG "../../logs/error.log"
+#define DEFAULT_ACCESS_LOG "../../logs/access.log"
 
 enum ConfTokenType {
 	DIRECTIVE,
@@ -47,10 +48,12 @@ class routeConfig
 	std::vector<std::string>	_defaultFile; //Set a default file to answer if the request is a directory.
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
 	std::string					_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
+
 	public:
 		routeConfig(std::vector<confToken> &context);
-		void	printConfig();
+		void	printConfig(std::string path);
 		void	setDefaultValues();
+		void	checkValues(void);
 		void	setMethods(std::vector<confToken>		&context, size_t lineNum);
 		void	setRedirect(std::vector<confToken>		&context, size_t lineNum);
 		void	setRootDir(std::vector<confToken>		&context, size_t lineNum);
@@ -95,6 +98,7 @@ class ServerConfig
 		~ServerConfig(){};
 		void	printConfig();
 		void	setDefaultValues(void);
+		void	checkValues(void);
 		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
 		int		getPort(void);
 		void	setRootDir(const std::string& rootDir);
@@ -111,8 +115,8 @@ class ServerConfig
 class MainConfig
 {
 	public:
-		std::string _error_log;
-		std::string _access_log;
+		std::pair<std::string, std::ofstream> _error_log;
+		std::pair<std::string, std::ofstream> _access_log;
 		size_t _worker_connections;
 		size_t _keepalive_timeout;
 		std::vector<ServerConfig> _http;
@@ -120,11 +124,11 @@ class MainConfig
 		void rmComment(std::string &line);
 		void prepareLine(std::string &line, size_t lineNum);
 		void typesortTokens(std::vector<confToken> &tokens);
-		void setErrorLog(std::vector<confToken> &tokens, size_t lineNum);
-		void setAccessLog(std::vector<confToken> &tokens, size_t lineNum);
-		void setWorkConn(std::vector<confToken> &tokens, size_t lineNum);
-		void setTimeout(std::vector<confToken> &tokens, size_t lineNum);
-		void setHttp(std::vector<confToken> &tokens, size_t lineNum);
+		void setErrorLog(std::vector<confToken>		&tokens, size_t lineNum);
+		void setAccessLog(std::vector<confToken>	&tokens, size_t lineNum);
+		void setWorkConn(std::vector<confToken>		&tokens, size_t lineNum);
+		void setTimeout(std::vector<confToken>		&tokens, size_t lineNum);
+		void setHttp(std::vector<confToken>			&tokens, size_t lineNum);
 		
 		public:
 		MainConfig(void);
@@ -138,6 +142,7 @@ class MainConfig
 	};
 	void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);
 	void printConfTokens(std::vector<confToken>	&tokens);
+	void OpenFile(std::pair<std::string, std::ofstream> &file);
 
 	template <typename type> void parseTokens(std::vector<confToken> &tokens, std::map <std::string, void(type::*)(std::vector<confToken> &, size_t lineNum)> directives, type &obj);
 	#include "../src/config_parsing/tokens.tpp"

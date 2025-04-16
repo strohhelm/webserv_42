@@ -78,7 +78,7 @@ void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive error_log line: " + std::to_string(lineNum));
 	else
-		_error_log = context[0].str;
+		_error_log.first = context[0].str;
 }
 
 void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
@@ -88,7 +88,7 @@ void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive access_log line:" + std::to_string(lineNum));
 	else
-		_access_log = context[0].str;
+		_access_log.first = context[0].str;
 }
 
 void MainConfig::setWorkConn(std::vector<confToken> &context, size_t lineNum)
@@ -145,26 +145,34 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 			throw std::runtime_error("WTF that shouldnt happen at all");
 }
 
-void MainConfig::checkValues(void)
-{
-	
-}
 
 void MainConfig::setDefaultValues(void)
 {
-	_error_log = DEFAULT_ERROR_LOG;
-	_access_log = DEFAULT_ACCESS_LOG;
+	_error_log.first = DEFAULT_ERROR_LOG;
+	_access_log.first = DEFAULT_ACCESS_LOG;
 	_worker_connections = 10;
 	_keepalive_timeout = 75;
 	_http.clear();
+}
+
+void MainConfig::checkValues(void)
+{
+	OpenFile(_error_log);
+	OpenFile(_access_log);
+	if (_worker_connections < 1)
+		throw std::runtime_error("Value worker_connections in main context not valid, must be bigger than 1.");
+	if (! _http.size())
+		throw std::runtime_error("Must have servers!!!");
+	for (auto server:_http)
+		server.checkValues();
 }
 
 void MainConfig::printConfig(void)
 {
 	std::stringstream print;
 	print<<MAGENTA<<UNDERLINE<<"MAIN CONFIG:"<<RESET<<"\n";
-	print<<"Error Log: "<<BLUE<<_error_log<<RESET<<"\n";
-	print<<"Access Log: "<<BLUE<<_access_log<<RESET<<"\n";
+	print<<"Error Log: "<<BLUE<<_error_log.first<<RESET<<"\n";
+	print<<"Access Log: "<<BLUE<<_access_log.first<<RESET<<"\n";
 	print<<"Worker Connections: "<<BLUE<<_worker_connections<<RESET<<"\n";
 	print<<"Keepalive Timeout: "<<BLUE<<_keepalive_timeout<<RESET<<"\n";
 	std::cout<<print.str()<<std::endl;

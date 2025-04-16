@@ -51,8 +51,8 @@ int main() {
 
     // Set up a loop to check for requests
     while (true) {
-        // Poll for events with a timeout
-        int ret = poll(fds.data(), fds.size(), TIMEOUT_MILLISECONDS);  // Timeout in milliseconds
+        // Poll for events with a timeoutpoll(
+        int ret = fds.data(), fds.size(), TIMEOUT_MILLISECONDS);  // Timeout in milliseconds
 
         if (ret == -1) {
             std::cerr << "poll() failed: " << strerror(errno) << std::endl;

@@ -110,11 +110,14 @@ void routeConfig::setDefaultValues()
 	_dirListing = false;
 	_uploadPath = "";
 }
+void	routeConfig::checkValues(void)
+ {
 
-void routeConfig::printConfig()
+ }
+void routeConfig::printConfig(std::string path)
 {
 	std::stringstream print;
-	print<<ORANGE<<UNDERLINE<<"ROUTE CONFIG:"<<RESET<<"\n";
+	print<<ORANGE<<UNDERLINE<<"ROUTE CONFIG:"<< GREEN<<"\""<<path<<"\""<< RESET<<"\n";
 	print<<"Methods: "<<BLUE;if (_methods[0]) print<<"GET ";if(_methods[1])print<<"POST ";if(_methods[2])print<<"DELETE ";print<<RESET<<"\n";
 	print<<"Redirect Code: "<<BLUE<<_redirectCode<<RESET<<"\n";
 	print<<"Redirect Path: "<<BLUE<<_redirectPath<<RESET<<"\n";

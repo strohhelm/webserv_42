@@ -53,6 +53,7 @@ int main(void)
 
 	try
 	{
+		MainConfig config;
 		SimpleServer server(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 10, configs);
 	}
 	catch(const std::exception& e)

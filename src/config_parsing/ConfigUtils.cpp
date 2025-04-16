@@ -68,3 +68,22 @@ int main (void)
 	}	// config.checkValues();
 	return 0;
 }
+
+void OpenFile(std::pair<std::string, std::ofstream> &file)
+{
+	std::ofstream& ofile = file.second;
+	std::string& path = file.first;
+	
+	struct stat sb;
+	int err = stat(path.data(), &sb);
+
+	if (S_ISDIR(sb.st_mode))
+		throw std::runtime_error("[OpenFile]: \"" + path + "\" is a directory");
+	ofile.open(path, std::ios::app);
+	if (!ofile.is_open() || ofile.bad())
+		throw std::runtime_error("[OpenFile]: Failed to create file \"" + path + "\"");
+	std::chrono::duration<int,std::ratio<60*60*24> > one_day;
+	std::chrono::system_clock::time_point today = std::chrono::system_clock::now();
+	time_t tt = std::chrono::system_clock::to_time_t ( today );
+	ofile<<"SESSION STARTED -- " << ctime(&tt);
+}

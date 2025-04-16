@@ -80,6 +80,8 @@ void	ServerConfig::setIndex(std::vector<confToken>	&context, size_t lineNum)
 {
 	// std::cout<<"setIndex Tokens:"<<std::endl;
 	// printConfTokens(context);
+	if (context.size() < 1)
+		throw std::runtime_error("Syntax error in directive 'index': Too few arguments! line: " + std::to_string(lineNum));
 	lineNum = 0;
 	for(auto it = context.begin(); it != context.end(); it++)
 	{
@@ -110,12 +112,15 @@ void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 void	ServerConfig::setRoute(std::vector<confToken>	&context, size_t lineNum)
 {
 	if (context.size() < 3)
-	throw std::runtime_error("[setRoute]: not enough arguments in directive 'location' line: " + std::to_string(lineNum));
+		throw std::runtime_error("[setRoute]: not enough arguments in directive 'location' line: " + std::to_string(lineNum));
 	std::string path = context[0].str;
 	std::vector<confToken> routeContext;
 	routeContext.insert(routeContext.begin(), context.begin() + 2, context.end() - 1);
-	// std::cout<<"Setting Route: " <<path<<std::endl;
-	_routes.insert({path, routeConfig(routeContext)});
+	if (_routes.find(path) == _routes.end())
+		_routes.insert({path, routeConfig(routeContext)});
+	else
+		throw std::runtime_error("[setRoute]: Route \"" + path + "\" set twice! line: " + std::to_string(lineNum));
+
 }
 
 void ServerConfig::setDefaultValues(void)
@@ -129,28 +134,45 @@ void ServerConfig::setDefaultValues(void)
 	_routes.clear();
 }
 
+void	ServerConfig::checkValues(void)
+{
+	if (_port > 65535 || _port < 0)
+		throw std::runtime_error("Port outside of scope!");
+	if (_serverNames.empty())
+		throw std::runtime_error("Must have Server Name!");
+
+}
+
+
 void ServerConfig::printConfig()
 {
 	std::stringstream print;
 	print<<YELLOW<<UNDERLINE<<"SERVER CONFIG:"<<RESET<<"\n";
+
 	print<<"Port: "<<BLUE<<_port<<RESET<<"\n";
+
 	print<<"Server Names: "<<BLUE;
 	for (std::string i: _serverNames)
 		print<<i<<" ";
 	print<<RESET<<"\n";
+
 	print<<"Root Dir: "<<BLUE<<_rootDir<<RESET<<"\n";
+
 	print<<"Index File: "<<BLUE;
 	for (std::string i: _indexFile)
 		print<<i<<" ";
 	print<<RESET<<"\n";
+
 	print<<"ErrorPages: "<<BLUE<<_rootDir<<RESET<<"\n";
 	for (auto i: _errorPage)
 		print<<"("<<i.first<<"|"<<i.second<<")"<<" ";
 	print<<RESET<<"\n";
+
 	print<<"Max Body: "<<BLUE<<_maxBody<<RESET<<"\n";
+
 	std::cout<<print.str()<<std::endl;
 	for (auto i: _routes)
-		i.second.printConfig();
+		i.second.printConfig(i.first);
 }
 
 ServerConfig::ServerConfig(std::vector<confToken> context)
