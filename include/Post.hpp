@@ -14,6 +14,7 @@ class Post : public HttpRequest
   private:
 	std::string path;
 	std::string body;
+	std::string content;
 	int fd;
 
   public:
@@ -22,4 +23,5 @@ class Post : public HttpRequest
 	userdata urlDecode();
 	void handleSignup();
 	void handleLogin();
+	void handleUpload();
 };

@@ -114,26 +114,46 @@ void SimpleServer::readDataFromClient(int fdIndex)
 {
 	std::cout << "readDataFromClient" << std::endl;
 	int		client_fd = _poll_fds[fdIndex].fd;
-	char	buffer[8192];
+	char	buffer[BUFFER_SIZE];
 	int		bytesReceived;
 	std::string request;
 
 	// memset(&buffer, '\0', sizeof(buffer));
 	
-	// while(true)
 	while (request.find("\r\n\r\n") == std::string::npos)
 	{
-		bytesReceived = recv(client_fd, buffer, 8192 - 1, 0);
+		bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
 		if (bytesReceived <= 0)
 			break;
 		request.append(buffer, bytesReceived);
 	}
 
-	size_t end = request.find("\r\n\r\n");
+	size_t end = request.find("\r\n\r\n") + 4;
 	std::string header = request.substr(0, end);
-	std::string body = request.substr(end + 4);
+	std::string body = request.substr(end);
+
+	size_t begin = header.find("Content-Length: ");
+	if (begin != std::string::npos)
+	{
+		begin = header.find(' ', begin) +1;
+		end = header.find('\r', begin);
+		std::string lenstr = header.substr(begin, end - begin);
+		if (lenstr.size())
+		{
+			int clen = std::stoi(lenstr);
+			std::cout << "clen: " << clen << std::endl;
+			char body_buffer[clen];
+			bytesReceived = recv(client_fd, body_buffer, clen, 0);
+			request.append(body_buffer, bytesReceived);
+		}
+	}
+	else
+		std::cout << "not found" << std::endl;
+
 	std::cout << "HEADER:\n" << header << std::endl;
 	std::cout << "BODY:\n" << body << std::endl;
+	std::cout << "request:\n" << request << std::endl;
+
 
 	if(noDataReceived(bytesReceived))
 	{
@@ -141,7 +161,6 @@ void SimpleServer::readDataFromClient(int fdIndex)
 		return ;
 	}
 
-	buffer[bytesReceived] = '\0';
 	_recvBuffer[fdIndex] = request;
 }
 

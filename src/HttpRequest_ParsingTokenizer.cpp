@@ -26,10 +26,13 @@ void HttpRequest::tokenizeRequestLine()
 
 void HttpRequest::extractRawBody(const std::string& requestBuffer)
 {
-	std::string line;
-	std::istringstream stream(requestBuffer);
-	while (std::getline(stream, line) && line != "\r"){}
-	std::getline(stream, _rawBody, '\0');	
+	// std::string line;
+	// std::istringstream stream(requestBuffer);
+	// while (std::getline(stream, line) && line != "\r"){}
+	// std::getline(stream, _rawBody, '\0');
+
+	size_t begin = requestBuffer.find("\r\n\r\n") + 4;
+	_rawBody = requestBuffer.substr(begin);
 }
 
 
@@ -54,6 +57,10 @@ void HttpRequest::extractAndTokenizeHeader(const std::string& requestBuffer)
 
 	while (std::getline(stream, line))
 	{
+		if (!line.empty() && line.back() == '\r')
+			line.pop_back();
+		if (line.empty())
+			break;
 		size_t delimiterPos = line.find(":");
 		if(delimiterPos != std::string::npos)
 		{
