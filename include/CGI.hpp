@@ -58,6 +58,10 @@ class CGI
 		void tokenizePath(void);
 		void buildEnvStrings(std::string method, std::string rawBody);
 		void convertEnvStringsToChar(void);
+
+		std::string	readCgiOutput(void);
+
+
 };
 
 

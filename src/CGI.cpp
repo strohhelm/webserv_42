@@ -13,13 +13,12 @@ void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::strin
 
 void CGI::tokenizePath(void)
 {
-	_fullPath = _config.getRootDir() + _requestPath;
 
-	size_t pos = _fullPath.find('?');
+	size_t pos = _requestPath.find('?');
 	if(pos != std::string::npos)
 	{
-		_scriptPath = _fullPath.substr(0, pos); // "/index2.php"
-		_queryString = _fullPath.substr(pos + 1); // "name=Alice&lang=de"
+		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
+		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
 	}
 	else
 	{
@@ -116,18 +115,17 @@ void CGI::convertEnvStringsToChar(void)
 
 void CGI::buildEnvStrings(std::string method, std::string rawBody)
 {
-
 	_envStrings = {
 		"GATEWAY_INTERFACE=CGI/1.1",
 		"REDIRECT_STATUS=200",
 		"REQUEST_METHOD=" + method,
-		"SCRIPT_FILENAME=" + _scriptPath,
-		"SCRIPT_NAME=" + _scriptPath,
+		"SCRIPT_FILENAME=" + _config.getRootDir() + _scriptPath, //www/get.php
+		"SCRIPT_NAME=" + _scriptPath, ///get.php
 		"SERVER_PROTOCOL=HTTP/1.1",
 	};
-
+	
 	if (method == "GET") {
-		_envStrings.push_back("QUERY_STRING=" + _queryString);
+		_envStrings.push_back("QUERY_STRING=" + _queryString); // everything after the ?	
 	}
 	else if (method == "POST")
 	{
@@ -157,6 +155,18 @@ void CGI::handleChildProcess(std::string method, std::string rawBody)
 
 }
 
+std::string CGI::readCgiOutput(void)
+{
+	std::string cgiOutput;
+	char buffer[1024];
+	ssize_t bytesRead;
+
+	while ((bytesRead = read(_child[READ_FD], buffer, sizeof(buffer))) > 0) {
+		cgiOutput.append(buffer, bytesRead);
+	}
+	return cgiOutput;
+}
+
 void CGI::handleParentProcess(std::string method, std::string rawBody)
 {
 	close(_parent[READ_FD]); // Parent doesn't need to read from this
@@ -169,13 +179,9 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	close(_parent[WRITE_FD]); // done writing
 
 	// Read CGI output
-	std::string cgiOutput;
-	char buffer[1024];
-	ssize_t bytesRead;
-	while ((bytesRead = read(_child[READ_FD], buffer, sizeof(buffer))) > 0) {
-		cgiOutput.append(buffer, bytesRead);
-	}
+	std::string cgiOutput = readCgiOutput();
 	close(_child[READ_FD]);
+
 
 	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
 	httpResponse += "Content-Type: text/html\r\n";
@@ -192,6 +198,7 @@ void CGI::execute(std::string method, std::string rawBody)
 	// init fds
 	_parent = {-1, -1};
 	_child = {-1, -1};
+	std::cout << BG_BRIGHT_GREEN << _scriptPath << RESET << std::endl;
 
 	if(createPipes())
 	{

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CGI GET Form</title>
+    <title>CGI</title>
 </head>
+<p>CGI GET from get.php </p>
 <body>
     <form action="/get.php" method="get">
         <label>Name: <input type="text" name="name"></label><br>
@@ -11,10 +12,15 @@
     </form>
 </body>
 
+<p>CGI GET from get no parameteres.php </p>
+<body>
+    <form action="/get.php" method="get">
+        <input type="submit" value="Submit via GET">
+    </form>
+</body>
 
-<head>
-    <title>CGI POST Form</title>
-</head>
+
+<p>CGI POST from post.php </p>
 <body>
     <form action="/post.php" method="post">
         <label>Name: <input type="text" name="name"></label><br>

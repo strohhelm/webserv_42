@@ -89,12 +89,13 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
 	(void)server_fd;
+	(void)config;
 
 	if(_requestLine._path.find("php") != std::string::npos)
 	{	
 		
 		std::string fullPath = config.getRootDir() + _requestLine._path;
-		runCgiScriptPost(client_fd, fullPath, _requestLine._path);
+		// runCgiScriptPost(client_fd, fullPath, _requestLine._path);
 		return;
 	}
 
