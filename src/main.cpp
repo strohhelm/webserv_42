@@ -37,7 +37,10 @@ int main(void)
 	config1.setRootDir("www");
 	config1.setCgiPath("/usr/bin/php-cgi");
 
+	
+
 	configs.push_back(config1);
+
 
 	std::cout << BG_BRIGHT_CYAN << config1.getCgiPath() << RESET << std::endl;
 	

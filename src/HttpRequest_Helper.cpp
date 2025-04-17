@@ -42,19 +42,15 @@ bool HttpRequest::directoryExists(const std::string& path)
 	return false;
 }
 
-bool HttpRequest::directoryListingIsOff()
-{
-	// check for config File
-	return false;
-}
 
-std::string HttpRequest::serveDirectory(std::string fullPath)
+std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config)
 {
 	std::stringstream html;
-	// std::cout << "serving Directory" << std::endl;
-	if(directoryListingIsOff())
-		return"";
 
+	// neeeeeeeds to be tested!!!!!
+	if((config.isDirListingActive(_requestLine._path)))
+		return"";
+	
 	html << "<!DOCTYPE html>\n"
 		 <<	"<html>\n"
 		 << "<head>\n"
@@ -103,7 +99,7 @@ std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
 	if(directoryExists(fullPath))
 	{
 		isFile = false;
-		return(serveDirectory(fullPath));
+		return(serveDirectory(fullPath, config));
 	}
 	return "";
 }
@@ -124,16 +120,7 @@ std::string HttpRequest::readFileContent(const std::string& path)
 
 void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& message)
 {
-	// std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + message;
-	// response += "\r\n";
-	// response += "Content-Length: " + std::to_string(message.size());
-	// response += "\r\n";
-	// response += "Content-Type: text/plain";
-	// response += "\r\n\r\n";
-	// response += message;
-	
-	std::string temp = message;
-	std::string response = buildResponse(statusCode, temp, message);
+	std::string response = buildResponse(statusCode, message, message, "text/plain");
 
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }
@@ -141,28 +128,19 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& m
 
 void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message)
 {
-
-	// std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " OK";
-	// response += "\r\n";
-	// response += "Content-Length: " + std::to_string(message.size());
-	// response += "\r\n";
-	// response += "Content-Type: text/html";
-	// response += "\r\n\r\n";
-	// response += message;
-	std::string message2 = "OK";
-	std::string response = buildResponse(statusCode, message2 , message);
+	std::string response = buildResponse(statusCode, "OK" , message, "text/html");
 
 	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
 
 }
 
-std::string HttpRequest::buildResponse(int& statusCode, std::string& CodeMessage,const std::string& message)
+std::string HttpRequest::buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType)
 {
 	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + CodeMessage;
 	response += "\r\n";
 	response += "Content-Length: " + std::to_string(message.size());
 	response += "\r\n";
-	response += "Content-Type: text/plain";
+	response += "Content-Type:" + contentType; 
 	response += "\r\n\r\n";
 	response += message;
 

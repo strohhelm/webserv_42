@@ -62,6 +62,7 @@ class ServerConfig
 		void	setRootDir(const std::string& rootDir);
 		const std::string& getRootDir(void);
 		std::string& getCgiPath(void);
+		bool	isDirListingActive(std::string location);
 };
 
 #endif

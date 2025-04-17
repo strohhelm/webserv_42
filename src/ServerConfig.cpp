@@ -44,3 +44,23 @@ std::string& ServerConfig::getCgiPath(void)
 {
 	return _cgiPath;
 }
+
+
+bool	ServerConfig::isDirListingActive(std::string location)
+{
+	for(auto it : _locations)
+	{
+		if(it.first == location)
+		{
+			if(it.second._dirListing == true)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+	return false;
+}
