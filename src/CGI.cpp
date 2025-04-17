@@ -13,16 +13,16 @@ void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::strin
 
 void CGI::tokenizePath(void)
 {
-
+	
 	size_t pos = _requestPath.find('?');
-	if(pos != std::string::npos)
+	if(pos != std::string::npos) // only at get
 	{
 		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
 		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
 	}
-	else
+	else // only at Post
 	{
-		// ?????
+		_scriptPath = _requestPath;
 	}
 	// std::cout << "CGI _requestPath: " << _requestPath << std::endl;
 	// std::cout << "CGI _fullPath: " << _fullPath << std::endl;
@@ -62,34 +62,23 @@ void	CGI::closeAllPipes(void)
 void	CGI::setArgv(void)
 {
 	_phpCgiPathStr = _config.getCgiPath();
-	
-	// std::cout << BG_RED << _phpCgiPath << RESET << std::endl;
-
 	_phpCgiPath = _phpCgiPathStr.c_str();
 	
-
 	_argv[0] = (char*)_phpCgiPath;
 	_argv[1] = (char*)_fullPath.c_str();
 	_argv[2] = nullptr;
-
-	// std::cout << "_argv\n"
-	// 			<< "_argv[0] = " << _argv[0]
-	// 			<< "_argv[1] = " << _argv[1]
-	// 			<< "_argv[2] = " << _argv[2]
-	// 			<< std::endl;
-
 }
 
 int	CGI::createPipes()
 {
 	if(pipe(_parent.data()) == -1)
 	{
-		return 1;
+		return -1;
 	}
 	if(pipe(_child.data()) == -1)
 	{
 		closePipesFromFd(_parent);
-		return 1;
+		return -1;
 	}
 	return 0;
 }
@@ -119,9 +108,9 @@ void CGI::buildEnvStrings(std::string method, std::string rawBody)
 		"GATEWAY_INTERFACE=CGI/1.1",
 		"REDIRECT_STATUS=200",
 		"REQUEST_METHOD=" + method,
+		"SERVER_PROTOCOL=HTTP/1.1",
 		"SCRIPT_FILENAME=" + _config.getRootDir() + _scriptPath, //www/get.php
 		"SCRIPT_NAME=" + _scriptPath, ///get.php
-		"SERVER_PROTOCOL=HTTP/1.1",
 	};
 	
 	if (method == "GET") {
@@ -150,9 +139,7 @@ void CGI::handleChildProcess(std::string method, std::string rawBody)
 	execve(_phpCgiPath, _argv, _envp.data());
 
 	std::cerr << "execve failed: " << std::endl;
-	exit(1);
-
-
+	exit(1); //?!?!?!?!?!?!?!
 }
 
 std::string CGI::readCgiOutput(void)
@@ -171,7 +158,7 @@ std::string CGI::readCgiOutput(void)
 void	CGI::sendPostDataToChild(std::string method, std::string rawBody)
 {
 	// Send POST data if any -> neeeds to be tested!?!?!?!?!
-	if (method == "POST" && !rawBody.size())
+	if (method == "POST" && !rawBody.empty())
 	{
 		write(_parent[WRITE_FD], rawBody.c_str(), rawBody.size()); //check returnvalue?!?!?
 	}
@@ -186,17 +173,20 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	close(_child[WRITE_FD]); // Parent doesn't need to write to this
 	
 	sendPostDataToChild(method, rawBody);
-	close(_parent[WRITE_FD]); 
+	close(_parent[WRITE_FD]);
 
 	std::string cgiOutput = readCgiOutput();
 	close(_child[READ_FD]);
-
 
 	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
 	httpResponse += "Content-Length: " + std::to_string(cgiOutput.size()) + "\r\n";
 	httpResponse += "Content-Type: text/html\r\n";
 	httpResponse += "\r\n";
 	httpResponse += cgiOutput;
+
+	std::cout << "FILENAME:" << _config.getRootDir() + _scriptPath << std::endl;
+	std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
+
 
 	send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0);
 }
@@ -208,7 +198,7 @@ void CGI::execute(std::string method, std::string rawBody)
 	_parent = {-1, -1};
 	_child = {-1, -1};
 
-	if(createPipes())
+	if(createPipes() < 0)
 	{
 		// sendErrorResponse(client_fd, 500, "Pipe creation failed"); //???
 		return;
@@ -230,5 +220,6 @@ void CGI::execute(std::string method, std::string rawBody)
 	{
 		handleParentProcess(method, rawBody);
 	}
+
 	closeAllPipes();
 }

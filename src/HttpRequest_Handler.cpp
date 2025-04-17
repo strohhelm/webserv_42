@@ -37,9 +37,6 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		_cgi.execute("GET", _rawBody);
 		return;
 	}
-
-	std::cout << BG_BRIGHT_BLUE << config.getRootDir() << RESET << std::endl;
-	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
 	if(path.empty())
 	{
 		sendErrorResponse(client_fd, 404, "404 Not Found");
@@ -53,9 +50,6 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	{
 		content = path;
 	}
-	
-	// std::cout << BG_BRIGHT_BLUE << "content [" << content << "]" << RESET << std::endl;
-	
 	if(content.empty())
 	{
 		sendErrorResponse(client_fd, 403, "403 Forbidden");
@@ -88,13 +82,13 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
 	(void)server_fd;
-	(void)config;
+
 
 	if(_requestLine._path.find("php") != std::string::npos)
 	{	
-		
-		std::string fullPath = config.getRootDir() + _requestLine._path;
-		// runCgiScriptPost(client_fd, fullPath, _requestLine._path);
+		_cgi.setCgiParameter(client_fd, config, _requestLine._path);
+		_cgi.tokenizePath();
+		_cgi.execute("POST", _rawBody);
 		return;
 	}
 

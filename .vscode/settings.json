@@ -81,6 +81,7 @@
 		"codecvt": "cpp",
 		"format": "cpp",
 		"span": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"regex": "cpp"
 	}
 }
