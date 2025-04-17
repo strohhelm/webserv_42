@@ -4,6 +4,7 @@
 
 void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config)
 {
+
 	switch (getMethod())
 	{
 		case HttpMethod::GET:
@@ -34,8 +35,6 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		_cgi.setCgiParameter(client_fd, config, _requestLine._path);
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
-
-		// sendErrorResponse(client_fd, 404, "404 Not Found");
 		return;
 	}
 

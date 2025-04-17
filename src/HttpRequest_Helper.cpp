@@ -124,10 +124,16 @@ std::string HttpRequest::readFileContent(const std::string& path)
 
 void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& message)
 {
-	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + message + "\r\n";
-	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
-	response += "Content-Type: text/plain\r\n\r\n";
-	response += message;
+	// std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + message;
+	// response += "\r\n";
+	// response += "Content-Length: " + std::to_string(message.size());
+	// response += "\r\n";
+	// response += "Content-Type: text/plain";
+	// response += "\r\n\r\n";
+	// response += message;
+	
+	std::string temp = message;
+	std::string response = buildResponse(statusCode, temp, message);
 
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }
@@ -136,12 +142,29 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& m
 void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message)
 {
 
-	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " OK\r\n";
-	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
-	response += "Content-Type: text/html\r\n";
-	response += "\r\n";
-	response += message;
-	
+	// std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " OK";
+	// response += "\r\n";
+	// response += "Content-Length: " + std::to_string(message.size());
+	// response += "\r\n";
+	// response += "Content-Type: text/html";
+	// response += "\r\n\r\n";
+	// response += message;
+	std::string message2 = "OK";
+	std::string response = buildResponse(statusCode, message2 , message);
+
 	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
 
+}
+
+std::string HttpRequest::buildResponse(int& statusCode, std::string& CodeMessage,const std::string& message)
+{
+	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + CodeMessage;
+	response += "\r\n";
+	response += "Content-Length: " + std::to_string(message.size());
+	response += "\r\n";
+	response += "Content-Type: text/plain";
+	response += "\r\n\r\n";
+	response += message;
+
+	return response;
 }

@@ -95,12 +95,13 @@ class HttpRequest
 
 		std::string getContentType();
 		void sendResponse(int fd,int statusCode, const std::string& message);
+		std::string buildResponse(int& statusCode, std::string& CodeMessage, const std::string& message);
 
 		std::string	buildFullPath(ServerConfig& config);
+		std::string	serveDirectory(std::string fullPath);
 		bool	fileExists(const std::string& path);
 		bool	directoryExists(const std::string& path);
 		bool	directoryListingIsOff(void);
-		std::string	serveDirectory(std::string fullPath);
 
 		int deleteFile(const std::string& filename);
 

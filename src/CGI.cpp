@@ -161,31 +161,40 @@ std::string CGI::readCgiOutput(void)
 	char buffer[1024];
 	ssize_t bytesRead;
 
-	while ((bytesRead = read(_child[READ_FD], buffer, sizeof(buffer))) > 0) {
+	while ((bytesRead = read(_child[READ_FD], buffer, sizeof(buffer))) > 0) //check returnvalue?!?!?
+	{
 		cgiOutput.append(buffer, bytesRead);
 	}
 	return cgiOutput;
 }
 
+void	CGI::sendPostDataToChild(std::string method, std::string rawBody)
+{
+	// Send POST data if any -> neeeds to be tested!?!?!?!?!
+	if (method == "POST" && !rawBody.size())
+	{
+		write(_parent[WRITE_FD], rawBody.c_str(), rawBody.size()); //check returnvalue?!?!?
+	}
+	// done writing
+}
+
+
+
 void CGI::handleParentProcess(std::string method, std::string rawBody)
 {
 	close(_parent[READ_FD]); // Parent doesn't need to read from this
 	close(_child[WRITE_FD]); // Parent doesn't need to write to this
+	
+	sendPostDataToChild(method, rawBody);
+	close(_parent[WRITE_FD]); 
 
-	// Send POST data if any -> neeeds to be tested!?!?!?!?!
-	if (method == "POST" && !rawBody.size()) {
-		write(_parent[WRITE_FD], rawBody.c_str(), rawBody.size());
-	}
-	close(_parent[WRITE_FD]); // done writing
-
-	// Read CGI output
 	std::string cgiOutput = readCgiOutput();
 	close(_child[READ_FD]);
 
 
 	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
-	httpResponse += "Content-Type: text/html\r\n";
 	httpResponse += "Content-Length: " + std::to_string(cgiOutput.size()) + "\r\n";
+	httpResponse += "Content-Type: text/html\r\n";
 	httpResponse += "\r\n";
 	httpResponse += cgiOutput;
 
@@ -198,13 +207,13 @@ void CGI::execute(std::string method, std::string rawBody)
 	// init fds
 	_parent = {-1, -1};
 	_child = {-1, -1};
-	std::cout << BG_BRIGHT_GREEN << _scriptPath << RESET << std::endl;
 
 	if(createPipes())
 	{
 		// sendErrorResponse(client_fd, 500, "Pipe creation failed"); //???
 		return;
 	}
+
 	pid_t pid = fork();
 	if (pid < 0)
 	{
@@ -212,7 +221,6 @@ void CGI::execute(std::string method, std::string rawBody)
 		// sendErrorResponse(client_fd, 500, "Fork failed");
 		return;
 	}
-
 
 	if(pid == 0)
 	{

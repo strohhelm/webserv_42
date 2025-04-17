@@ -19,7 +19,7 @@ struct routeConfig
 	bool						_dirListing; //Turn on or off directory listing.
 	std::string					_defaultFile; //Set a default file to answer if the request is a directory.
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
-	std::vector<std::string>	_cgiExtension; //Execute CGI based on certain file extension (for example .php)
+	std::string					_cgiExtension; //Execute CGI based on certain file extension (for example .php)
 
 };
 
