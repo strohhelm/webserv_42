@@ -1,4 +1,4 @@
-#include"../include/HttpRequest.hpp"
+#include"../include/ServerConfig.hpp"
 
 #include <sys/stat.h> //stat
 #include <filesystem>

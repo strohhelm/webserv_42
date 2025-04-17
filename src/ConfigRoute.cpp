@@ -138,7 +138,7 @@ bool	routeConfig::checkCgiPath()
 	return false;
 }
 
-std::string& routeconfig::getCgiPath()
+std::string& routeConfig::getCgiPath()
 {
 	return _cgiExtension;
 }

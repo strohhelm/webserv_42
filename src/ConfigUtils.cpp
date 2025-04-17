@@ -1,4 +1,4 @@
-#include "../include/HttpRequest.hpp"
+#include "../include/SimpleServer.hpp"
 
 void prepareLine(std::string &line, size_t lineNum)
 {

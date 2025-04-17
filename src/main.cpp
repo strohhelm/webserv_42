@@ -1,7 +1,7 @@
-#include "../include/CGI.hpp"
-#include "../include/HttpRequest.hpp"
+// #include "../include/CGI.hpp"
+// #include "../include/HttpRequest.hpp"
 #include "../include/SimpleServer.hpp"
-#include "../include/ServerConfig.hpp"
+// #include "../include/ServerConfig.hpp"
 #include "../include/SignalHandler.hpp"
 
 

@@ -1,20 +1,20 @@
-#include "../include/CGI.hpp"
+
 #include "../include/Colors.hpp"
 #include <arpa/inet.h> // send()
-
+#include "../include/ServerConfig.hpp"
 
 
 void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath)
 {
 	_client_fd = client_fd;
-	_config = config;
+	_config = &config;
 	_requestPath = requestPath;
 	_phpCgiPathStr = cgiPath;
 }
 
 void CGI::tokenizePath(void)
 {
-	_fullPath = _config._rootDir + _requestPath;
+	_fullPath = _config->_rootDir + _requestPath;
 
 	size_t pos = _fullPath.find('?');
 	if(pos != std::string::npos)

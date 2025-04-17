@@ -1,4 +1,4 @@
-#include"../include/HttpRequest.hpp"
+#include"../include/ServerConfig.hpp"
 
 /********************/
 /*		Helper		*/

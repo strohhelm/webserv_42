@@ -1,4 +1,3 @@
-
 #ifndef SERVERCONFIG
 #define SERVERCONFIG
 
@@ -19,9 +18,9 @@
 #include <chrono>
 #include "./Colors.hpp"
 #include "./HttpRequest.hpp"
-#define DEFAULT_CONFIG_PATH "../config/test.conf"
-#define DEFAULT_ERROR_LOG "../logs/error.log"
-#define DEFAULT_ACCESS_LOG "../logs/access.log"
+#define DEFAULT_CONFIG_PATH "./config/test.conf"
+#define DEFAULT_ERROR_LOG "./logs/error.log"
+#define DEFAULT_ACCESS_LOG "./logs/access.log"
 #define ACCESS "access"
 #define ERROR "error"
 #define CLOSE "close"

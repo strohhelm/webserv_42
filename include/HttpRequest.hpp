@@ -1,5 +1,4 @@
 
-
 #ifndef HTTPREQUEST_HPP
 #define HTTPREQUEST_HPP
 
@@ -12,14 +11,16 @@
 #include <sstream>
 #include <unordered_map>
 
-#include"Colors.hpp"
+#include "Colors.hpp"
 
-#include"CGI.hpp"
-#include"ServerConfig.hpp"
+#include "CGI.hpp"
+// #include "ServerConfig.hpp"
 
 
 #include <arpa/inet.h> // send()
 
+class routeConfig;
+class ServerConfig;
 
 enum class HttpMethod
 {
@@ -66,15 +67,17 @@ class HttpRequest
  	
 		int			validateRequest(ServerConfig& config, routeConfig& route);
 		bool		validateHost(std::vector<std::string> &serverNames);
+		int			checkCgi(std::string path, routeConfig& route);
 		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
 		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config);
+		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
 		void		handleDelete(int fd);
 		void		handleUnknown(int fd);
+
 		void		sendErrorResponse(int fd, int statusCode, const std::string& message);
 		HttpMethod	stringToHttpMethod(const std::string& method);
 
-		HttpMethod	getMethod(routeConfig &route);
+		HttpMethod			getMethod(routeConfig &route);
 		const std::string	getMethodString(void);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
@@ -110,7 +113,7 @@ class HttpRequest
 		void runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path);
 
 
-		void executeCGI(const int& client_fd, ServerConfig& config);
+		// void executeCGI(const int& client_fd, ServerConfig& config);
 
 
 };
