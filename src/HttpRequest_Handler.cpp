@@ -2,35 +2,47 @@
 
 
 
-void HttpRequest::handleHttpRequest(int fd)
+void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config)
 {
+
 	switch (getMethod())
 	{
 		case HttpMethod::GET:
-			handleGet(fd);
+			handleGet(client_fd, server_fd, config);
 			break;
 		case HttpMethod::POST:
-			handlePost(fd);
+			handlePost(client_fd, server_fd, config);
 			break;
 		case HttpMethod::DELETE:
-			handleDelete(fd);
+			handleDelete(client_fd);
 			break;		
 		default:
-			handleUnknown(fd);
+			handleUnknown(client_fd);
 			break;
 	}
 }
 
-void HttpRequest::handleGet(int fd)
+void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config)
 {
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 	bool isFile = true;
 	std::string	content;
-	std::string path = getRequestedFile(isFile);
+	std::string path = getRequestedFile(isFile, config);
+	(void)server_fd;
+
+	if(_requestLine._path.find("php") != std::string::npos)
+	{	
+		_cgi.setCgiParameter(client_fd, config, _requestLine._path);
+		_cgi.tokenizePath();
+		_cgi.execute("GET", _rawBody);
+		return;
+	}
+
+	std::cout << BG_BRIGHT_BLUE << config.getRootDir() << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
 	if(path.empty())
 	{
-		sendErrorResponse(fd, 403, "403 Forbidden");
+		sendErrorResponse(client_fd, 404, "404 Not Found");
 		return;
 	}
 	if(isFile)
@@ -41,15 +53,15 @@ void HttpRequest::handleGet(int fd)
 	{
 		content = path;
 	}
-
+	
 	// std::cout << BG_BRIGHT_BLUE << "content [" << content << "]" << RESET << std::endl;
-
+	
 	if(content.empty())
 	{
-		sendErrorResponse(fd, 404, "404 Not Found");
+		sendErrorResponse(client_fd, 403, "403 Forbidden");
 		return;
 	}
-	sendResponse(fd, 200, content);	
+	sendResponse(client_fd, 200, content);	
 }
 
 std::string HttpRequest::getContentType()
@@ -67,24 +79,32 @@ std::string HttpRequest::getContentType()
 	}
 }
 
-void HttpRequest::handlePost(int fd)
+
+
+
+void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerConfig& config)
 {
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
-	handleGet(fd);
-	if(getContentType() != "")
-		sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
+	(void)server_fd;
+	(void)config;
 
+	if(_requestLine._path.find("php") != std::string::npos)
+	{	
+		
+		std::string fullPath = config.getRootDir() + _requestLine._path;
+		// runCgiScriptPost(client_fd, fullPath, _requestLine._path);
+		return;
+	}
+
+	sendErrorResponse(client_fd, 405, "405 NO CGI");// wrong Code 
 }
 
 void HttpRequest::handleUnknown(int fd)
 {
 	sendErrorResponse(fd, 405, "405 Method Not Allowed");
 }
-
-
-
 
 
 int HttpRequest::deleteFile(const std::string& filename)
@@ -98,8 +118,8 @@ void HttpRequest::handleDelete(int fd)
 {
 	std::string path = getPath();
 	if (path.front() == '/') {
-        path.erase(path.begin());  // Remove the leading "/"
-    }
+		path.erase(path.begin());  // Remove the leading "/"
+	}
 	std::cout << BG_BRIGHT_BLACK << path << RESET << std::endl;
 
 	if(!fileExists(path))

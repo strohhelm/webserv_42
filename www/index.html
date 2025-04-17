@@ -1,28 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple Server</title>
+    <title>CGI</title>
 </head>
+<p>CGI GET from get.php </p>
 <body>
-    <h1>Hello, World! This is a simple HTTP server.</h1>
-    <form action="http://localhost:8080/" method="POST">
-        <input type="text" name="message" value="INPUT">
-        <input type="submit" value="Send POST">
+    <form action="/get.php" method="get">
+        <label>Name: <input type="text" name="name"></label><br>
+        <label>Language: <input type="text" name="lang"></label><br>
+        <input type="submit" value="Submit via GET">
     </form>
-    
 </body>
+
+<p>CGI GET from get no parameteres.php </p>
+<body>
+    <form action="/get.php" method="get">
+        <input type="submit" value="Submit via GET">
+    </form>
+</body>
+
+
+<p>CGI POST from post.php </p>
+<body>
+    <form action="/post.php" method="post">
+        <label>Name: <input type="text" name="name"></label><br>
+        <label>Language: <input type="text" name="lang"></label><br>
+        <input type="submit" value="Submit via POST">
+    </form>
+</body>
+
+
 </html>
-
-
-<!-- Mulitple body -->
-<!--
-    
-<form action="http://localhost:8080/" method="POST">
-    <input type="text" name="username" value="example">
-    <input type="password" name="password" value="secret">
-    <input type="checkbox" name="interest1" value="sports" checked>
-    <input type="checkbox" name="interest2" value="music" checked>
-    <input type="submit" value="Send POST">
-</form>
-
--->

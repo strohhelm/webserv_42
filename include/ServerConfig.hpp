@@ -3,6 +3,11 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <unordered_map>
+
+
+#ifndef SERVERCONFIG
+#define SERVERCONFIG
 
 
 struct routeConfig
@@ -14,7 +19,7 @@ struct routeConfig
 	bool						_dirListing; //Turn on or off directory listing.
 	std::string					_defaultFile; //Set a default file to answer if the request is a directory.
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
-	std::vector<std::string>	_cgiExtension; //Execute CGI based on certain file extension (for example .php)
+	std::string					_cgiExtension; //Execute CGI based on certain file extension (for example .php)
 
 };
 
@@ -38,22 +43,29 @@ class ServerConfig
 {
 	private:
 		int							_port; //default set to 80
-		std::vector<std::string>	_serverNames; //default set to 127.0.0.1?
+		std::vector<std::string>	_serverNames; //default set to localhost?
 
 		std::string 				_rootDir;   
 		std::string 				_indexFile; //default set to index.html?
 
 		std::map<int, std::string>	_errorPage; // 404 ./var/www/html/40x.html
-		std::map<std::string, routeConfig> _routes; // path and config
+		std::map<std::string, routeConfig> _locations; // path and config
+
+		std::string					_cgiPath;
 
 	public:
 		ServerConfig();
 		~ServerConfig();
-		void setUrl(const std::vector<std::string>& serverNames ,const int& port);
-
+		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
+		void	setCgiPath(std::string path);
+		int		getPort(void);
+		void	setRootDir(const std::string& rootDir);
+		const std::string& getRootDir(void);
+		std::string& getCgiPath(void);
+		bool	isDirListingActive(std::string location);
 };
 
-
+#endif
 
 /*
 server {

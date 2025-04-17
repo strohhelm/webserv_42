@@ -13,16 +13,18 @@
 #include <exception>
 
 #include <fcntl.h>
+#include <chrono>
 
-
+#include <unordered_set>
 
 #include"HttpRequest.hpp"
+#include"ServerConfig.hpp"
 
 
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 1024 * 100000
 
 class SimpleServer
 {
@@ -30,29 +32,43 @@ class SimpleServer
 		int							_domain;
 		int							_type;
 		int							_protocol;
-		int							_port;
+		// int							_port;
 		u_long						_networkInterface;
 		struct sockaddr_in			_serviceAddress;
 		socklen_t					_serviceAddressLen;
-		int							_maxAmountOfConnections;
+		int							_maxAmountOfConnections; // from config?
 
-		int							_serverSocket_fd;
-
+		
 
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
+		
+		
+		HttpRequest		_request;
+		std::vector<ServerConfig>		_rawConfigs;
+		std::map<int, ServerConfig>		_serverConfigs;
 
-		HttpRequest			_request;
+
+		std::unordered_set<int>			_serverSocket_fds;
+
+		std::unordered_map<int, std::chrono::steady_clock::time_point> _clientLastActivityTimes;
+
+		std::unordered_map<int, int>	_listeningServerFromClient;
+
 
 	public:
-		SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
+		SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);
 		~SimpleServer();
 		
 		int		serverConfiguration(void);
-		int 	createSocket(void);
-		void 	initAddress(void);
-		int 	bindAddressToSocket(void);
-		int		startListenOnSocket(void);
+		int 	createSocket();
+		struct sockaddr_in 	initAddress(int port);
+		int 	bindAddressToSocket(int serverSocket_fd, struct sockaddr_in serviceAddress);
+		int		startListenOnSocket(int serverSocket_fd);
+
+		void	setHostnamesToSystem(); //TODO
+		void	removeHostnamesFromSystem(); //TODO
+
 
 		void	launch(void);
 		int		initPoll(void);
@@ -61,12 +77,14 @@ class SimpleServer
 
 		int		isDataToRead(const int& fdIndex);
 		int		isDataToWrite(const int& fdIndex);
-		int		isNewConnection(const int& fdIndex);
-		void	acceptNewConnection(void);
+		bool	isNewConnection(const int& fdIndex);
+		void	acceptNewConnection(const int& fdIndex);
 		
-		void	readDataFromClient(int fdIndex);
+		int		readDataFromClient(int fdIndex);
 		int		noDataReceived(int bytesReceived);
 		void	removeClient(int fdIndex);
+
+		void	closeAllSockets(void);
 
 
 		void	handler(int fdIndex);
@@ -77,7 +95,13 @@ class SimpleServer
 				const char* what() const noexcept override;
 		};
 
-		
+		void	closeConnection(int fdIndex);
+		bool	shouldCloseConnection(int fdIndex);
+		void	resetIdleTimeout(int fdIndex);
+
+		void	checkIdleConnections(void);
+
+
 };
 
 #endif
