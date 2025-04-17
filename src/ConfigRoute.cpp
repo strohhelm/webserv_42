@@ -1,14 +1,15 @@
-#include "../../include/ServerConfig.hpp"
-#include "../../include/HttpRequest.hpp"
+#include "../include/ServerConfig.hpp"
+#include "../include/HttpRequest.hpp"
 
 void	routeConfig::setMethods(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"Methods Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() > 3)
-		throw std::runtime_error("[setMethods]: Too many arguments to directive 'methods' line: " + std::to_string(lineNum));
+		throw std::runtime_error("[setMethods]: Too many arguments to directive 'methods' line: " + line);
 	else if ( context.size() < 1)
-		throw std::runtime_error("[setMethods]: No arguments to directive 'methods' line: " + std::to_string(lineNum));
+		throw std::runtime_error("[setMethods]: No arguments to directive 'methods' line: " + line);
 	else
 	{
 		for (auto it = context.begin(); it != context.end(); it++)
@@ -20,7 +21,7 @@ void	routeConfig::setMethods(std::vector<confToken> &context, size_t lineNum)
 			else if (it->str == "DELETE")
 				_methods[static_cast<size_t>(HttpMethod::DELETE)] = true;
 			else
-				throw std::runtime_error("[setMethods]: Unkown method: \"" + it->str + "\" line: " + std::to_string(lineNum));
+				throw std::runtime_error("[setMethods]: Unkown method: \"" + it->str + "\" line: " + line);
 		}
 	}
 }
@@ -28,8 +29,9 @@ void	routeConfig::setRedirect(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"RedirectCode Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 2)
-		throw std::runtime_error("Syntax error in directive 'redirect' line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'redirect' line: " + line);
 	if (all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
 	{
 		if (context[0].str[0] == '3')
@@ -40,13 +42,13 @@ void	routeConfig::setRedirect(std::vector<confToken> &context, size_t lineNum)
 				_redirectCode = code;
 			}
 			else
-				throw std::runtime_error("Status code \"" + context[0].str + "\" not valid. line" + std::to_string(lineNum));
+				throw std::runtime_error("Status code \"" + context[0].str + "\" not valid. line" + line);
 		}
 		else
-			throw std::runtime_error("Status code \"" + context[0].str + "\" must begin with '3'. line" + std::to_string(lineNum));
+			throw std::runtime_error("Status code \"" + context[0].str + "\" must begin with '3'. line" + line);
 	}
 	else
-		throw std::runtime_error("Status code \"" + context[0].str + "\" not numeric. line" + std::to_string(lineNum));
+		throw std::runtime_error("Status code \"" + context[0].str + "\" not numeric. line" + line);
 	_redirectPath = context[1].str; //Error handling here? My gut says no , better in handling logic.
 }
 
@@ -54,27 +56,30 @@ void	routeConfig::setRootDir(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"RootDir Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 1)
-		throw std::runtime_error("Syntax error in directive 'root' line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'root' line: " + line);
 	_rootDir = context[0].str;
 }
 void	routeConfig::setAutoIndex(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"AutoIndex Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive 'redirect' line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'redirect' line: " + line);
 	if (context[0].str == "on" || context[0].str == "ON")
 		_dirListing = true;
 	else if (context[0].str == "off" || context[0].str == "OFF")
 		_dirListing =false;
 	else
-		throw std::runtime_error(" in directive 'autoindex' line: " + std::to_string(lineNum) + "unknown option: \"" + context[0].str +"\"");
+		throw std::runtime_error(" in directive 'autoindex' line: " + line + "unknown option: \"" + context[0].str +"\"");
 }
 void	routeConfig::setDefaultFiles(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"DefaultFile Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	for (auto t:context)
 	{
 		_defaultFile.push_back(t.str);
@@ -87,8 +92,9 @@ void	routeConfig::setUploadPath(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"UploadPath Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 1)
-		throw std::runtime_error("Syntax error in directive 'upload_path' line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'upload_path' line: " + line);
 	_uploadPath = context[0].str;
 
 }
@@ -96,8 +102,9 @@ void	routeConfig::setCGIExtension(std::vector<confToken> &context, size_t lineNu
 {
 	// std::cout<<"CGI Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 1)
-		throw std::runtime_error("Syntax error in directive 'cgi' line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'cgi' line: " + line);
 	_cgiExtension = context[0].str;
 }
 
@@ -109,11 +116,33 @@ void routeConfig::setDefaultValues()
 	_rootDir = "";
 	_dirListing = false;
 	_uploadPath = "";
+	_errorcode = routeError::All_GOOD;
 }
 void	routeConfig::checkValues(void)
  {
 
  }
+
+bool	routeConfig::checkMethod(HttpMethod& method)
+{
+	return(_methods[static_cast<int>(method)]);
+}
+
+bool	routeConfig::checkCgiPath()
+{
+	if (!_cgiExtension.empty())
+	{
+		if (!access(_cgiExtension.c_str(), F_OK) && !access(_cgiExtension.c_str(), X_OK))
+			return true;
+	}
+	return false;
+}
+
+std::string& routeconfig::getCgiPath()
+{
+	return _cgiExtension;
+}
+
 void routeConfig::printConfig(std::string path)
 {
 	std::stringstream print;
@@ -131,6 +160,11 @@ void routeConfig::printConfig(std::string path)
 	print<<"cgi extension: "<<BLUE<<_cgiExtension<<RESET<<"\n";
 	std::cout<<print.str()<<std::endl;
 }
+routeConfig::routeConfig(void)
+{
+	_errorcode = routeError::INVALID;
+}
+
 routeConfig::routeConfig(std::vector<confToken> &context)
 {
 	setDefaultValues();

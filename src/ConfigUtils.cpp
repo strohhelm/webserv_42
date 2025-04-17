@@ -1,4 +1,4 @@
-#include "../../include/HttpRequest.hpp"
+#include "../include/HttpRequest.hpp"
 
 void prepareLine(std::string &line, size_t lineNum)
 {
@@ -141,7 +141,7 @@ void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iter
 void OpenLogFile(std::string path, std::ofstream &ofile)
 {
 	struct stat sb;
-	int err = stat(path.data(), &sb);
+	(void)stat(path.data(), &sb);
 
 	if (S_ISDIR(sb.st_mode))
 		throw std::runtime_error("[OpenLogFile]: \"" + path + "\" is a directory");

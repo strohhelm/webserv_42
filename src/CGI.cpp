@@ -4,16 +4,17 @@
 
 
 
-void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath)
+void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath)
 {
 	_client_fd = client_fd;
 	_config = config;
 	_requestPath = requestPath;
+	_phpCgiPathStr = cgiPath;
 }
 
 void CGI::tokenizePath(void)
 {
-	_fullPath = _config.getRootDir() + _requestPath;
+	_fullPath = _config._rootDir + _requestPath;
 
 	size_t pos = _fullPath.find('?');
 	if(pos != std::string::npos)
@@ -62,7 +63,7 @@ void	CGI::closeAllPipes(void)
 
 void	CGI::setArgv(void)
 {
-	_phpCgiPathStr = _config.getCgiPath();
+
 	
 	// std::cout << BG_RED << _phpCgiPath << RESET << std::endl;
 

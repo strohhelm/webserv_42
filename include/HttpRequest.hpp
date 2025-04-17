@@ -26,7 +26,7 @@ enum class HttpMethod
 	GET,
 	POST,
 	DELETE,
-	UNKNOWN
+	UNKNOWN,
 };
 
 struct requestLine
@@ -64,22 +64,20 @@ class HttpRequest
 		void setPath(const std::string& path);
 		void setVersion(const std::string& version);
  	
-		bool isValidRequest(void);
-		
-		void handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config);
-		void handleGet(const int& client_fd, const int& server_fd, ServerConfig& config);
-		void handlePost(const int& client_fd, const int& server_fd, ServerConfig& config);
-		void handleDelete(int fd);
-		void handleUnknown(int fd);
-		void sendErrorResponse(int fd, int statusCode, const std::string& message);
-		HttpMethod stringToHttpMethod(const std::string& method);
-		
+		int			validateRequest(ServerConfig& config, routeConfig& route);
+		bool		validateHost(std::vector<std::string> &serverNames);
+		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
+		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
+		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config);
+		void		handleDelete(int fd);
+		void		handleUnknown(int fd);
+		void		sendErrorResponse(int fd, int statusCode, const std::string& message);
+		HttpMethod	stringToHttpMethod(const std::string& method);
 
-		const HttpMethod&	getMethod(void);
+		HttpMethod	getMethod(routeConfig &route);
 		const std::string	getMethodString(void);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
-		
 		
 		const std::string&	getRawRequestLine(void);
 		const std::string&	getRawBody(void);
@@ -93,16 +91,16 @@ class HttpRequest
 		std::string getRequestedFile(bool& isFile, ServerConfig& config);
 		std::string readFileContent(const std::string& path);
 
-		std::string getContentType();
-		void sendResponse(int fd,int statusCode, const std::string& message);
+		std::string	getContentType();
+		void		sendResponse(int fd,int statusCode, const std::string& message);
 
 		std::string	buildFullPath(ServerConfig& config);
-		bool	fileExists(const std::string& path);
-		bool	directoryExists(const std::string& path);
-		bool	directoryListingIsOff(void);
+		bool		fileExists(const std::string& path);
+		bool		directoryExists(const std::string& path);
+		bool		directoryListingIsOff(void);
 		std::string	serveDirectory(std::string fullPath);
 
-		int deleteFile(const std::string& filename);
+		int			deleteFile(const std::string& filename);
 
 		/********************************************************/
 		const std::unordered_map<std::string, std::string>& getHeaders() const {

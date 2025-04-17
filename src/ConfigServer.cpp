@@ -1,17 +1,20 @@
-#include "../../include/ServerConfig.hpp"
+#include "../include/ServerConfig.hpp"
+
+
 
 
 void	ServerConfig::setPort(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"setPort Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive 'listen' line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'listen' line: " + line);
 	else if (all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
 		_port = std::stoi(context[0].str);
 	else
 		throw std::runtime_error("Syntax error in directive 'listen' line: " \
-								+ std::to_string(lineNum) + " \"" \
+								+ line + " \"" \
 								+ context[0].str + "\""
 								+ " -> only numbers allowed");
 
@@ -21,8 +24,9 @@ void	ServerConfig::setServerNames(std::vector<confToken> &context, size_t lineNu
 {
 	// std::cout<<"ServerNames Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (! context.size())
-		throw std::runtime_error("Syntax error in directive 'server_names': Too few arguments! line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'server_names': Too few arguments! line: " + line);
 	for(auto it = context.begin(); it != context.end(); it++)
 	{
 		_serverNames.push_back(it->str);
@@ -32,8 +36,9 @@ void	ServerConfig::setErrorPages(std::vector<confToken> &context, size_t lineNum
 {
 	// std::cout<<"ErrorPage Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() < 2)
-		throw std::runtime_error("Syntax error in directive 'error_page': Too few arguments" );
+		throw std::runtime_error("Syntax error in directive 'error_page': Too few arguments. line: " + line);
 	std::string filename = (context.end() - 1)->str;
 	// struct stat sb;
 	// if (stat(filename.data(), &sb) != 0)
@@ -46,10 +51,10 @@ void	ServerConfig::setErrorPages(std::vector<confToken> &context, size_t lineNum
 			if (_errorPage.find(key) == _errorPage.end())
 				_errorPage.insert({key, filename});
 			else
-				throw std::runtime_error("Double Errorcode set: \"" + it->str + "\" line: " += std::to_string(it->lineNum));
+				throw std::runtime_error("Double Errorcode set: \"" + it->str + "\" line: " + line);
 		}
 		else
-			throw std::runtime_error("Unknown Errorcode: \"" + it->str + "\" line: " += std::to_string(it->lineNum));
+			throw std::runtime_error("Unknown Errorcode: \"" + it->str + "\" line: " + line);
 	}
 }
 
@@ -57,12 +62,13 @@ void	ServerConfig::setClientBodySize(std::vector<confToken>	&context, size_t lin
 {
 	// std::cout<<"ErrorPage Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive 'client_max_body_size'");
+		throw std::runtime_error("Syntax error in directive 'client_max_body_size'. line: "+ line);
 	std::smatch match;
 	std::regex pattern("^\\d+[a-zA-Z]{2}$");
 	if (!std::regex_match(context[0].str, match, pattern))
-		throw std::runtime_error("In directive 'client_max_body_size': Not a valid Size: \"" + context[0].str + "\" line: " + std::to_string(context[0].lineNum));
+		throw std::runtime_error("In directive 'client_max_body_size': Not a valid Size: \"" + context[0].str + "\" line: " + line);
 	size_t pos = context[0].str.length() - 2;
 	std::string unit = (context[0].str.substr(pos));
 	size_t size = std::stoul(context[0].str.substr(0, pos));
@@ -73,15 +79,16 @@ void	ServerConfig::setClientBodySize(std::vector<confToken>	&context, size_t lin
 	else if (unit == "gb" || unit == "GB")
 		size *= 1073741824; // 2 ^ 30
 	else
-		throw std::runtime_error("In directive 'client_max_body_size': Not a valid Size: \"" + context[0].str + "\" line: " + std::to_string(context[0].lineNum));
+		throw std::runtime_error("In directive 'client_max_body_size': Not a valid Size: \"" + context[0].str + "\" line: " + line);
 	_maxBody = size;
 }
 void	ServerConfig::setIndex(std::vector<confToken>	&context, size_t lineNum)
 {
 	// std::cout<<"setIndex Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() < 1)
-		throw std::runtime_error("Syntax error in directive 'index': Too few arguments! line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'index': Too few arguments! line: " + line);
 	lineNum = 0;
 	for(auto it = context.begin(); it != context.end(); it++)
 	{
@@ -95,8 +102,9 @@ void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 {
 	// std::cout<<"RootDir Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive 'listen' line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'listen' line: "  + line);
 	else
 	{
 		// struct stat sb;
@@ -111,15 +119,16 @@ void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 
 void	ServerConfig::setRoute(std::vector<confToken>	&context, size_t lineNum)
 {
+	std::string line = std::to_string(lineNum);
 	if (context.size() < 3)
-		throw std::runtime_error("[setRoute]: not enough arguments in directive 'location' line: " + std::to_string(lineNum));
+		throw std::runtime_error("[setRoute]: not enough arguments in directive 'location' line: " + line);
 	std::string path = context[0].str;
 	std::vector<confToken> routeContext;
 	routeContext.insert(routeContext.begin(), context.begin() + 2, context.end() - 1);
 	if (_routes.find(path) == _routes.end())
 		_routes.insert({path, routeConfig(routeContext)});
 	else
-		throw std::runtime_error("[setRoute]: Route \"" + path + "\" set twice! line: " + std::to_string(lineNum));
+		throw std::runtime_error("[setRoute]: Route \"" + path + "\" set twice! line: " + line);
 
 }
 

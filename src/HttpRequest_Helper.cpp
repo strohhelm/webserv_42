@@ -81,7 +81,7 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 
 std::string HttpRequest::buildFullPath(ServerConfig& config)
 {
-	std::string _rootDir = config.getRootDir(); // extract from config file object
+	std::string _rootDir = config._rootDir; // extract from config file object
 	std::string fullPath = _rootDir + _requestLine._path;
 	if(_requestLine._path == "/")
 	{

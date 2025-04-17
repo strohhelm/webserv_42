@@ -18,18 +18,29 @@
 #include <sys/stat.h>
 #include <chrono>
 #include "./Colors.hpp"
-#define DEFAULT_CONFIG_PATH "../../config/test.conf"
-#define DEFAULT_ERROR_LOG "../../logs/error.log"
-#define DEFAULT_ACCESS_LOG "../../logs/access.log"
+#include "./HttpRequest.hpp"
+#define DEFAULT_CONFIG_PATH "../config/test.conf"
+#define DEFAULT_ERROR_LOG "../logs/error.log"
+#define DEFAULT_ACCESS_LOG "../logs/access.log"
 #define ACCESS "access"
 #define ERROR "error"
 #define CLOSE "close"
+
+enum class HttpMethod;
+
 enum ConfTokenType {
 	DIRECTIVE,
 	VALUE,
 	STOP,
 	BLOCK_START,
 	BLOCK_END,
+};
+
+enum class routeError
+{
+	All_GOOD,
+	NO_SERVERNAME,
+	INVALID
 };
 
 struct confToken
@@ -50,12 +61,16 @@ class routeConfig
 	std::vector<std::string>	_defaultFile; //Set a default file to answer if the request is a directory.
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
 	std::string					_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
-
+	routeError					_errorcode;
 	public:
 		routeConfig(std::vector<confToken> &context);
+		routeConfig();
 		void	printConfig(std::string path);
 		void	setDefaultValues();
 		void	checkValues(void);
+		bool	checkMethod(HttpMethod& method);
+		bool	checkCgiPath();
+		std::string& getCgiPath();
 		void	setMethods(std::vector<confToken>		&context, size_t lineNum);
 		void	setRedirect(std::vector<confToken>		&context, size_t lineNum);
 		void	setRootDir(std::vector<confToken>		&context, size_t lineNum);
@@ -82,7 +97,7 @@ from the CGI, EOF will mark the end of the returned data.
 
 class ServerConfig
 {
-	private:
+	public:
 		int									_port; //default set to 80
 		std::vector<std::string>			_serverNames; //default set to localhost?
 		// std::unordered_map<std::string, int> urls;
@@ -94,18 +109,14 @@ class ServerConfig
 		size_t								_maxBody;
 		std::map<std::string, routeConfig>	_routes; // path and config
 
-	public:
-		ServerConfig() = delete;
+
+		ServerConfig(){};
 		ServerConfig(std::vector<confToken> context);
 		~ServerConfig(){};
 		void	printConfig();
 		void	setDefaultValues(void);
 		void	checkValues(void);
-		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
-		void	setCgiPath(std::string path);
-		int		getPort(void);
-		void	setRootDir(const std::string& rootDir);
-		const	std::string& getRootDir(void);
+
 		void	setPort(std::vector<confToken>				&context, size_t lineNum);
 		void	setServerNames(std::vector<confToken>		&context, size_t lineNum);
 		void	setErrorPages(std::vector<confToken>		&context, size_t lineNum);
@@ -148,6 +159,6 @@ class MainConfig
 	void OpenLogFile(std::string path, std::ofstream &file);
 
 	template <typename type> void parseTokens(std::vector<confToken> &tokens, std::map <std::string, void(type::*)(std::vector<confToken> &, size_t lineNum)> directives, type &obj);
-	#include "../src/config_parsing/tokens.tpp"
+	#include "../src/ConfigTokens.tpp"
 
 #endif

@@ -53,7 +53,7 @@ int main(void)
 
 	// std::string cgipath = "/usr/bin/php-cgi";
 
-	std::vector<ServerConfig> configs;
+	// std::vector<ServerConfig> configs;
 	
 	// ServerConfig config1;
 	// std::vector<std::string> hostname1;

@@ -54,7 +54,7 @@ class CGI
 		// ~CGI(); //TODO
 
 
-		void setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath);
+		void setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath);
 		void tokenizePath(void);
 		void buildEnvStrings(std::string method, std::string rawBody);
 		void convertEnvStringsToChar(void);

@@ -26,7 +26,7 @@ const std::string	HttpRequest::getMethodString(void)
 
 void HttpRequest::executeCGI(const int& client_fd, ServerConfig& config)
 {
-    std::string fullPath = config.getRootDir() + _requestLine._path;
+    std::string fullPath = config._rootDir + _requestLine._path;
     std::string queryString;
     std::string scriptPath;
 

@@ -130,7 +130,7 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 	_poll_fds.push_back(client_poll_fd);
 	_recvBuffer[client_fd] = "";
 
-    _clientLastActivityTimes[client_fd] = std::chrono::steady_clock::now();
+	_clientLastActivityTimes[client_fd] = std::chrono::steady_clock::now();
 
 	_listeningServerFromClient[client_fd] = server_fd;
 }
@@ -209,8 +209,6 @@ int SimpleServer::isDataToWrite(const int& fdIndex)
 
 
 
-
-
 void SimpleServer::handler(int fdIndex)
 {
 	_request.parseHttpRequest(_recvBuffer[fdIndex]);
@@ -222,8 +220,17 @@ void SimpleServer::handler(int fdIndex)
 	
 	int client_fd = _poll_fds[fdIndex].fd;
 	int server_fd = _listeningServerFromClient[client_fd];
-
-	_request.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd]);
+	routeConfig route;
+	int invalid =  _request.validateRequest(_serverConfigs[server_fd], route);
+	if (invalid)
+	{
+		int code = 404;
+		if (invalid < 0)
+			code = 400;
+		_request.sendErrorResponse(server_fd, code, StatusCode.at(code));
+		return;
+	}
+	_request.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd], route);
 
 
 

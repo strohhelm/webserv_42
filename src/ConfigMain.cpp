@@ -1,5 +1,4 @@
-#include "../../include/ServerConfig.hpp"
-
+#include "../include/ServerConfig.hpp"
 
 
 void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
@@ -7,7 +6,7 @@ void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
 	// std::cout<<"Error_log Tokens:"<<std::endl;
 	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive error_log line: " + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'error_log' line: " + std::to_string(lineNum));
 	else
 		_error_log = context[0].str;
 }
@@ -17,7 +16,7 @@ void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
 	// std::cout<<"Access_log  Tokens:"<<std::endl;
 	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive access_log line:" + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'access_log'. line:" + std::to_string(lineNum));
 	else
 		_access_log = context[0].str;
 }
@@ -27,9 +26,9 @@ void MainConfig::setWorkConn(std::vector<confToken> &context, size_t lineNum)
 	// std::cout<<"Worker connect Tokens:"<<std::endl;
 	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive worker_connections line:" + std::to_string(lineNum));
+		throw std::runtime_error("Syntax error in directive 'worker_connections' line:" + std::to_string(lineNum));
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
-		throw std::runtime_error("Value error in directive worker_connections: \"" + context[0].str + "\" not a number");
+		throw std::runtime_error("Value error in directive 'worker_connections': \"" + context[0].str + "\" not a number");
 	else
 		_worker_connections = std::stoul(context[0].str);
 }
@@ -39,9 +38,9 @@ void MainConfig::setTimeout(std::vector<confToken> &context, size_t lineNum)
 	// std::cout<<"Timeout Tokens:"<<std::endl;
 	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive keepalive_timeout");
+		throw std::runtime_error("Syntax error in directive 'keepalive_timeout' line: " + std::to_string(lineNum));
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
-		throw std::runtime_error("Value error in directive keepalive_timeout: \"" + context[0].str + "\" not a number");
+		throw std::runtime_error("Value error in directive 'keepalive_timeout': \"" + context[0].str + "\" not a number");
 	else
 		_keepalive_timeout = std::stoul(context[0].str);
 }
@@ -58,7 +57,7 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 			{
 				throw std::runtime_error("[setHttp]: Syntax Error: \""
 					+ it->str + "\"" + " line: "
-					+ std::to_string(it->lineNum)
+					+ std::to_string(lineNum)
 					+ " -> directive not valid!");
 				}
 				else
@@ -75,7 +74,6 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 		else 
 			throw std::runtime_error("WTF that shouldnt happen at all");
 }
-
 
 void MainConfig::setDefaultValues(void)
 {

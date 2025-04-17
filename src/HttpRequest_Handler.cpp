@@ -1,37 +1,71 @@
 #include"../include/HttpRequest.hpp"
 
-
-
-void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config)
+bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 {
-	switch (getMethod())
+	std::string host = _headers["Host"];
+	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end())
+		return true;
+	else
+		return false;
+}
+
+int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
+{
+	std::string path = _requestLine._path;
+	auto routes = config._routes;
+	if (validateHost(config._serverNames))
+		return -1;
+	while (!path.empty())
+	{
+		auto tmp = routes.find(path);
+		if (tmp != routes.end())
+		{
+			route = tmp->second;
+			return 0;
+		}
+		else
+		{
+			size_t pos = path.find_last_of('/');
+			if (pos == std::string::npos)
+			break;
+			path = path.substr(0, pos);
+		}
+	}
+	return 1;
+}
+
+
+void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route)
+{
+	switch (getMethod(route))
 	{
 		case HttpMethod::GET:
-			handleGet(client_fd, server_fd, config);
+			handleGet(client_fd, server_fd, config, route);
 			break;
 		case HttpMethod::POST:
 			handlePost(client_fd, server_fd, config);
 			break;
 		case HttpMethod::DELETE:
 			handleDelete(client_fd);
-			break;		
+			break;
 		default:
 			handleUnknown(client_fd);
 			break;
 	}
 }
 
-void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config)
+void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
 {
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 	bool isFile = true;
 	std::string	content;
 	std::string path = getRequestedFile(isFile, config);
 	(void)server_fd;
-
-	if(_requestLine._path.find("php") != std::string::npos)
-	{	
-		_cgi.setCgiParameter(client_fd, config, _requestLine._path);
+	std::string filename = path.substr(path.find_last_of("/"), path.size() - path.find_last_of("/"));
+	bool check = filename.substr(filename.size() - 4, filename.size()) == ".php";
+	if(check && route.checkCgiPath())
+	{
+		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath());
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
 
@@ -39,7 +73,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		return;
 	}
 
-	std::cout << BG_BRIGHT_BLUE << config.getRootDir() << RESET << std::endl;
+	std::cout << BG_BRIGHT_BLUE << config._rootDir << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
 	if(path.empty())
 	{
@@ -90,11 +124,11 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 
 	(void)server_fd;
 
-	if(_requestLine._path.find("php") != std::string::npos)
+	if(path.find("php") != std::string::npos)
 	{	
 		
-		std::string fullPath = config.getRootDir() + _requestLine._path;
-		runCgiScriptPost(client_fd, fullPath, _requestLine._path);
+		std::string fullPath = config._rootDir + path;
+		runCgiScriptPost(client_fd, fullPath, path);
 		return;
 	}
 
@@ -105,6 +139,7 @@ void HttpRequest::handleUnknown(int fd)
 {
 	sendErrorResponse(fd, 405, "405 Method Not Allowed");
 }
+
 
 
 int HttpRequest::deleteFile(const std::string& filename)

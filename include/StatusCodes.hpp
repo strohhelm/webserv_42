@@ -3,10 +3,10 @@
 #include <map>
 #include <string>
 
-const std::map<int, std::string> StatusCode = {
+const std::map<int, const std::string> StatusCode = {
 	{100, "continue"},
 	{101, "Switching Protocols"},
-	{102, " Processing"},
+	{102, "Processing"},
 	{103, "Early Hints"},
 	{200, "OK"},
 	{201, "Created"},
