@@ -27,7 +27,10 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 	std::string path = _requestLine._path;
 	auto routes = config._routes;
 	if (!validateHost(config._serverNames))
+	{
+		std::cout << BG_BRIGHT_MAGENTA << "return-1" << RESET << std::endl;
 		return -1;
+	}
 	while (!path.empty())
 	{
 		auto tmp = routes.find(path);
@@ -44,7 +47,9 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 			path = path.substr(0, pos);
 		}
 	}
-	return 1;
+	std::cout << BG_BRIGHT_MAGENTA << "return1" << RESET << std::endl;
+	// return 1; //originl
+	return 0;
 }
 
 
@@ -174,8 +179,9 @@ int HttpRequest::deleteFile(const std::string& filename)
 void HttpRequest::handleDelete(int fd)
 {
 	std::string path = getPath();
-	if (path.front() == '/') {
-		path.erase(path.begin());  // Remove the leading "/"
+	if (path.front() == '/')
+	{
+		path.erase(path.begin());
 	}
 	std::cout << BG_BRIGHT_BLACK << path << RESET << std::endl;
 
@@ -190,5 +196,4 @@ void HttpRequest::handleDelete(int fd)
 		return;
 	}
 	sendResponse(fd,204, "Resource deleted successfully");
-
 }

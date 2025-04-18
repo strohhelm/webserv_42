@@ -75,10 +75,37 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 	return html.str();
 }
 
+/*
+	size_t pos = _requestPath.find('?');
+	if(pos != std::string::npos) // only at get
+	{
+		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
+		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
+	}
+	else // only at Post
+	{
+		_scriptPath = _requestPath;
+	}
+*/
+
+
 std::string HttpRequest::buildFullPath(ServerConfig& config)
 {
-	std::string _rootDir = config._rootDir; // extract from config file object
-	std::string fullPath = _rootDir + _requestLine._path;
+	std::string rootDir = config._rootDir;
+
+	std::string path = _requestLine._path;
+	size_t pos = path.find('?');
+	if (pos != std::string::npos)
+	{
+		path = path.substr(0, pos);
+	}
+	std::string fullPath = rootDir + path;
+	std::cout << BG_CYAN << "fullpath " << fullPath << RESET << std::endl;
+	std::cout << BG_CYAN << "request " << _requestLine._path << RESET << std::endl;
+
+
+	// std::cout << BG_CYAN << "rootdir " << rootDir << RESET << std::endl;
+
 	if(_requestLine._path == "/")
 	{
 		return fullPath + "index.html"; //extract from config. if 2 indexes are availiable check all and give first that fits?
@@ -94,6 +121,8 @@ std::string HttpRequest::buildFullPath(ServerConfig& config)
 std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
 {
 	std::string fullPath = buildFullPath(config);
+	std::cout << BG_CYAN << "fullpath " << fullPath << RESET << std::endl;
+
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
