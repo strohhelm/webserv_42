@@ -150,6 +150,7 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	sendErrorResponse(client_fd, 405, "405 NO CGI");// wrong Code 
 }
 
+
 void HttpRequest::handleUnknown(int fd)
 {
 	sendErrorResponse(fd, 405, "405 Method Not Allowed");
@@ -161,7 +162,6 @@ int HttpRequest::deleteFile(const std::string& filename)
 {
 	return (remove(filename.c_str()) == 0);
 }
-
 
 
 void HttpRequest::handleDelete(int fd)
@@ -183,6 +183,5 @@ void HttpRequest::handleDelete(int fd)
 		return;
 	}
 	sendResponse(fd,204, "Resource deleted successfully");
-
 
 }

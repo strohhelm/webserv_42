@@ -71,7 +71,7 @@ class SimpleServer
 
 		void	launch(void);
 		int		initPoll(void);
-		void	handlePolls(void);
+		void	handlePolls(int pollCount);
 
 
 		int		isDataToRead(const int&			fdIndex);
