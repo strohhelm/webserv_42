@@ -106,7 +106,6 @@ std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
 
 std::string HttpRequest::readFileContent(const std::string& path)
 {
-	std::cout << "path:::\n" << path << std::endl;
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
@@ -118,9 +117,9 @@ std::string HttpRequest::readFileContent(const std::string& path)
 }
 
 
-void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& message)
+void HttpRequest::sendErrorResponse(int fd, int statusCode)
 {
-	std::string response = buildResponse(statusCode, message, message, "text/plain");
+	std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }

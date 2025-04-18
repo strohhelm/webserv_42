@@ -39,7 +39,7 @@ HttpMethod HttpRequest::getMethod(routeConfig &route)
 	if (route.checkMethod(_requestLine._method))
 		return (_requestLine._method );
 	else
-		return HttpMethod::UNKNOWN;
+		return HttpMethod::FORBIDDEN;
 }
 
 void HttpRequest::setVersion(const std::string& version)

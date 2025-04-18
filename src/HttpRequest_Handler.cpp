@@ -61,6 +61,9 @@ void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, 
 		case HttpMethod::DELETE:
 			handleDelete(client_fd);
 			break;
+		case HttpMethod::FORBIDDEN:
+			handleForbidden(client_fd);
+			break;
 		default:
 			handleUnknown(client_fd);
 			break;
@@ -73,11 +76,12 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	bool isFile = true;
 	std::string	content;
 	std::string path = getRequestedFile(isFile, config);
+	std::cout << BG_CYAN << "path" << RESET << std::endl;
 	(void)server_fd;
 
 	if(path.empty())
 	{
-		sendErrorResponse(client_fd, 404, "404 Not Found");
+		sendErrorResponse(client_fd, 404);
 		return;
 	}
 	int check = checkCgi(path, route);
@@ -89,7 +93,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		return;
 	}
 	else if (check < 0)
-		sendErrorResponse(client_fd, 502, "502 Bad Gateway");
+		sendErrorResponse(client_fd, 502);
 
 	std::cout << BG_BRIGHT_BLUE << config._rootDir << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
@@ -103,7 +107,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	}
 	if(content.empty())
 	{
-		sendErrorResponse(client_fd, 403, "403 Forbidden");
+		sendErrorResponse(client_fd, 403);
 		return;
 	}
 	sendResponse(client_fd, 200, content);	
@@ -127,6 +131,13 @@ std::string HttpRequest::getContentType()
 
 
 
+void HttpRequest::handleForbidden(const int& client_fd)
+{
+	sendErrorResponse(client_fd, 403);
+}
+
+
+
 void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
 {
 	// If Content-Length is missing for a POST request, return 411 Length Required.
@@ -143,13 +154,13 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 		return;
 	}
 
-	sendErrorResponse(client_fd, 405, "405 NO CGI");// wrong Code 
+	sendErrorResponse(client_fd, 405);// wrong Code 
 }
 
 
 void HttpRequest::handleUnknown(int fd)
 {
-	sendErrorResponse(fd, 405, "405 Method Not Allowed");
+	sendErrorResponse(fd, 405);
 }
 
 
@@ -170,12 +181,12 @@ void HttpRequest::handleDelete(int fd)
 
 	if(!fileExists(path))
 	{
-		sendErrorResponse(fd, 404, "404 Not Found");
+		sendErrorResponse(fd, 404);
 		return;		
 	}
 	if(!deleteFile(path))
 	{
-		sendErrorResponse(fd, 500, "500 Failed to delete resource");
+		sendErrorResponse(fd, 500);
 		return;
 	}
 	sendResponse(fd,204, "Resource deleted successfully");
