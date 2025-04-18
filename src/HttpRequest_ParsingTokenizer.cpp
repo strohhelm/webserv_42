@@ -92,11 +92,6 @@ void HttpRequest::clearOldRequest(void)
 	_requestLine = {}; // Set struct to default values as given in declaration
 }
 
-bool HttpRequest::isValidRequest(void)
-{
-	return true;
-}
-
 void HttpRequest::parseHttpRequest(const std::string& requestBuffer)
 {
 	clearOldRequest();

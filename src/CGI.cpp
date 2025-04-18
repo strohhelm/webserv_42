@@ -1,14 +1,15 @@
-#include "../include/CGI.hpp"
+
 #include "../include/Colors.hpp"
 #include <arpa/inet.h> // send()
+#include "../include/ServerConfig.hpp"
 
 
-
-void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath)
+void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath)
 {
 	_client_fd = client_fd;
-	_config = config;
+	_config = &config;
 	_requestPath = requestPath;
+	_phpCgiPathStr = cgiPath;
 }
 
 void CGI::tokenizePath(void)
@@ -108,8 +109,7 @@ void CGI::buildEnvStrings(std::string method, std::string rawBody)
 		"GATEWAY_INTERFACE=CGI/1.1",
 		"REDIRECT_STATUS=200",
 		"REQUEST_METHOD=" + method,
-		"SERVER_PROTOCOL=HTTP/1.1",
-		"SCRIPT_FILENAME=" + _config.getRootDir() + _scriptPath, //www/get.php
+		"SCRIPT_FILENAME=" + _config->_rootDir + _scriptPath, //www/get.php
 		"SCRIPT_NAME=" + _scriptPath, ///get.php
 	};
 	

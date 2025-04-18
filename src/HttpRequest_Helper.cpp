@@ -1,4 +1,4 @@
-#include"../include/HttpRequest.hpp"
+#include"../include/ServerConfig.hpp"
 
 #include <sys/stat.h> //stat
 #include <filesystem>
@@ -77,7 +77,7 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 
 std::string HttpRequest::buildFullPath(ServerConfig& config)
 {
-	std::string _rootDir = config.getRootDir(); // extract from config file object
+	std::string _rootDir = config._rootDir; // extract from config file object
 	std::string fullPath = _rootDir + _requestLine._path;
 	if(_requestLine._path == "/")
 	{

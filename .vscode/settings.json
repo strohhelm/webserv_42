@@ -77,11 +77,8 @@
 		"stack": "cpp",
 		"filesystem": "cpp",
 		"unordered_set": "cpp",
-		"charconv": "cpp",
-		"codecvt": "cpp",
-		"format": "cpp",
-		"span": "cpp",
-		"variant": "cpp",
+		"regex": "cpp",
+		"*.tpp": "cpp",
 		"regex": "cpp"
 	}
 }

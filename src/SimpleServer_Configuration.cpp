@@ -16,10 +16,10 @@ int SimpleServer::serverConfiguration(void)
 			return 1;
 		}
 		std::cout << GREEN << "SOCKET CREATED" << RESET << std::endl;	
-		std::cout << "PORT " << conf.getPort() << std::endl;
-		std::cout << "CGI " << conf.getCgiPath() << std::endl;
+		std::cout << "PORT " << conf._port << std::endl;
+		// std::cout << "CGI " << conf._cgiExtension << std::endl;
 
-		serviceAddress = initAddress(conf.getPort());
+		serviceAddress = initAddress(conf._port);
 
 		int opt = 1;
 		if (setsockopt(serverSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)

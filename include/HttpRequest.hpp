@@ -1,5 +1,4 @@
 
-
 #ifndef HTTPREQUEST_HPP
 #define HTTPREQUEST_HPP
 
@@ -12,21 +11,23 @@
 #include <sstream>
 #include <unordered_map>
 
-#include"Colors.hpp"
+#include "Colors.hpp"
 
-#include"CGI.hpp"
-#include"ServerConfig.hpp"
+#include "CGI.hpp"
+// #include "ServerConfig.hpp"
 
 
 #include <arpa/inet.h> // send()
 
+class routeConfig;
+class ServerConfig;
 
 enum class HttpMethod
 {
 	GET,
 	POST,
 	DELETE,
-	UNKNOWN
+	UNKNOWN,
 };
 
 struct requestLine
@@ -64,22 +65,21 @@ class HttpRequest
 		void setPath(const std::string& path);
 		void setVersion(const std::string& version);
  	
-		bool isValidRequest(void);
-		
-		void handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config);
-		void handleGet(const int& client_fd, const int& server_fd, ServerConfig& config);
-		void handlePost(const int& client_fd, const int& server_fd, ServerConfig& config);
-		void handleDelete(int fd);
-		void handleUnknown(int fd);
-		void sendErrorResponse(int fd, int statusCode, const std::string& message);
-		HttpMethod stringToHttpMethod(const std::string& method);
-		
+		int			validateRequest(ServerConfig& config, routeConfig& route);
+		bool		validateHost(std::vector<std::string> &serverNames);
+		int			checkCgi(std::string path, routeConfig& route);
+		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
+		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
+		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
+		void		handleDelete(int fd);
+		void		handleUnknown(int fd);
 
-		const HttpMethod&	getMethod(void);
-		const std::string	getMethodString(void);
+		void		sendErrorResponse(int fd, int statusCode, const std::string& message);
+		HttpMethod	stringToHttpMethod(const std::string& method);
+
+		HttpMethod			getMethod(routeConfig &route);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
-		
 		
 		const std::string&	getRawRequestLine(void);
 		const std::string&	getRawBody(void);
@@ -98,11 +98,11 @@ class HttpRequest
 		std::string buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
 
 		std::string	buildFullPath(ServerConfig& config);
+		bool		fileExists(const std::string& path);
+		bool		directoryExists(const std::string& path);
 		std::string	serveDirectory(std::string fullPath, ServerConfig& config);
-		bool	fileExists(const std::string& path);
-		bool	directoryExists(const std::string& path);
 
-		int deleteFile(const std::string& filename);
+		int			deleteFile(const std::string& filename);
 
 		/********************************************************/
 		const std::unordered_map<std::string, std::string>& getHeaders() const {
@@ -112,7 +112,7 @@ class HttpRequest
 		void runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path);
 
 
-		void executeCGI(const int& client_fd, ServerConfig& config);
+		// void executeCGI(const int& client_fd, ServerConfig& config);
 
 
 };
