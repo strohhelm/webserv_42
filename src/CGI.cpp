@@ -194,6 +194,7 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 // std::array<int, 3> a = {1, 2, 3};
 void CGI::execute(std::string method, std::string rawBody)
 {
+	std::cout << "CGI" << std::endl;
 	// init fds
 	_parent = {-1, -1};
 	_child = {-1, -1};

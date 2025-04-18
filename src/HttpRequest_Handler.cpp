@@ -81,7 +81,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	bool isFile = true;
 	std::string	content;
 	std::string path = getRequestedFile(isFile, config);
-	std::cout << BG_CYAN << "path" << RESET << std::endl;
+	std::cout << BG_CYAN << "path :" << path << RESET << std::endl;
 	(void)server_fd;
 
 	if(path.empty())
@@ -90,6 +90,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		return;
 	}
 	int check = checkCgi(path, route);
+	std::cout << BG_GREEN << "check " << check << RESET << std::endl;
 	if(check > 0)
 	{
 		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath());
