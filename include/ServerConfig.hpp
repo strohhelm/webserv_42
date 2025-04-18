@@ -128,7 +128,7 @@ class ServerConfig
 		// int		getPort(void);
 		// void	setRootDir(const std::string& rootDir);
 		const std::string& getRootDir(void);
-		std::string& getCgiPath(void);
+		// std::string& getCgiPath(void);
 		bool	isDirListingActive(std::string location);
 };
 

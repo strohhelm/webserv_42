@@ -137,7 +137,7 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 
 	if(_requestLine._path.find("php") != std::string::npos)
 	{	
-		_cgi.setCgiParameter(client_fd, config, _requestLine._path);
+		_cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath());
 		_cgi.tokenizePath();
 		_cgi.execute("POST", _rawBody);
 		return;

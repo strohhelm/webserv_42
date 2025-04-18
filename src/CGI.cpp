@@ -62,8 +62,8 @@ void	CGI::closeAllPipes(void)
 
 void	CGI::setArgv(void)
 {
-	_phpCgiPathStr = _config.getCgiPath();
-	_phpCgiPath = _phpCgiPathStr.c_str();
+	// _phpCgiPathStr = this->_config->getCgiPath();
+	// _phpCgiPath = _phpCgiPathStr.c_str();
 	
 	_argv[0] = (char*)_phpCgiPath;
 	_argv[1] = (char*)_fullPath.c_str();
@@ -184,7 +184,7 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	httpResponse += "\r\n";
 	httpResponse += cgiOutput;
 
-	std::cout << "FILENAME:" << _config.getRootDir() + _scriptPath << std::endl;
+	std::cout << "FILENAME:" << _config->_rootDir + _scriptPath << std::endl;
 	std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
 
 

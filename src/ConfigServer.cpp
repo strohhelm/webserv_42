@@ -107,12 +107,14 @@ void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 		throw std::runtime_error("Syntax error in directive 'listen' line: "  + line);
 	else
 	{
+		/*
 		// struct stat sb;
 		// if (stat(context[0].str.data(), &sb) != 0)
 		// 	throw std::runtime_error("In directive 'root' line: " + std::to_string(lineNum) \
 		// 							+ " -> File not found: \"" \
 		// 							+ context[0].str + "\"");
 		// else
+		*/
 			_rootDir = context[0].str;
 	}
 }
