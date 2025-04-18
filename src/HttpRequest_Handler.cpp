@@ -142,9 +142,9 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	int check = checkCgi(path, route);
 	if(check > 0)
 	{	
-		std::string fullPath = config._rootDir + path;
-		runCgiScriptPost(client_fd, fullPath, path);
-		return;
+		// std::string fullPath = config._rootDir + path;
+		// runCgiScriptPost(client_fd, fullPath, path);
+		// return;
 	}
 
 	sendErrorResponse(client_fd, 405, "405 NO CGI");// wrong Code 

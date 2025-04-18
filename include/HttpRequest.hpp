@@ -78,7 +78,6 @@ class HttpRequest
 		HttpMethod	stringToHttpMethod(const std::string& method);
 
 		HttpMethod			getMethod(routeConfig &route);
-		const std::string	getMethodString(void);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
 		
@@ -101,11 +100,7 @@ class HttpRequest
 		std::string	buildFullPath(ServerConfig& config);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
-		bool		directoryListingIsOff(void);
-		std::string	serveDirectory(std::string fullPath);
 		std::string	serveDirectory(std::string fullPath, ServerConfig& config);
-		bool	fileExists(const std::string& path);
-		bool	directoryExists(const std::string& path);
 
 		int			deleteFile(const std::string& filename);
 
