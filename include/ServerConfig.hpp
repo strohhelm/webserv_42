@@ -159,5 +159,15 @@ class MainConfig
 
 	template <typename type> void parseTokens(std::vector<confToken> &tokens, std::map <std::string, void(type::*)(std::vector<confToken> &, size_t lineNum)> directives, type &obj);
 	#include "../src/ConfigTokens.tpp"
+		ServerConfig();
+		~ServerConfig();
+		void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
+		void	setCgiPath(std::string path);
+		int		getPort(void);
+		void	setRootDir(const std::string& rootDir);
+		const std::string& getRootDir(void);
+		std::string& getCgiPath(void);
+		bool	isDirListingActive(std::string location);
+
 
 #endif

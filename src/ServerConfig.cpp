@@ -35,10 +35,10 @@
 // 	return _rootDir;
 // }
 
-// void	ServerConfig::setCgiPath(std::string path)
-// {
-// 	_cgiPath = path;
-// }
+void	ServerConfig::setCgiPath(std::string path)
+{
+	_cgiPath = path;
+}
 
 // std::string& ServerConfig::getCgiPath(void)
 // {

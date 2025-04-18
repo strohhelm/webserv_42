@@ -74,6 +74,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::string	content;
 	std::string path = getRequestedFile(isFile, config);
 	(void)server_fd;
+
 	if(path.empty())
 	{
 		sendErrorResponse(client_fd, 404, "404 Not Found");
@@ -85,8 +86,6 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath());
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
-
-		// sendErrorResponse(client_fd, 404, "404 Not Found");
 		return;
 	}
 	else if (check < 0)

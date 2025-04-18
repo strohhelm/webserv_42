@@ -94,14 +94,18 @@ class HttpRequest
 		std::string getRequestedFile(bool& isFile, ServerConfig& config);
 		std::string readFileContent(const std::string& path);
 
-		std::string	getContentType();
-		void		sendResponse(int fd,int statusCode, const std::string& message);
+		std::string getContentType();
+		void sendResponse(int fd,int statusCode, const std::string& message);
+		std::string buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
 
 		std::string	buildFullPath(ServerConfig& config);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
 		bool		directoryListingIsOff(void);
 		std::string	serveDirectory(std::string fullPath);
+		std::string	serveDirectory(std::string fullPath, ServerConfig& config);
+		bool	fileExists(const std::string& path);
+		bool	directoryExists(const std::string& path);
 
 		int			deleteFile(const std::string& filename);
 

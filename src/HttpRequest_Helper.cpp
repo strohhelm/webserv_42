@@ -42,19 +42,15 @@ bool HttpRequest::directoryExists(const std::string& path)
 	return false;
 }
 
-bool HttpRequest::directoryListingIsOff()
-{
-	// check for config File
-	return false;
-}
 
-std::string HttpRequest::serveDirectory(std::string fullPath)
+std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config)
 {
 	std::stringstream html;
-	// std::cout << "serving Directory" << std::endl;
-	if(directoryListingIsOff())
-		return"";
 
+	// neeeeeeeds to be tested!!!!!
+	if((config.isDirListingActive(_requestLine._path)))
+		return"";
+	
 	html << "<!DOCTYPE html>\n"
 		 <<	"<html>\n"
 		 << "<head>\n"
@@ -103,7 +99,7 @@ std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
 	if(directoryExists(fullPath))
 	{
 		isFile = false;
-		return(serveDirectory(fullPath));
+		return(serveDirectory(fullPath, config));
 	}
 	return "";
 }
@@ -124,23 +120,29 @@ std::string HttpRequest::readFileContent(const std::string& path)
 
 void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& message)
 {
-	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + message + "\r\n";
-	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
-	response += "Content-Type: text/plain\r\n\r\n";
-	response += message;
+	std::string response = buildResponse(statusCode, message, message, "text/plain");
+
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }
 
 
 void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message)
 {
+	std::string response = buildResponse(statusCode, "OK" , message, "text/html");
 
-	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " OK\r\n";
-	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
-	response += "Content-Type: text/html\r\n";
-	response += "\r\n";
-	response += message;
-	
 	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
 
+}
+
+std::string HttpRequest::buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType)
+{
+	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + CodeMessage;
+	response += "\r\n";
+	response += "Content-Length: " + std::to_string(message.size());
+	response += "\r\n";
+	response += "Content-Type:" + contentType; 
+	response += "\r\n\r\n";
+	response += message;
+
+	return response;
 }
