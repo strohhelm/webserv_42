@@ -163,11 +163,9 @@ class MainConfig
 	void printConfTokens(std::vector<confToken>	&tokens);
 	void typesortTokens(std::vector<confToken> &tokens);
 	void OpenLogFile(std::string path, std::ofstream &file);
-
+	void myLog(std::string type, std::string message);
 	template <typename type> void parseTokens(std::vector<confToken> &tokens, std::map <std::string, void(type::*)(std::vector<confToken> &, size_t lineNum)> directives, type &obj);
 	#include "../src/ConfigTokens.tpp"
-
-
 
 
 #endif

@@ -29,12 +29,13 @@ void SimpleServer::launch(void)
 {
 	while(!g_stopFlag)
 	{
-		if(initPoll() && !g_stopFlag)
+		int pollcount = initPoll();
+		if(pollcount  < 0 && !g_stopFlag)
 		{
 			std::cerr << RED << "Poll error, retrying..." << RESET << std::endl;
 			continue; 
 		}
-		handlePolls();
+		handlePolls(pollcount);
 		checkIdleConnections();
 	}
 }
@@ -49,25 +50,25 @@ int SimpleServer::initPoll(void)
     an error, including one due to an interrupted call, the fds array will be unmodified and the global variable errno will be set to indicate the error.
 */
 	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 0);
-	if (pollCount == 0)
-	{
-		// std::cout << "pollCount = 0" << std::endl;
-		return 0;
-	}	
-	else if (pollCount < 0)
-	{
-		//std::cout << "pollCount = <1" << std::endl;
-		return 1;
-	}	
+	// if (pollCount == 0)
+	// {
+	// 	// std::cout << "pollCount = 0" << std::endl;
+	// 	return 0;
+	// }	
+	// else if (pollCount < 0)
+	// {
+	// 	//std::cout << "pollCount = <1" << std::endl;
+	// 	return pollCount;
+	// }	
 	//std::cout << "else poll" << std::endl;
-	return 0;
+	return pollCount;
 }	
 
 
-void SimpleServer::handlePolls(void)
+void SimpleServer::handlePolls(int pollCount)
 {
 	int fdIndex = _poll_fds.size() - 1;
-	while (fdIndex >= 0)
+	while (pollCount && fdIndex >= 0)
 	{
 		// std::cout << "fdIndex " << fdIndex << std::endl;
 		if(isDataToRead(fdIndex))
@@ -231,8 +232,6 @@ void SimpleServer::handler(int fdIndex)
 		return;
 	}
 	_request.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd], route);
-
-
 
 	// removeClient(fdIndex);
 }
