@@ -3,6 +3,8 @@
 bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 {
 	std::string host = _headers["Host"];
+	host = host.substr(0, host.find(':'));
+	std::cout<<host<<std::endl;
 	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end())
 		return true;
 	else
@@ -24,7 +26,7 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 {
 	std::string path = _requestLine._path;
 	auto routes = config._routes;
-	if (validateHost(config._serverNames))
+	if (!validateHost(config._serverNames))
 		return -1;
 	while (!path.empty())
 	{
@@ -72,6 +74,11 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::string	content;
 	std::string path = getRequestedFile(isFile, config);
 	(void)server_fd;
+	if(path.empty())
+	{
+		sendErrorResponse(client_fd, 404, "404 Not Found");
+		return;
+	}
 	int check = checkCgi(path, route);
 	if(check > 0)
 	{
@@ -87,11 +94,6 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 
 	std::cout << BG_BRIGHT_BLUE << config._rootDir << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
-	if(path.empty())
-	{
-		sendErrorResponse(client_fd, 404, "404 Not Found");
-		return;
-	}
 	if(isFile)
 	{
 		content = readFileContent(path);

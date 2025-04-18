@@ -222,12 +222,12 @@ void SimpleServer::handler(int fdIndex)
 	int server_fd = _listeningServerFromClient[client_fd];
 	routeConfig route;
 	int invalid =  _request.validateRequest(_serverConfigs[server_fd], route);
-	if (invalid)
+	if (invalid != 0)
 	{
 		int code = 404;
 		if (invalid < 0)
 			code = 400;
-		_request.sendErrorResponse(server_fd, code, StatusCode.at(code));
+		_request.sendErrorResponse(client_fd, code, StatusCode.at(code));
 		return;
 	}
 	_request.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd], route);

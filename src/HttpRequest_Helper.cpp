@@ -128,7 +128,6 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& m
 	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
 	response += "Content-Type: text/plain\r\n\r\n";
 	response += message;
-
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }
 
