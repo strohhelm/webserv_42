@@ -24,7 +24,7 @@ int SimpleServer::initPoll(void)
 	poll() returns the number of descriptors that are ready for I/O, or -1 if an error occurred.  If the time limit expires, poll() returns 0.  If poll() returns with
     an error, including one due to an interrupted call, the fds array will be unmodified and the global variable errno will be set to indicate the error.
 */
-	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 1000); // 1 second timeout or -1 to blocking mode
+	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 10000); // 1 second timeout or -1 to blocking mode
 	if (pollCount == 0)
 	{
 		return 0;
@@ -124,7 +124,10 @@ void SimpleServer::readDataFromClient(int fdIndex)
 	{
 		bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
 		if (bytesReceived <= 0)
+		{
+			std::cerr << "RECV ERROR." << std::endl;
 			break;
+		}
 		request.append(buffer, bytesReceived);
 	}
 
@@ -140,26 +143,43 @@ void SimpleServer::readDataFromClient(int fdIndex)
 		std::string lenstr = header.substr(begin, end - begin);
 		if (lenstr.size())
 		{
-			int clen = std::stoi(lenstr);
+			int clen = std::stoi(lenstr) - body.size();
 			std::cout << "clen: " << clen << std::endl;
-			char body_buffer[clen];
-			bytesReceived = recv(client_fd, body_buffer, clen, 0);
-			request.append(body_buffer, bytesReceived);
+
+			request.reserve(clen);
+			const int buffer_size = 4096;
+			char body_buffer[buffer_size];
+
+			int rlen = 0;
+			while (rlen < clen)
+			{
+				int to_read = std::min(buffer_size, clen - rlen);
+				std::cout << "to_read: " << to_read << std::endl;
+				int bytes = recv(client_fd, body_buffer, to_read, 0);
+				if (bytes <= 0)
+				{
+					std::cerr << "RECV ERROR. " << bytes << std::strerror(errno) << std::endl;
+					exit(1);
+				}
+				rlen += bytes;
+				request.append(body_buffer, bytesReceived);
+			}
+			std::cout << "clen: " << clen << "rlen: " << rlen << std::endl;
 		}
 	}
 	else
 		std::cout << "not found" << std::endl;
 
-	std::cout << "HEADER:\n" << header << std::endl;
-	std::cout << "BODY:\n" << body << std::endl;
+	// std::cout << "HEADER:\n" << header << std::endl;
+	// std::cout << "BODY:\n" << body << std::endl;
 	std::cout << "request:\n" << request << std::endl;
 
 
-	if(noDataReceived(bytesReceived))
-	{
-		removeClient(fdIndex);
-		return ;
-	}
+	// if(noDataReceived(bytesReceived))
+	// {
+	// 	removeClient(fdIndex);
+	// 	return ;
+	// }
 
 	_recvBuffer[fdIndex] = request;
 }

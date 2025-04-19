@@ -79,8 +79,8 @@ void Post::handleUpload()
 	end = body.find("\r\n" + boundary , begin);
 	std::string content = body.substr(begin, end - begin);
 
-	std::cout << "content: " << content << std::endl;
-	std::cout << "end\n";
+	// std::cout << "content: " << content << std::endl;
+	// std::cout << "end\n";
 
 	std::ofstream output("./file_upload/" + filename, std::ios::binary);
 	if (output.is_open())
@@ -88,6 +88,9 @@ void Post::handleUpload()
 		output.write(content.c_str(), content.size());
 		output.close();
 	}
+
+	std::string html_content = readFileContent("www/upload.html");
+	sendResponse(fd, 200, html_content);
 
 }
 

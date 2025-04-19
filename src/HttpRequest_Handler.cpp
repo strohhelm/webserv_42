@@ -77,7 +77,7 @@ void HttpRequest::handlePost(int fd)
 	std::cout << "POST request incoming" << std::endl;
 	std::cout << "---" << std::endl;
 	std::cout << _rawRequestLine << std::endl;
-	std::cout << _rawBody << std::endl;
+	// std::cout << _rawBody << std::endl;
 	std::cout << _requestLine._path << std::endl;
 	std::cout << "---" << std::endl;
 	
