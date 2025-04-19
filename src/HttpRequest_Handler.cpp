@@ -33,11 +33,11 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 {
 	std::string path = _requestLine._path;
 	auto routes = config._routes;
-	if (!validateHost(config._serverNames))
-	{
-		std::cout << BG_BRIGHT_MAGENTA << "return-1" << RESET << std::endl;
-		return -1;
-	}
+	// if (!validateHost(config._serverNames))
+	// {
+	// 	std::cout << BG_BRIGHT_MAGENTA << "return-1" << RESET << std::endl;
+	// 	return -1;
+	// }
 	// does route exist?
 	while (!path.empty())
 	{

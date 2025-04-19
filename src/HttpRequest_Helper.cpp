@@ -47,8 +47,6 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 {
 	std::stringstream html;
 	(void)config;
-	// neeeeeeeds to be tested!!!!!
-
 	if((!route.isDirListingActive()))
 		return"";
 	
@@ -92,24 +90,35 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 
 std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 {
-	std::string rootDir = config._rootDir;
-	rootDir = route.getRootDir();
-
-
+	(void)config;
+	std::string rootDir = route.getRootDir();
 	std::string path = _requestLine._path;
 	std::string fullPath;
-
+	
 	size_t pos = path.find('?');
 	if (pos != std::string::npos)
 	{
 		path = path.substr(0, pos);
 	}
 	fullPath = rootDir + path;
+
+	std::cout << "fullPath " << fullPath << std::endl;
+
 	auto it = _requestLine._path.rbegin();
 	if(*it == '/')
 	{
+		std::cout << "ends with /" << std::endl;
 		// are there a default files and does one of them exist?
-		return fullPath + "index.html"; //extract from config. if 2 indexes are availiable check all and give first that fits?
+		for(auto it : route._defaultFile)
+		{
+			std::string temp = fullPath + it;
+			if(access(temp.c_str(), F_OK) == 0)// read access?
+			{
+				fullPath += it; //extract from config. if 2 indexes are availiable check all and give first that fits?
+				break;
+			} 
+		}
+		// return fullPath; //extract from config. if 2 indexes are availiable check all and give first that fits?
 	}
 	if(fullPath.find("..") != std::string::npos) //to avoid forbidden access
 	{
@@ -122,7 +131,7 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config,routeConfig& route)
 {
 	std::string fullPath = buildFullPath(config, route);
-
+	std::cout << "fullPath " << fullPath << std::endl;
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
