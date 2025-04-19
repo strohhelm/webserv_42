@@ -26,7 +26,6 @@ bool HttpRequest::fileExists(const std::string& path)
 	}
 	std::cout << "file exists not" << std::endl;
 	return false;
-	
 }
 
 
@@ -43,12 +42,13 @@ bool HttpRequest::directoryExists(const std::string& path)
 }
 
 
-std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config)
+std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config, routeConfig& route)
 {
 	std::stringstream html;
-
+	(void)config;
 	// neeeeeeeds to be tested!!!!!
-	if((config.isDirListingActive(_requestLine._path)))
+
+	if((!route.isDirListingActive()))
 		return"";
 	
 	html << "<!DOCTYPE html>\n"
@@ -75,10 +75,32 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 	return html.str();
 }
 
+/*
+	size_t pos = _requestPath.find('?');
+	if(pos != std::string::npos) // only at get
+	{
+		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
+		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
+	}
+	else // only at Post
+	{
+		_scriptPath = _requestPath;
+	}
+*/
+
+
 std::string HttpRequest::buildFullPath(ServerConfig& config)
 {
-	std::string _rootDir = config._rootDir; // extract from config file object
-	std::string fullPath = _rootDir + _requestLine._path;
+	std::string rootDir = config._rootDir;
+	std::string path = _requestLine._path;
+	std::string fullPath;
+
+	size_t pos = path.find('?');
+	if (pos != std::string::npos)
+	{
+		path = path.substr(0, pos);
+	}
+	fullPath = rootDir + path;
 	if(_requestLine._path == "/")
 	{
 		return fullPath + "index.html"; //extract from config. if 2 indexes are availiable check all and give first that fits?
@@ -91,22 +113,22 @@ std::string HttpRequest::buildFullPath(ServerConfig& config)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
+std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config,routeConfig& route)
 {
 	std::string fullPath = buildFullPath(config);
+
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
 	{
 		isFile = false;
-		return(serveDirectory(fullPath, config));
+		return(serveDirectory(fullPath, config, route));
 	}
 	return "";
 }
 
 std::string HttpRequest::readFileContent(const std::string& path)
 {
-	std::cout << "path:::\n" << path << std::endl;
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
@@ -118,9 +140,9 @@ std::string HttpRequest::readFileContent(const std::string& path)
 }
 
 
-void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& message)
+void HttpRequest::sendErrorResponse(int fd, int statusCode)
 {
-	std::string response = buildResponse(statusCode, message, message, "text/plain");
+	std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }

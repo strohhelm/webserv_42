@@ -28,6 +28,7 @@ enum class HttpMethod
 	POST,
 	DELETE,
 	UNKNOWN,
+	FORBIDDEN,
 };
 
 struct requestLine
@@ -65,16 +66,16 @@ class HttpRequest
 		void setPath(const std::string& path);
 		void setVersion(const std::string& version);
  	
-		int			validateRequest(ServerConfig& config, routeConfig& route);
-		bool		validateHost(std::vector<std::string> &serverNames);
-		int			checkCgi(std::string path, routeConfig& route);
-		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
-		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handleDelete(int fd);
-		void		handleUnknown(int fd);
-
-		void		sendErrorResponse(int fd, int statusCode, const std::string& message);
+		int		validateRequest(ServerConfig& config, routeConfig& route);
+		bool	validateHost(std::vector<std::string> &serverNames);
+		int		checkCgi(std::string path, routeConfig& route);
+		void	handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
+		void	handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
+		void	handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
+		void	handleDelete(int fd);
+		void	handleUnknown(int fd);
+		void	handleForbidden(const int& client_fd);
+		void	sendErrorResponse(int fd, int statusCode);
 		HttpMethod	stringToHttpMethod(const std::string& method);
 
 		HttpMethod			getMethod(routeConfig &route);
@@ -90,7 +91,7 @@ class HttpRequest
 		void	showBody(void);
 
 
-		std::string getRequestedFile(bool& isFile, ServerConfig& config);
+		std::string getRequestedFile(bool& isFile, ServerConfig& config, routeConfig& route);
 		std::string readFileContent(const std::string& path);
 
 		std::string getContentType();
@@ -100,7 +101,7 @@ class HttpRequest
 		std::string	buildFullPath(ServerConfig& config);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
-		std::string	serveDirectory(std::string fullPath, ServerConfig& config);
+		std::string	serveDirectory(std::string fullPath, ServerConfig& config,routeConfig& route);
 
 		int			deleteFile(const std::string& filename);
 
@@ -110,6 +111,7 @@ class HttpRequest
 		}
 		void runCgiScriptGet(const int& client_fd, const std::string& fullPath);
 		void runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path);
+
 
 
 		// void executeCGI(const int& client_fd, ServerConfig& config);

@@ -78,6 +78,7 @@
 		"filesystem": "cpp",
 		"unordered_set": "cpp",
 		"regex": "cpp",
-		"*.tpp": "cpp"
+		"*.tpp": "cpp",
+		"regex": "cpp"
 	}
 }

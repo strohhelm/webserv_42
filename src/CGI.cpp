@@ -2,6 +2,8 @@
 #include "../include/Colors.hpp"
 #include <arpa/inet.h> // send()
 #include "../include/ServerConfig.hpp"
+#include <cerrno> // needs to be removed when done only for debugging
+#include <cstring> // needs to be removed when done only for debugging
 
 
 void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath)
@@ -10,20 +12,22 @@ void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::strin
 	_config = &config;
 	_requestPath = requestPath;
 	_phpCgiPathStr = cgiPath;
+	std::cout << RED << _phpCgiPathStr << RESET << std::endl;
+	std::cout << RED << _requestPath << RESET << std::endl;
 }
 
 void CGI::tokenizePath(void)
 {
-
+	
 	size_t pos = _requestPath.find('?');
-	if(pos != std::string::npos)
+	if(pos != std::string::npos) // only at get
 	{
 		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
 		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
 	}
-	else
+	else // only at Post
 	{
-		// ?????
+		_scriptPath = _requestPath;
 	}
 	// std::cout << "CGI _requestPath: " << _requestPath << std::endl;
 	// std::cout << "CGI _fullPath: " << _fullPath << std::endl;
@@ -62,35 +66,25 @@ void	CGI::closeAllPipes(void)
 
 void	CGI::setArgv(void)
 {
-
+	// _phpCgiPathStr = this->_config->getCgiPath();
+	// _phpCgiPath = _phpCgiPathStr.c_str();
+	_fullPath = _config->_rootDir + _scriptPath;
 	
-	// std::cout << BG_RED << _phpCgiPath << RESET << std::endl;
-
-	_phpCgiPath = _phpCgiPathStr.c_str();
-	
-
-	_argv[0] = (char*)_phpCgiPath;
+	_argv[0] = (char*)_phpCgiPathStr.c_str();
 	_argv[1] = (char*)_fullPath.c_str();
 	_argv[2] = nullptr;
-
-	// std::cout << "_argv\n"
-	// 			<< "_argv[0] = " << _argv[0]
-	// 			<< "_argv[1] = " << _argv[1]
-	// 			<< "_argv[2] = " << _argv[2]
-	// 			<< std::endl;
-
 }
 
 int	CGI::createPipes()
 {
 	if(pipe(_parent.data()) == -1)
 	{
-		return 1;
+		return -1;
 	}
 	if(pipe(_child.data()) == -1)
 	{
 		closePipesFromFd(_parent);
-		return 1;
+		return -1;
 	}
 	return 0;
 }
@@ -112,6 +106,13 @@ void CGI::convertEnvStringsToChar(void)
 		_envp.push_back(&s[0]);
 	}
 	_envp.push_back(nullptr);
+	
+	// debugging
+	for (char* env : _envp)
+	{
+		if (env) std::cerr << "env: " << env << std::endl;
+	}
+
 }
 
 void CGI::buildEnvStrings(std::string method, std::string rawBody)
@@ -122,7 +123,6 @@ void CGI::buildEnvStrings(std::string method, std::string rawBody)
 		"REQUEST_METHOD=" + method,
 		"SCRIPT_FILENAME=" + _config->_rootDir + _scriptPath, //www/get.php
 		"SCRIPT_NAME=" + _scriptPath, ///get.php
-		"SERVER_PROTOCOL=HTTP/1.1",
 	};
 	
 	if (method == "GET") {
@@ -148,12 +148,18 @@ void CGI::handleChildProcess(std::string method, std::string rawBody)
 
 	convertEnvStringsToChar();
 
-	execve(_phpCgiPath, _argv, _envp.data());
 
-	std::cerr << "execve failed: " << std::endl;
-	exit(1);
+	std::cerr << "Running: " << _phpCgiPathStr << " with script " << _argv[1] << std::endl;
 
 
+	execve(_phpCgiPathStr.c_str(), _argv, _envp.data());
+
+	// std::cerr << "execve failed: " << std::endl;
+	std::cerr << "argv[0]: " << _argv[0] << "\nargv[1]: " << _argv[1] << std::endl;
+
+	std::cerr << "execve failed: " << strerror(errno) << std::endl;
+
+	exit(1); //?!?!?!?!?!?!?!
 }
 
 std::string CGI::readCgiOutput(void)
@@ -172,7 +178,7 @@ std::string CGI::readCgiOutput(void)
 void	CGI::sendPostDataToChild(std::string method, std::string rawBody)
 {
 	// Send POST data if any -> neeeds to be tested!?!?!?!?!
-	if (method == "POST" && !rawBody.size())
+	if (method == "POST" && !rawBody.empty())
 	{
 		write(_parent[WRITE_FD], rawBody.c_str(), rawBody.size()); //check returnvalue?!?!?
 	}
@@ -187,11 +193,10 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	close(_child[WRITE_FD]); // Parent doesn't need to write to this
 	
 	sendPostDataToChild(method, rawBody);
-	close(_parent[WRITE_FD]); 
+	close(_parent[WRITE_FD]);
 
 	std::string cgiOutput = readCgiOutput();
 	close(_child[READ_FD]);
-
 
 	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
 	httpResponse += "Content-Length: " + std::to_string(cgiOutput.size()) + "\r\n";
@@ -199,17 +204,31 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	httpResponse += "\r\n";
 	httpResponse += cgiOutput;
 
+	/**********************************************************/
+	std::cout << "SCRIPT_FILENAME=" << _config->_rootDir + _scriptPath << std::endl;	//www/get.php
+	std::cout << "SCRIPT_NAME=" << _scriptPath << std::endl; ///get.php
+	std::cout << "argv\n"
+				<< _phpCgiPathStr.c_str() << "\n"
+				<< _config->_rootDir + _scriptPath << "\n"
+				<< "---\n"
+				<< std::endl;
+
+	/**********************************************************/
+	std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
+
+
 	send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0);
 }
 
 // std::array<int, 3> a = {1, 2, 3};
 void CGI::execute(std::string method, std::string rawBody)
 {
+	std::cout << "CGI" << std::endl;
 	// init fds
 	_parent = {-1, -1};
 	_child = {-1, -1};
 
-	if(createPipes())
+	if(createPipes() < 0)
 	{
 		// sendErrorResponse(client_fd, 500, "Pipe creation failed"); //???
 		return;
@@ -222,7 +241,11 @@ void CGI::execute(std::string method, std::string rawBody)
 		// sendErrorResponse(client_fd, 500, "Fork failed");
 		return;
 	}
+	// 
 
+
+
+	// 
 	if(pid == 0)
 	{
 		handleChildProcess(method, rawBody);
@@ -231,5 +254,6 @@ void CGI::execute(std::string method, std::string rawBody)
 	{
 		handleParentProcess(method, rawBody);
 	}
+
 	closeAllPipes();
 }
