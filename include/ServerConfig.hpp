@@ -51,7 +51,9 @@ struct confToken
 };
 
 class routeConfig
-{public:
+{
+	public:
+
 	bool						_methods[3]; //Define a list of accepted HTTP methods for the route
 	int 						_redirectCode;
 	std::string					_redirectPath; //Define a HTTP redirection
@@ -62,23 +64,23 @@ class routeConfig
 	std::string					_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
 	routeError					_errorcode;
 	
-		routeConfig(std::vector<confToken> &context);
-		routeConfig();
-		void	printConfig(std::string path);
-		void	setDefaultValues(void);
-		void	checkValues(ServerConfig& conf);
-		bool	checkMethod(HttpMethod& method);
-		bool	checkCgiPath();
-		std::string& getCgiPath();
-		void	setMethods(std::vector<confToken>		&context, size_t lineNum);
-		void	setRedirect(std::vector<confToken>		&context, size_t lineNum);
-		void	setRootDir(std::vector<confToken>		&context, size_t lineNum);
-		void	setAutoIndex(std::vector<confToken>		&context, size_t lineNum);
-		void	setDefaultFiles(std::vector<confToken>	&context, size_t lineNum);
-		void	setUploadPath(std::vector<confToken>	&context, size_t lineNum);
-		void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
-		bool	isDirListingActive(void);
-		std::string getRootDir(void);
+	routeConfig(std::vector<confToken> &context);
+	routeConfig();
+	void	printConfig(std::string path);
+	void	setDefaultValues(void);
+	void	checkValues(ServerConfig& conf);
+	bool	checkMethod(HttpMethod& method);
+	bool	checkCgiPath();
+	std::string& getCgiPath();
+	void	setMethods(std::vector<confToken>		&context, size_t lineNum);
+	void	setRedirect(std::vector<confToken>		&context, size_t lineNum);
+	void	setRootDir(std::vector<confToken>		&context, size_t lineNum);
+	void	setAutoIndex(std::vector<confToken>		&context, size_t lineNum);
+	void	setDefaultFiles(std::vector<confToken>	&context, size_t lineNum);
+	void	setUploadPath(std::vector<confToken>	&context, size_t lineNum);
+	void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
+	bool	isDirListingActive(void);
+	std::string getRootDir(void);
 
 };
 

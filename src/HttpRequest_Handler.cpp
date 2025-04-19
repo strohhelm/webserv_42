@@ -111,7 +111,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::cout << BG_GREEN << "isCgiRequest " << isCgiRequest << RESET << std::endl;
 	if(isCgiRequest > 0)
 	{
-		_cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath());
+		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath());
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
 		return;

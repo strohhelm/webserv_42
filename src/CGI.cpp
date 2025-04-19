@@ -68,10 +68,10 @@ void	CGI::setArgv(void)
 {
 	// _phpCgiPathStr = this->_config->getCgiPath();
 	// _phpCgiPath = _phpCgiPathStr.c_str();
-	_fullPath = _config->_rootDir + _scriptPath;
+	// _fullPath = _config->_rootDir + _scriptPath;
 	
 	_argv[0] = (char*)_phpCgiPathStr.c_str();
-	_argv[1] = (char*)_fullPath.c_str();
+	_argv[1] = (char*)_scriptPath.c_str();
 	_argv[2] = nullptr;
 }
 
@@ -121,7 +121,7 @@ void CGI::buildEnvStrings(std::string method, std::string rawBody)
 		"GATEWAY_INTERFACE=CGI/1.1",
 		"REDIRECT_STATUS=200",
 		"REQUEST_METHOD=" + method,
-		"SCRIPT_FILENAME=" + _config->_rootDir + _scriptPath, //www/get.php
+		"SCRIPT_FILENAME=" + _scriptPath, //www/get.php
 		"SCRIPT_NAME=" + _scriptPath, ///get.php
 	};
 	
