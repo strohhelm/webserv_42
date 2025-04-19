@@ -10,3 +10,9 @@ default error files, checking in sendErrorResponse if there is  a default file i
 location \.php as default cgi path or keep as is.
 
 are all settings considered in the corresponding functoins?
+
+return value check from send and revieve
+
+Headers check -> some headers have to be there and cant be sent twice also-> 400
+
+understand the subject!

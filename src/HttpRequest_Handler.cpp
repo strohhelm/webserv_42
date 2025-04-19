@@ -117,7 +117,10 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		return;
 	}
 	else if (isCgiRequest < 0)
-		sendErrorResponse(client_fd, 502);
+	{
+		sendErrorResponse(client_fd, 500);
+		return;
+	}
 
 	std::cout << BG_BRIGHT_BLUE << config._rootDir << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;

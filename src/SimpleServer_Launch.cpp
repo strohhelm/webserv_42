@@ -85,6 +85,7 @@ void SimpleServer::handlePolls(int pollCount)
 		if(isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
+			
 		}
 		fdIndex--;
 	}
