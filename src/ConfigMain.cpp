@@ -90,7 +90,7 @@ void MainConfig::checkValues(void)
 		throw std::runtime_error("Value worker_connections in main context not valid, must be bigger than 1.");
 	if (! _http.size())
 		throw std::runtime_error("Must have servers!!!");
-	for (auto server:_http)
+	for (auto& server:_http)
 		server.checkValues();
 }
 
@@ -103,7 +103,7 @@ void MainConfig::printConfig(void)
 	print<<"Worker Connections: "<<BLUE<<_worker_connections<<RESET<<"\n";
 	print<<"Keepalive Timeout: "<<BLUE<<_keepalive_timeout<<RESET<<"\n";
 	std::cout<<print.str()<<std::endl;
-	for (auto i: _http)
+	for (auto &i: _http)
 		i.printConfig();
 }
 
@@ -125,7 +125,7 @@ MainConfig::MainConfig(std::string &filename)
 	// printConfTokens(tokens);
 	parseTokens<MainConfig>(tokens, directives, *this);
 	checkValues();
-	// printConfig();
+	printConfig();
 }
 
 

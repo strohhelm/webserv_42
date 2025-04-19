@@ -51,7 +51,7 @@ struct confToken
 };
 
 class routeConfig
-{
+{public:
 	bool						_methods[3]; //Define a list of accepted HTTP methods for the route
 	int 						_redirectCode;
 	std::string					_redirectPath; //Define a HTTP redirection
@@ -61,12 +61,12 @@ class routeConfig
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
 	std::string					_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
 	routeError					_errorcode;
-	public:
+	
 		routeConfig(std::vector<confToken> &context);
 		routeConfig();
 		void	printConfig(std::string path);
-		void	setDefaultValues();
-		void	checkValues(void);
+		void	setDefaultValues(void);
+		void	checkValues(ServerConfig& conf);
 		bool	checkMethod(HttpMethod& method);
 		bool	checkCgiPath();
 		std::string& getCgiPath();
@@ -77,7 +77,6 @@ class routeConfig
 		void	setDefaultFiles(std::vector<confToken>	&context, size_t lineNum);
 		void	setUploadPath(std::vector<confToken>	&context, size_t lineNum);
 		void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
-
 		bool	isDirListingActive(void);
 
 };
@@ -125,12 +124,7 @@ class ServerConfig
 		void	setIndex(std::vector<confToken>				&context, size_t lineNum);
 		void	setRoute(std::vector<confToken>				&context, size_t lineNum);
 		void	setRootDir(std::vector<confToken>			&context, size_t lineNum);
-		// void	setUrl(const std::vector<std::string>& serverNames ,const int& port);
-		// void	setCgiPath(std::string path);
-		// int		getPort(void);
-		// void	setRootDir(const std::string& rootDir);
 		const std::string& getRootDir(void);
-		// std::string& getCgiPath(void);
 };
 
 class MainConfig

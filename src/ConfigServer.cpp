@@ -151,7 +151,13 @@ void	ServerConfig::checkValues(void)
 		throw std::runtime_error("Port outside of scope!");
 	if (_serverNames.empty())
 		throw std::runtime_error("Must have Server Name!");
+	if (_rootDir.empty())
+		throw std::runtime_error("Must have root directory!");
+	for (auto& r:_routes)
+	{
+		r.second.checkValues(*this);
 
+	}
 }
 
 
@@ -174,7 +180,7 @@ void ServerConfig::printConfig()
 		print<<i<<" ";
 	print<<RESET<<"\n";
 
-	print<<"ErrorPages: "<<BLUE<<_rootDir<<RESET<<"\n";
+	print<<"ErrorPages: "<<BLUE;
 	for (auto i: _errorPage)
 		print<<"("<<i.first<<"|"<<i.second<<")"<<" ";
 	print<<RESET<<"\n";
@@ -182,7 +188,7 @@ void ServerConfig::printConfig()
 	print<<"Max Body: "<<BLUE<<_maxBody<<RESET<<"\n";
 
 	std::cout<<print.str()<<std::endl;
-	for (auto i: _routes)
+	for (auto &i: _routes)
 		i.second.printConfig(i.first);
 }
 

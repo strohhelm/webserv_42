@@ -12,6 +12,7 @@ void	routeConfig::setMethods(std::vector<confToken> &context, size_t lineNum)
 		throw std::runtime_error("[setMethods]: No arguments to directive 'methods' line: " + line);
 	else
 	{
+		_methods[0] = false; //default is set true
 		for (auto it = context.begin(); it != context.end(); it++)
 		{
 			if (it->str == "GET")
@@ -82,7 +83,8 @@ void	routeConfig::setDefaultFiles(std::vector<confToken> &context, size_t lineNu
 	std::string line = std::to_string(lineNum);
 	for (auto t:context)
 	{
-		_defaultFile.push_back(t.str);
+		if (std::find(_defaultFile.begin(), _defaultFile.end(), line) != _defaultFile.end())
+			_defaultFile.push_back(t.str);
 	}
 	if (!context.size())
 		throw std::runtime_error("directive 'index' set but no arguments given. line: "+ std::to_string(lineNum));
@@ -112,16 +114,19 @@ void routeConfig::setDefaultValues()
 {
 	_methods[0] = true; _methods[1] = false; _methods[2] = false;
 	_redirectCode = 0;
-	_redirectPath = "";
-	_rootDir = "";
+	_redirectPath.clear();
+	_rootDir.clear();
 	_dirListing = false;
-	_uploadPath = "";
+	_uploadPath.clear();
 	_errorcode = routeError::All_GOOD;
+	_defaultFile.push_back("index.html");
 }
-void	routeConfig::checkValues(void)
- {
 
- }
+void	routeConfig::checkValues(ServerConfig& conf)
+ {
+	 if (_rootDir.empty())
+		_rootDir = conf._rootDir;
+}
 
 bool	routeConfig::checkMethod(HttpMethod& method)
 {
@@ -169,17 +174,16 @@ routeConfig::routeConfig(std::vector<confToken> &context)
 {
 	setDefaultValues();
 	std::map <std::string, void(routeConfig::*)(std::vector<confToken> &, size_t lineNum)> directives;
-	directives.insert({std::string("methods"), &routeConfig::setMethods});
-	directives.insert({std::string("return"), &routeConfig::setRedirect});
-	directives.insert({std::string("root"), &routeConfig::setRootDir});
-	directives.insert({std::string("autoindex"), &routeConfig::setAutoIndex});
-	directives.insert({std::string("index"), &routeConfig::setDefaultFiles});
-	directives.insert({std::string("upload_path"), &routeConfig::setUploadPath});
-	directives.insert({std::string("cgi"), &routeConfig::setCGIExtension});
+	directives.insert({std::string("methods"),		&routeConfig::setMethods});
+	directives.insert({std::string("return"),		&routeConfig::setRedirect});
+	directives.insert({std::string("root"),			&routeConfig::setRootDir});
+	directives.insert({std::string("autoindex"),	&routeConfig::setAutoIndex});
+	directives.insert({std::string("index"),		&routeConfig::setDefaultFiles});
+	directives.insert({std::string("upload_path"),	&routeConfig::setUploadPath});
+	directives.insert({std::string("cgi"),			&routeConfig::setCGIExtension});
 	// std::cout<<" ------------------------------------------------Location--------------------------------------------------------"<<std::endl;
 	// std::cout<<"Route Tokens:"<<std::endl;
 	// printConfTokens(context);
 	parseTokens<routeConfig>(context, directives, *this);
 	// std::cout<<"------Location end ----"<<std::endl;
-
 }

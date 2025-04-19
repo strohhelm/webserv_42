@@ -4,3 +4,9 @@ handleDelete response code
 cgi
 dir listing
 errno output removen -> Error receiving data from client
+
+default error files, checking in sendErrorResponse if there is  a default file in this server, if so send it instead of response.
+
+location \.php as default cgi path or keep as is.
+
+are all settings considered in the corresponding functoins?
