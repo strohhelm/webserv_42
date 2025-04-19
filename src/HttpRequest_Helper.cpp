@@ -111,6 +111,11 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 		// are there a default files and does one of them exist?
 		for(auto it : route._defaultFile)
 		{
+			std::cout << it << std::endl;
+		}
+		for(auto it : route._defaultFile)
+		{
+			std::cout << "it "<< it << std::endl;
 			std::string temp = fullPath + it;
 			if(access(temp.c_str(), F_OK) == 0)// read access?
 			{
