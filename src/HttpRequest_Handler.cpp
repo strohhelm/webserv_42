@@ -50,6 +50,15 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 		}
 		else
 		{
+			if (path.find_last_of('/') == path.find_first_of('/'))
+			{
+				auto it = config._routes.find("/");
+				if ( it != config._routes.end())
+				{
+					route = it->second;
+					return 0;
+				}
+			}
 			size_t pos = path.find_last_of('/');
 			if (pos == std::string::npos)
 			break;
