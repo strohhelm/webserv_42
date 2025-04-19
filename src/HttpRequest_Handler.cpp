@@ -4,7 +4,7 @@ bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 {
 	std::string host = _headers["Host"];
 	host = host.substr(0, host.find(':'));
-	std::cout<<host<<std::endl;
+	std::cout<<GREEN<<"HOST: "<<YELLOW<<host<<std::endl;
 	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end())
 		return true;
 	else
@@ -90,6 +90,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::string	content;
 	std::string path = getRequestedFile(isFile, config, route);
 	std::cout << BG_CYAN << "path :" << path << RESET << std::endl;
+
 	(void)server_fd;
 
 	if(path.empty())
