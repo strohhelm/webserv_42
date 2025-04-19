@@ -147,7 +147,8 @@ class MainConfig
 		void setHttp(std::vector<confToken>			&tokens, size_t lineNum);
 		
 		public:
-		MainConfig(void);
+		MainConfig() = delete;
+		MainConfig(std::string &filename);
 		~MainConfig(){};
 		MainConfig(MainConfig& src) = delete;
 		MainConfig& operator=(MainConfig &src) = delete;
@@ -156,7 +157,7 @@ class MainConfig
 		void	printConfig();
 		
 	};
-	void tokenizeConfig(std::vector<confToken> &tokens);
+	void tokenizeConfig(std::vector<confToken> &tokens, std::string &filename);
 	void rmComment(std::string &line);
 	void prepareLine(std::string &line, size_t lineNum);
 	void collectContext(std::vector<confToken> &tokens, std::vector<confToken>::iterator it, std::vector<confToken> &context);

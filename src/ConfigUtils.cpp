@@ -20,9 +20,8 @@ void rmComment(std::string &line)
 		line.erase(line.begin() + pos, line.end());
 }
 
-void tokenizeConfig(std::vector<confToken> &tokens)
+void tokenizeConfig(std::vector<confToken> &tokens, std::string &filename)
 {
-	std::string				filename = DEFAULT_CONFIG_PATH;
 	std::ifstream			file (filename, std::fstream::in);
 	std::stringstream		buffer;
 	std::string				line;

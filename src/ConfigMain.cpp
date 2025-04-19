@@ -107,7 +107,7 @@ void MainConfig::printConfig(void)
 		i.printConfig();
 }
 
-MainConfig::MainConfig(void)
+MainConfig::MainConfig(std::string &filename)
 {
 	setDefaultValues();
 
@@ -119,13 +119,13 @@ MainConfig::MainConfig(void)
 	directives.insert({std::string("http"), &MainConfig::setHttp});
 
 	std::vector<confToken> tokens;
-	tokenizeConfig(tokens);
+	tokenizeConfig(tokens, filename);
 	typesortTokens(tokens);
 	// std::cout<<"All Tokens:"<<std::endl;
 	// printConfTokens(tokens);
 	parseTokens<MainConfig>(tokens, directives, *this);
 	checkValues();
-	printConfig();
+	// printConfig();
 }
 
 

@@ -47,41 +47,32 @@ void	myLog(std::string type, std::string message)
 		throw std::runtime_error("Wrong Use of Function myLog!");
 }
 
-int main(void)
+std::string getFilename(int argc, char**argv)
+{
+	std::string filename;
+	if (argc > 2)
+		throw std::runtime_error("Usage: ./webserv <config_file>");
+	else if (argc == 1)
+		filename = DEFAULT_CONFIG_PATH;
+	else
+	{
+		if (access(argv[1], F_OK))
+			throw std::runtime_error("Cannot access: \"" + std::string(argv[1]) + "\" file not found.");
+		else if (access(argv[1], R_OK))
+			throw std::runtime_error("Cannot access: \"" + std::string(argv[1]) + "\" permission denied.");
+		filename = argv[1];
+	}
+	return filename;
+}
+
+int main(int argc, char **argv)
 {
 	signal(SIGINT, handleSignalINT);
-
-	// std::string cgipath = "/usr/bin/php-cgi";
-
-	// std::vector<ServerConfig> configs;
-	
-	// ServerConfig config1;
-	// std::vector<std::string> hostname1;
-	// hostname1.push_back("example.com");
-	// hostname1.push_back("www.example.com");
-	// config1.setUrl(hostname1, 8080);
-	// config1.setRootDir("www");
-	// configs.push_back(config1);
-	
-	// ServerConfig config2;
-	// std::vector<std::string> hostname2;
-	// hostname2.push_back("test.com");
-	// hostname2.push_back("www.test.com");
-	// config2.setUrl(hostname2, 8081);
-	// config2.setRootDir("www2");
-	// configs.push_back(config2);
-	
-	// ServerConfig config3;
-	// std::vector<std::string> hostname3;
-	// hostname3.push_back("test1.com");
-	// hostname3.push_back("www.test1.com");
-	// config3.setUrl(hostname3, 8082);
-	// config3.setRootDir("www3");
-	// configs.push_back(config3);
-
 	try
 	{
-		MainConfig config;
+		std::string	filename = getFilename(argc, argv);
+		MainConfig	config(filename);
+
 		myLog(config._error_log, config._access_log);
 		SimpleServer server(AF_INET, SOCK_STREAM, 0, INADDR_ANY, config._worker_connections, config._http);
 	}

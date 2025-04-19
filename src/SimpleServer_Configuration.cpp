@@ -16,8 +16,7 @@ int SimpleServer::serverConfiguration(void)
 			// myLog(ERROR, "Failed to create socket for server:" + conf._serverNames[0] + ":" + std::to_string(conf._port));
 			return 1;
 		}
-		std::cout << GREEN << "SOCKET CREATED: "<< YELLOW << conf._serverNames[0];
-		std::cout << GREEN << "PORT " << YELLOW <<  conf._port << RESET << std::endl;
+		std::cout << GREEN << "SOCKET CREATED"<<RESET<<std::endl;
 		// std::cout << "CGI " << conf._cgiExtension << std::endl;
 
 		serviceAddress = initAddress(conf._port);
@@ -72,7 +71,11 @@ int SimpleServer::serverConfiguration(void)
 
 		_serverConfigs[serverSocket_fd] = conf;
 		
-		std::cout << GREEN << "SERVER SETUP SUCCESSFUL" << RESET << std::endl;
+		std::cout << BG_BRIGHT_GREEN << BOLD<<"SERVER SETUP SUCCESSFUL:" <<RESET<<" "<< YELLOW << conf._serverNames[0];
+		std::cout << GREEN << " PORT: " << YELLOW <<  conf._port << GREEN<<" locations: ";
+		for (auto i:conf._routes)
+			std::cout<<GREEN<<"\""<<YELLOW<<i.first << GREEN<<"\", ";
+		std::cout<<"\n"<< RESET << std::endl;
 	}
 	return 0;
 }
