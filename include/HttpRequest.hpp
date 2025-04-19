@@ -98,7 +98,7 @@ class HttpRequest
 		void sendResponse(int fd,int statusCode, const std::string& message);
 		std::string buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
 
-		std::string	buildFullPath(ServerConfig& config);
+		std::string	buildFullPath(ServerConfig& config, routeConfig& route);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
 		std::string	serveDirectory(std::string fullPath, ServerConfig& config,routeConfig& route);

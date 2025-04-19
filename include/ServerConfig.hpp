@@ -79,6 +79,7 @@ class routeConfig
 		void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
 
 		bool	isDirListingActive(void);
+		std::string getRootDir(void);
 
 };
 
