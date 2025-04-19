@@ -12,7 +12,6 @@ REMOVE		= rm -rf
 FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/SimpleServer.cpp \
 				$(SRC_DIR)/SimpleServer_Launch.cpp \
-				$(SRC_DIR)/SimpleServer_test.cpp \
 				$(SRC_DIR)/SimpleServer_Configuration.cpp \
 				$(SRC_DIR)/HttpRequest_Helper.cpp \
 				$(SRC_DIR)/HttpRequest_Debugger.cpp \
