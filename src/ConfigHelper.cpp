@@ -9,3 +9,10 @@ bool	routeConfig::isDirListingActive(void)
     else
         return false;
 }
+
+
+
+std::string routeConfig::getRootDir(void)
+{
+    return _rootDir;
+}
