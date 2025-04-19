@@ -119,13 +119,15 @@ void routeConfig::setDefaultValues()
 	_dirListing = false;
 	_uploadPath.clear();
 	_errorcode = routeError::All_GOOD;
-	_defaultFile.push_back("index.html");
+	_defaultFile.clear();
 }
 
 void	routeConfig::checkValues(ServerConfig& conf)
  {
-	 if (_rootDir.empty())
+	if (_rootDir.empty())
 		_rootDir = conf._rootDir;
+	if (_defaultFile.empty())
+		_defaultFile = conf._indexFile;
 }
 
 bool	routeConfig::checkMethod(HttpMethod& method)
