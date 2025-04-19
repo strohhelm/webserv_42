@@ -12,6 +12,7 @@ RUN apt-get install -y \
     curl \
     zsh \
     nano \
+    tree \
 	php-cgi
 
 

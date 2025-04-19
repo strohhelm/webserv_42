@@ -26,7 +26,6 @@ bool HttpRequest::fileExists(const std::string& path)
 	}
 	std::cout << "file exists not" << std::endl;
 	return false;
-	
 }
 
 

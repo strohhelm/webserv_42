@@ -2,6 +2,8 @@
 #include "../include/Colors.hpp"
 #include <arpa/inet.h> // send()
 #include "../include/ServerConfig.hpp"
+#include <cerrno> // needs to be removed when done only for debugging
+#include <cstring> // needs to be removed when done only for debugging
 
 
 void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath)
@@ -10,6 +12,8 @@ void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::strin
 	_config = &config;
 	_requestPath = requestPath;
 	_phpCgiPathStr = cgiPath;
+	std::cout << RED << _phpCgiPathStr << RESET << std::endl;
+	std::cout << RED << _requestPath << RESET << std::endl;
 }
 
 void CGI::tokenizePath(void)
@@ -64,8 +68,9 @@ void	CGI::setArgv(void)
 {
 	// _phpCgiPathStr = this->_config->getCgiPath();
 	// _phpCgiPath = _phpCgiPathStr.c_str();
+	_fullPath = _config->_rootDir + _scriptPath;
 	
-	_argv[0] = (char*)_phpCgiPath;
+	_argv[0] = (char*)_phpCgiPathStr.c_str();
 	_argv[1] = (char*)_fullPath.c_str();
 	_argv[2] = nullptr;
 }
@@ -101,6 +106,13 @@ void CGI::convertEnvStringsToChar(void)
 		_envp.push_back(&s[0]);
 	}
 	_envp.push_back(nullptr);
+	
+	// debugging
+	for (char* env : _envp)
+	{
+		if (env) std::cerr << "env: " << env << std::endl;
+	}
+
 }
 
 void CGI::buildEnvStrings(std::string method, std::string rawBody)
@@ -136,9 +148,17 @@ void CGI::handleChildProcess(std::string method, std::string rawBody)
 
 	convertEnvStringsToChar();
 
-	execve(_phpCgiPath, _argv, _envp.data());
 
-	std::cerr << "execve failed: " << std::endl;
+	std::cerr << "Running: " << _phpCgiPathStr << " with script " << _argv[1] << std::endl;
+
+
+	execve(_phpCgiPathStr.c_str(), _argv, _envp.data());
+
+	// std::cerr << "execve failed: " << std::endl;
+	std::cerr << "argv[0]: " << _argv[0] << "\nargv[1]: " << _argv[1] << std::endl;
+
+	std::cerr << "execve failed: " << strerror(errno) << std::endl;
+
 	exit(1); //?!?!?!?!?!?!?!
 }
 
@@ -184,7 +204,16 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	httpResponse += "\r\n";
 	httpResponse += cgiOutput;
 
-	std::cout << "FILENAME:" << _config->_rootDir + _scriptPath << std::endl;
+	/**********************************************************/
+	std::cout << "SCRIPT_FILENAME=" << _config->_rootDir + _scriptPath << std::endl;	//www/get.php
+	std::cout << "SCRIPT_NAME=" << _scriptPath << std::endl; ///get.php
+	std::cout << "argv\n"
+				<< _phpCgiPathStr.c_str() << "\n"
+				<< _config->_rootDir + _scriptPath << "\n"
+				<< "---\n"
+				<< std::endl;
+
+	/**********************************************************/
 	std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
 
 
@@ -212,7 +241,11 @@ void CGI::execute(std::string method, std::string rawBody)
 		// sendErrorResponse(client_fd, 500, "Fork failed");
 		return;
 	}
+	// 
 
+
+
+	// 
 	if(pid == 0)
 	{
 		handleChildProcess(method, rawBody);

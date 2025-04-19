@@ -13,13 +13,20 @@ bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 
 int	HttpRequest::checkCgi(std::string path, routeConfig& route)
 {
-	std::string filename = path.substr(path.find_last_of("/"), path.size() - path.find_last_of("/"));
-	bool check = (filename.substr(filename.size() - 4, filename.size()) == ".php");
-	if (check && route.checkCgiPath())
+	// std::string filename = path.substr(path.find_last_of("/"), path.size() - path.find_last_of("/"));
+	// bool check = (filename.substr(filename.size() - 4, filename.size()) == ".php");
+
+	bool endsWithPhp = path.size() >= 4 && path.substr(path.size() - 4) == ".php";
+
+	std::cout << "endsWithPhp " << endsWithPhp << std::endl;
+	if(!endsWithPhp)
+		return 0;
+
+	if (endsWithPhp && route.checkCgiPath())
 		return 1;
-	else if (check)
+	else 
 		return -1;
-	return 0;
+
 }
 
 int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
@@ -31,12 +38,14 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 		std::cout << BG_BRIGHT_MAGENTA << "return-1" << RESET << std::endl;
 		return -1;
 	}
+	// does route exist?
 	while (!path.empty())
 	{
 		auto tmp = routes.find(path);
 		if (tmp != routes.end())
 		{
 			route = tmp->second;
+			std::cout << BG_BRIGHT_MAGENTA << "return0" << RESET << std::endl;
 			return 0;
 		}
 		else
@@ -48,8 +57,7 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 		}
 	}
 	std::cout << BG_BRIGHT_MAGENTA << "return1" << RESET << std::endl;
-	// return 1; //originl
-	return 0;
+	return 1;
 }
 
 
@@ -89,16 +97,16 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		sendErrorResponse(client_fd, 404);
 		return;
 	}
-	int check = checkCgi(path, route);
-	std::cout << BG_GREEN << "check " << check << RESET << std::endl;
-	if(check > 0)
+	int isCgiRequest = checkCgi(path, route);
+	std::cout << BG_GREEN << "isCgiRequest " << isCgiRequest << RESET << std::endl;
+	if(isCgiRequest > 0)
 	{
-		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath());
+		_cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath());
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
 		return;
 	}
-	else if (check < 0)
+	else if (isCgiRequest < 0)
 		sendErrorResponse(client_fd, 502);
 
 	std::cout << BG_BRIGHT_BLUE << config._rootDir << RESET << std::endl;
