@@ -2,7 +2,7 @@
 .DS_Store
 webserv.pdf
 *.o
-obj
+obj/*
 a.out
 a.out.dSYM
 *.log
