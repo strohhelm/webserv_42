@@ -154,11 +154,6 @@ void	ServerConfig::checkValues(void)
 
 }
 
-bool	ServerConfig::isDirListingActive(std::string location)
-{
-	(void)location;
-	return true;
-}
 
 void ServerConfig::printConfig()
 {

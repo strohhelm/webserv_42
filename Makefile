@@ -24,6 +24,7 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/ConfigRoute.cpp \
 				$(SRC_DIR)/ConfigServer.cpp \
 				$(SRC_DIR)/ConfigUtils.cpp \
+				$(SRC_DIR)/ConfigHelper.cpp \
 				$(SRC_DIR)/CGI.cpp 
 
 

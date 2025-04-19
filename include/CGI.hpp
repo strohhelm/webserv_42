@@ -28,7 +28,6 @@ class CGI
 		char*						_argv[3];
 
 		std::string					_phpCgiPathStr;
-		const char*					_phpCgiPath;
 
 		std::string					_scriptPath;
 		std::string					_queryString;

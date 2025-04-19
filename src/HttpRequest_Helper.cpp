@@ -42,12 +42,13 @@ bool HttpRequest::directoryExists(const std::string& path)
 }
 
 
-std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config)
+std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config, routeConfig& route)
 {
 	std::stringstream html;
-
+	(void)config;
 	// neeeeeeeds to be tested!!!!!
-	if((config.isDirListingActive(_requestLine._path)))
+
+	if((!route.isDirListingActive()))
 		return"";
 	
 	html << "<!DOCTYPE html>\n"
@@ -112,7 +113,7 @@ std::string HttpRequest::buildFullPath(ServerConfig& config)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
+std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config,routeConfig& route)
 {
 	std::string fullPath = buildFullPath(config);
 
@@ -121,7 +122,7 @@ std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config)
 	if(directoryExists(fullPath))
 	{
 		isFile = false;
-		return(serveDirectory(fullPath, config));
+		return(serveDirectory(fullPath, config, route));
 	}
 	return "";
 }

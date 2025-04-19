@@ -78,6 +78,8 @@ class routeConfig
 		void	setUploadPath(std::vector<confToken>	&context, size_t lineNum);
 		void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
 
+		bool	isDirListingActive(void);
+
 };
 
 /*
@@ -129,7 +131,6 @@ class ServerConfig
 		// void	setRootDir(const std::string& rootDir);
 		const std::string& getRootDir(void);
 		// std::string& getCgiPath(void);
-		bool	isDirListingActive(std::string location);
 };
 
 class MainConfig

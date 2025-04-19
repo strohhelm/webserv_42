@@ -91,7 +91,7 @@ class HttpRequest
 		void	showBody(void);
 
 
-		std::string getRequestedFile(bool& isFile, ServerConfig& config);
+		std::string getRequestedFile(bool& isFile, ServerConfig& config, routeConfig& route);
 		std::string readFileContent(const std::string& path);
 
 		std::string getContentType();
@@ -101,7 +101,7 @@ class HttpRequest
 		std::string	buildFullPath(ServerConfig& config);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
-		std::string	serveDirectory(std::string fullPath, ServerConfig& config);
+		std::string	serveDirectory(std::string fullPath, ServerConfig& config,routeConfig& route);
 
 		int			deleteFile(const std::string& filename);
 
@@ -111,6 +111,7 @@ class HttpRequest
 		}
 		void runCgiScriptGet(const int& client_fd, const std::string& fullPath);
 		void runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path);
+
 
 
 		// void executeCGI(const int& client_fd, ServerConfig& config);

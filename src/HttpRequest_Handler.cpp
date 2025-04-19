@@ -88,7 +88,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 	bool isFile = true;
 	std::string	content;
-	std::string path = getRequestedFile(isFile, config);
+	std::string path = getRequestedFile(isFile, config, route);
 	std::cout << BG_CYAN << "path :" << path << RESET << std::endl;
 	(void)server_fd;
 
