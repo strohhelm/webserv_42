@@ -17,13 +17,13 @@
 
 #include <unordered_set>
 
-#include"ServerConfig.hpp"
+#include "Macros.hpp"
+#include "ServerConfig.hpp"
 
 
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#define BUFFER_SIZE 1024 * 100000
 
 class SimpleServer
 {
@@ -31,7 +31,6 @@ class SimpleServer
 		int										_domain;
 		int										_type;
 		int										_protocol;
-		// int										_port;
 		u_long									_networkInterface;
 		struct sockaddr_in						_serviceAddress;
 		socklen_t								_serviceAddressLen;
@@ -40,10 +39,12 @@ class SimpleServer
 		
 
 		std::vector<struct pollfd>				_poll_fds;
-		std::unordered_map<int, std::string>	_recvBuffer;
+		// std::unordered_map<int, std::string>	_recvBuffer;
 		
 		
-		HttpRequest								_request;
+		std::map<int, HttpRequest>				_clients;
+
+
 		std::vector<ServerConfig>				_rawConfigs;
 		std::map<int, ServerConfig>				_serverConfigs;
 
@@ -73,15 +74,17 @@ class SimpleServer
 		int		initPoll(void);
 		void	handlePolls(int pollCount);
 
-
+		void	checkState();
 		int		isDataToRead(const int&			fdIndex);
 		int		isDataToWrite(const int&		fdIndex);
 		bool	isNewConnection(const int&		fdIndex);
 		void	acceptNewConnection(const int&	fdIndex);
 		
-		int		readDataFromClient(int	fdIndex);
-		int		noDataReceived(int		bytesReceived);
-		void	removeClient(int		fdIndex);
+
+		int				readDataFromClient(int	fdIndex);
+		std::string&	readBytes();
+		int				noDataReceived(int		bytesReceived);
+		void			removeClient(int		fdIndex);
 
 		void	closeAllSockets(void);
 

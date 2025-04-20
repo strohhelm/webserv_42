@@ -219,3 +219,59 @@ void HttpRequest::handleDelete(int fd)
 	}
 	sendResponse(fd,204, "Resource deleted successfully");
 }
+
+
+HttpRequest::HttpRequest()
+{
+	_state._buffer.clear();
+	_rawRequestLine.clear();
+	_rawBody.clear();
+	_headers.clear();
+	_body.clear();
+	_httpResponse.clear();
+	_requestLine._path.clear();
+	_requestLine._version.clear();
+}
+
+
+int	HttpRequest::evaluateState(void)
+{
+	if (!_state._requestlineRecieved)
+	{
+		size_t pos = _state._buffer.find("\r\n");
+		if (pos == 0)
+			pos = _state._buffer.find("\r\n", pos, _state._buffer.length() - pos);
+		if (pos != std::string::npos)
+			_state._requestlineRecieved = true;
+		else
+			return NEEDS_TO_READ;
+	}
+	if (!_state._requestlineParsed)
+	{
+		extractRawRequestLine();
+		int error = tokenizeRequestLine();
+		if (error)
+			return error;
+		_state._requestlineParsed = true;
+	}
+	if (!_state._headersRecieved)
+	{
+		size_t pos = _state._buffer.find("\r\n\r\n");
+		if (pos != std::string::npos)
+			_state._headersRecieved = true;
+		else
+			return NEEDS_TO_READ;
+	}
+	if (!_state._headersParsed)
+	{
+		extractAndTokenizeHeader();
+		_state._contentLength = extractContentLength();
+		if ((!_state._contentLength) && (_requestLine._method == HttpMethod::POST))
+			return 400; //check for POST + 0 content length -> chunking
+		_state._headersParsed = true;
+	}
+
+	
+
+//think about what happens when one request is handled completely ->reset values
+}

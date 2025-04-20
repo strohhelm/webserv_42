@@ -31,51 +31,96 @@ enum class HttpMethod
 	FORBIDDEN,
 };
 
-struct requestLine
+enum State
+{
+	NEEDS_TO_READ,
+	NEEDS_TO_WRITE,
+	ERROR_501, // method longer than any implemented one
+	ERROR_414, //if uri is too long
+	ERROR_400, //if target contains whitespace | 400 or 301
+};
+
+struct requestLine 
 {
 	HttpMethod _method = HttpMethod::UNKNOWN;
 	std::string _path = "";
 	std::string _version = "";
 };
 
+struct RequestState
+{
+	std::string		_buffer;
+	size_t			_ContentBytesRecieved = 0;
+	size_t			_contentLength = 0;
+	bool			_requestlineRecieved	= false;
+	bool			_requestlineParsed		= false;
+
+	bool			_headersRecieved		= false;
+	bool			_headersParsed			= false;
+
+	bool			_uploadEvaluated		= false;
+	bool			_uploadMode				= false;
+	bool			_bodyRecieved			= false;
+	bool			_uploadComplete			= false;
+
+	bool			_downloadMode			= false;
+	bool			_downloadComplete		= false;
+
+	bool			_readyToHandle			= false;
+	
+	std::string		_tempUploadFilePath;
+	std::ofstream	_uploadFile;
+	std::string		_tempDownloadFilePath;
+	std::ifstream	_downloadFile;
+};
+
 class HttpRequest
 {
 	private:
-		std::string	_rawRequestLine;
-		std::string	_rawBody;
+	
+		std::string		_rawRequestLine;
+		std::string		_rawBody;
 		
 		std::unordered_map<std::string, std::string> _headers;
 		std::unordered_map<std::string, std::string> _body;
-
+		
 		requestLine	_requestLine;
-
+		
 		std::string _httpResponse;
-
+		
 		CGI	_cgi;
-
-	public:
-		void parseHttpRequest(const std::string& requestBuffer);
-		void clearOldRequest(void);
-		void extractAndTokenizeHeader(const std::string& requestBuffer);
-		void extractRawBody(const std::string& requestBuffer);
-		void extractRawRequestLine(const std::string& requestBuffer);
-		void tokenizeRequestLine(void);
-		void tokenizeBody(void);
+	// const ServerConfig& _config;
 	
-		void setMethod(const std::string& method);
-		void setPath(const std::string& path);
-		void setVersion(const std::string& version);
+	public:
+		RequestState	_state;
+
+
+
+		HttpRequest(void);
+		int		parseHttpRequest(void);
+		int		clearOldRequest(void);
+		size_t	extractContentLength(void);
+		int		extractAndTokenizeHeader(void);
+		int		extractRawBody(void);
+		int		extractRawRequestLine(void);
+		int		tokenizeRequestLine(void);
+		int		tokenizeBody(void);
+	
+		void	setMethod(const std::string& method);
+		void	setPath(const std::string& path);
+		void	setVersion(const std::string& version);
  	
-		int		validateRequest(ServerConfig& config, routeConfig& route);
-		bool	validateHost(std::vector<std::string> &serverNames);
-		int		checkCgi(std::string path, routeConfig& route);
-		void	handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
-		void	handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void	handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void	handleDelete(int fd);
-		void	handleUnknown(int fd);
-		void	handleForbidden(const int& client_fd);
-		void	sendErrorResponse(int fd, int statusCode);
+		int			evaluateState(void);
+		int			validateRequest(ServerConfig& config, routeConfig& route);
+		bool		validateHost(std::vector<std::string> &serverNames);
+		int			checkCgi(std::string path, routeConfig& route);
+		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
+		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
+		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
+		void		handleDelete(int fd);
+		void		handleUnknown(int fd);
+		void		handleForbidden(const int& client_fd);
+		void		sendErrorResponse(int fd, int statusCode);
 		HttpMethod	stringToHttpMethod(const std::string& method);
 
 		HttpMethod			getMethod(routeConfig &route);
@@ -85,24 +130,23 @@ class HttpRequest
 		const std::string&	getRawRequestLine(void);
 		const std::string&	getRawBody(void);
 
-		void	eraseSpaceAndTab(std::string key, std::string value);
+		void	eraseSpaceAndTab(std::string &key, std::string &value);
 
 		void	showHeader(void);
 		void	showBody(void);
 
 
-		std::string getRequestedFile(bool& isFile, ServerConfig& config, routeConfig& route);
-		std::string readFileContent(const std::string& path);
+		std::string	getRequestedFile(bool& isFile, ServerConfig& config, routeConfig& route);
+		std::string	readFileContent(const std::string& path);
 
-		std::string getContentType();
-		void sendResponse(int fd,int statusCode, const std::string& message);
-		std::string buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
+		std::string	getContentType();
+		void		sendResponse(int fd,int statusCode, const std::string& message);
+		std::string	buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
 
 		std::string	buildFullPath(ServerConfig& config, routeConfig& route);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
 		std::string	serveDirectory(std::string fullPath, ServerConfig& config,routeConfig& route);
-
 		int			deleteFile(const std::string& filename);
 
 		/********************************************************/

@@ -1,4 +1,3 @@
-methods always set to false?
 handleDelete response code
 
 cgi
@@ -13,6 +12,11 @@ are all settings considered in the corresponding functoins?
 
 return value check from send and revieve
 
-Headers check -> some headers have to be there and cant be sent twice also-> 400
+Headers check -> some headers have to be there and cant be sent twice also-> 400 HOST check!
 
 understand the subject!
+
+checking port numbers when setting up sockets so that only the first siver on certain port in the config file will listen on that port.
+
+
+downloadin get request has to send chunked with great files!

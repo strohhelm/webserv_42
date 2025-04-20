@@ -82,14 +82,17 @@ void SimpleServer::handlePolls(int pollCount)
 				readDataFromClient(fdIndex);
 			}
 		}
+		int check = _clients[_poll_fds[fdIndex].fd].evaluateState();
+
 		if(isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
-			
 		}
 		fdIndex--;
 	}
 }
+
+//
 
 
 int SimpleServer::isDataToRead(const int& fdIndex)
@@ -130,20 +133,30 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 	// make new fd and add it with the read and write flags to the poll_fds container(vector)
 	struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
 	_poll_fds.push_back(client_poll_fd);
-	_recvBuffer[client_fd] = "";
+	_clients[client_fd] = HttpRequest();
+
+	// _recvBuffer[client_fd] = "";
 
 	_clientLastActivityTimes[client_fd] = std::chrono::steady_clock::now();
 
 	_listeningServerFromClient[client_fd] = server_fd;
 }
 
+std::string& SimpleServer::readBytes()
+{
+	
+}
+
 
 int SimpleServer::readDataFromClient(int fdIndex)
 {
-	std::cout << "readDataFromClient" << std::endl;
-	int		client_fd = _poll_fds[fdIndex].fd;
 
-	static char	buffer[BUFFER_SIZE];
+	int		client_fd = _poll_fds[fdIndex].fd;
+	HttpRequest& client = _clients[client_fd]; // reference to current client
+	std::cout << "readDataFromClient" << std::endl;
+
+
+	char	buffer[BUFFER_SIZE];
 	int		bytesReceived;
 	memset(&buffer, '\0', sizeof(buffer));
 	
@@ -155,7 +168,6 @@ int SimpleServer::readDataFromClient(int fdIndex)
 		removeClient(fdIndex);  // Remove client on error
 		return 0;
 	}
-
 	// std::cout << std::string(buffer, bytesReceived) << std::endl;
 	if (bytesReceived == 0)
 	{
@@ -164,10 +176,8 @@ int SimpleServer::readDataFromClient(int fdIndex)
 		removeClient(fdIndex);
 		return 0;
 	}
-	
-	_recvBuffer[fdIndex] = std::string(buffer, bytesReceived);
+	client._state._buffer.append(std::string(buffer, bytesReceived));
 	_clientLastActivityTimes[client_fd] = std::chrono::steady_clock::now();
-
 	return 1;
 }
 
@@ -187,7 +197,7 @@ void SimpleServer::removeClient(int fdIndex)
 			break;  // Exit after removing the client
 		}
 	}
-	_recvBuffer.erase(fdIndex);
+	_clients.erase(client_fd);
 }
 
 
