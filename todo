@@ -10,3 +10,5 @@ default error files, checking in sendErrorResponse if there is  a default file i
 location \.php as default cgi path or keep as is.
 
 are all settings considered in the corresponding functoins?
+
+error pages?!!?!??!

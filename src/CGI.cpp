@@ -6,12 +6,14 @@
 #include <cstring> // needs to be removed when done only for debugging
 
 
-void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath)
+void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath, std::string& query)
 {
 	_client_fd = client_fd;
 	_config = &config;
 	_requestPath = requestPath;
+	_scriptPath = requestPath;
 	_phpCgiPathStr = cgiPath;
+	_queryString = query;
 	std::cout << RED << _phpCgiPathStr << RESET << std::endl;
 	std::cout << RED << _requestPath << RESET << std::endl;
 }
@@ -20,19 +22,20 @@ void CGI::tokenizePath(void)
 {
 	
 	size_t pos = _requestPath.find('?');
+	std::cout << "CGI _requestPath: " << _requestPath << std::endl;
 	if(pos != std::string::npos) // only at get
 	{
 		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
 		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
+		std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
+		std::cout << "CGI _queryString: " << _queryString << std::endl;
+		
 	}
 	else // only at Post
 	{
 		_scriptPath = _requestPath;
+		std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
 	}
-	// std::cout << "CGI _requestPath: " << _requestPath << std::endl;
-	// std::cout << "CGI _fullPath: " << _fullPath << std::endl;
-	// std::cout << "SCRIPT_FILENAME: " << _fullPath << std::endl;
-	// std::cout << "Checking file: " << (access(_fullPath.c_str(), F_OK) == 0 ? "Exists" : "DOES NOT EXIST") << std::endl;
 }
 
 

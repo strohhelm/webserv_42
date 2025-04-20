@@ -112,6 +112,7 @@ class HttpRequest
 		void runCgiScriptGet(const int& client_fd, const std::string& fullPath);
 		void runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path);
 
+		std::string extractQueryString(std::string& request);
 
 
 		// void executeCGI(const int& client_fd, ServerConfig& config);

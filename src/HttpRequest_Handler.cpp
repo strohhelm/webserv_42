@@ -92,6 +92,15 @@ void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, 
 	}
 }
 
+std::string HttpRequest::extractQueryString(std::string& request)
+{
+	size_t pos = request.find('?');
+	if(pos != std::string::npos) // only at get
+	{
+		return request.substr(pos + 1);
+	}
+	return "";
+}
 void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
 {
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
@@ -111,7 +120,11 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::cout << BG_GREEN << "isCgiRequest " << isCgiRequest << RESET << std::endl;
 	if(isCgiRequest > 0)
 	{
-		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath());
+		std::cout << BG_BRIGHT_MAGENTA << _requestLine._path << RESET << std::endl;
+		std::cout << BG_BRIGHT_MAGENTA << path << RESET << std::endl;
+		// _cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath());
+		std::string query = extractQueryString(_requestLine._path);
+		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath(), query);
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
 		return;
@@ -169,10 +182,10 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 
 	(void)server_fd;
 
-
+	std::string query = "";
 	if(_requestLine._path.find("php") != std::string::npos)
 	{	
-		_cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath());
+		_cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath(), query);
 		_cgi.tokenizePath();
 		_cgi.execute("POST", _rawBody);
 		return;
