@@ -164,7 +164,7 @@ int SimpleServer::readDataFromClient(int fdIndex)
 		return 0;
 	}
 	
-	_recvBuffer[fdIndex] = std::string(buffer, bytesReceived);
+	_recvBuffer[fdIndex].append(std::string(buffer, bytesReceived));
 	_clientLastActivityTimes[client_fd] = std::chrono::steady_clock::now();
 
 	return 1;
