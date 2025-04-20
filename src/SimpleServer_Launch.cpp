@@ -62,7 +62,7 @@ int SimpleServer::initPoll(void)
 	// }	
 	//std::cout << "else poll" << std::endl;
 	return pollCount;
-}	
+}
 
 
 void SimpleServer::handlePolls(int pollCount)
