@@ -81,13 +81,13 @@ void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, 
 			handlePost(client_fd, server_fd, config, route);
 			break;
 		case HttpMethod::DELETE:
-			handleDelete(client_fd);
+			handleDelete(client_fd, config);
 			break;
 		case HttpMethod::FORBIDDEN:
-			handleForbidden(client_fd);
+			handleForbidden(client_fd, config);
 			break;
 		default:
-			handleUnknown(client_fd);
+			handleUnknown(client_fd, config);
 			break;
 	}
 }
@@ -103,6 +103,7 @@ std::string HttpRequest::extractQueryString(std::string& request)
 }
 void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
 {
+	
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 	bool isFile = true;
 	std::string	content;
@@ -113,7 +114,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 
 	if(path.empty())
 	{
-		sendErrorResponse(client_fd, 404);
+		sendErrorResponse(client_fd, 404, config);
 		return;
 	}
 	int isCgiRequest = checkCgi(path, route);
@@ -127,7 +128,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		return;
 	}
 	else if (isCgiRequest < 0)
-		sendErrorResponse(client_fd, 502);
+		sendErrorResponse(client_fd, 502, config);
 
 	std::cout << BG_BRIGHT_BLUE << config._rootDir << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
@@ -141,11 +142,12 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	}
 	if(content.empty())
 	{
-		sendErrorResponse(client_fd, 403);
+		sendErrorResponse(client_fd, 403, config);
 		return;
 	}
 	sendResponse(client_fd, 200, content);	
 }
+
 
 std::string HttpRequest::getContentType()
 {
@@ -162,12 +164,9 @@ std::string HttpRequest::getContentType()
 	}
 }
 
-
-
-
-void HttpRequest::handleForbidden(const int& client_fd)
+void HttpRequest::handleForbidden(const int& client_fd, ServerConfig& config )
 {
-	sendErrorResponse(client_fd, 403);
+	sendErrorResponse(client_fd, 403, config);
 }
 
 
@@ -191,13 +190,13 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 		return;
 	}
 
-	sendErrorResponse(client_fd, 405);// wrong Code 
+	sendErrorResponse(client_fd, 405, config);// wrong Code 
 }
 
 
-void HttpRequest::handleUnknown(int fd)
+void HttpRequest::handleUnknown(int fd, ServerConfig& config)
 {
-	sendErrorResponse(fd, 405);
+	sendErrorResponse(fd, 405, config);
 }
 
 
@@ -208,7 +207,7 @@ int HttpRequest::deleteFile(const std::string& filename)
 }
 
 
-void HttpRequest::handleDelete(int fd)
+void HttpRequest::handleDelete(int fd, ServerConfig& config)
 {
 	std::string path = getPath();
 	if (path.front() == '/')
@@ -219,12 +218,12 @@ void HttpRequest::handleDelete(int fd)
 
 	if(!fileExists(path))
 	{
-		sendErrorResponse(fd, 404);
+		sendErrorResponse(fd, 404, config);
 		return;		
 	}
 	if(!deleteFile(path))
 	{
-		sendErrorResponse(fd, 500);
+		sendErrorResponse(fd, 500, config);
 		return;
 	}
 	sendResponse(fd,204, "Resource deleted successfully");

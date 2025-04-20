@@ -127,7 +127,6 @@ class ServerConfig
 		void	setIndex(std::vector<confToken>				&context, size_t lineNum);
 		void	setRoute(std::vector<confToken>				&context, size_t lineNum);
 		void	setRootDir(std::vector<confToken>			&context, size_t lineNum);
-		const std::string& getRootDir(void);
 };
 
 class MainConfig

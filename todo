@@ -12,3 +12,6 @@ location \.php as default cgi path or keep as is.
 are all settings considered in the corresponding functoins?
 
 error pages?!!?!??!
+
+
+return values send() recv()

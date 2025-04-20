@@ -228,7 +228,7 @@ void SimpleServer::handler(int fdIndex)
 		int code = 404;
 		if (invalid < 0)
 			code = 400;
-		_request.sendErrorResponse(client_fd, code);
+		_request.sendErrorResponse(client_fd, code, _serverConfigs[server_fd]);
 		return;
 	}
 	_request.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd], route);

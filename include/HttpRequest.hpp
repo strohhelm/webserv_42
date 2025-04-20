@@ -72,10 +72,10 @@ class HttpRequest
 		void	handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
 		void	handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
 		void	handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void	handleDelete(int fd);
-		void	handleUnknown(int fd);
-		void	handleForbidden(const int& client_fd);
-		void	sendErrorResponse(int fd, int statusCode);
+		void	handleDelete(int fd, ServerConfig& config);
+		void	handleUnknown(int fd, ServerConfig& config);
+		void	handleForbidden(const int& client_fd, ServerConfig& config);
+		void	sendErrorResponse(int fd, int statusCode, ServerConfig& config);
 		HttpMethod	stringToHttpMethod(const std::string& method);
 
 		HttpMethod			getMethod(routeConfig &route);
@@ -109,8 +109,6 @@ class HttpRequest
 		const std::unordered_map<std::string, std::string>& getHeaders() const {
 			return _headers;
 		}
-		void runCgiScriptGet(const int& client_fd, const std::string& fullPath);
-		void runCgiScriptPost(const int& client_fd, const std::string& fullPath, const std::string& path);
 
 		std::string extractQueryString(std::string& request);
 
