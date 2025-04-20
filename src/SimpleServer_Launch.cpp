@@ -119,21 +119,24 @@ void SimpleServer::readDataFromClient(int fdIndex)
 	std::string request;
 
 	// memset(&buffer, '\0', sizeof(buffer));
-	
-	while (request.find("\r\n\r\n") == std::string::npos)
+	if (!_recvBuffer[fdIndex].size())
 	{
-		bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
-		if (bytesReceived <= 0)
+		while (request.find("\r\n\r\n") == std::string::npos)
 		{
-			std::cerr << "RECV ERROR." << std::endl;
-			break;
+			bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
+			if (bytesReceived <= 0)
+			{
+				std::cerr << "RECV ERROR." << std::endl;
+				break;
+			}
+			request.append(buffer, bytesReceived);
 		}
-		request.append(buffer, bytesReceived);
+		_recvBuffer[fdIndex] = request;
 	}
 
-	size_t end = request.find("\r\n\r\n") + 4;
-	std::string header = request.substr(0, end);
-	std::string body = request.substr(end);
+	size_t end = _recvBuffer[fdIndex].find("\r\n\r\n") + 4;
+	std::string header = _recvBuffer[fdIndex].substr(0, end);
+	std::string body = _recvBuffer[fdIndex].substr(end);
 
 	size_t begin = header.find("Content-Length: ");
 	if (begin != std::string::npos)
@@ -143,26 +146,31 @@ void SimpleServer::readDataFromClient(int fdIndex)
 		std::string lenstr = header.substr(begin, end - begin);
 		if (lenstr.size())
 		{
-			int clen = std::stoi(lenstr) - body.size();
+			int clen = std::stoi(lenstr);
 			std::cout << "clen: " << clen << std::endl;
 
-			request.reserve(clen);
 			const int buffer_size = 4096;
 			char body_buffer[buffer_size];
 
-			int rlen = 0;
+			int rlen = body.size();
 			while (rlen < clen)
 			{
 				int to_read = std::min(buffer_size, clen - rlen);
 				std::cout << "to_read: " << to_read << std::endl;
 				int bytes = recv(client_fd, body_buffer, to_read, 0);
-				if (bytes <= 0)
+				if (bytes < 0)
 				{
+					// break;
 					std::cerr << "RECV ERROR. " << bytes << std::strerror(errno) << std::endl;
-					exit(1);
+					// _recvBuffer[fdIndex].append(body_buffer, bytes);
+					// exit(1);
+					return;
 				}
+				else if (bytes == 0)
+					break;
 				rlen += bytes;
-				request.append(body_buffer, bytesReceived);
+				std::cout << "bytes: " << bytes << std::endl;
+				_recvBuffer[fdIndex].append(body_buffer, bytes);
 			}
 			std::cout << "clen: " << clen << "rlen: " << rlen << std::endl;
 		}
@@ -170,9 +178,12 @@ void SimpleServer::readDataFromClient(int fdIndex)
 	else
 		std::cout << "not found" << std::endl;
 
+	std::ofstream rq("request");
+	rq << _recvBuffer[fdIndex];
+
 	// std::cout << "HEADER:\n" << header << std::endl;
 	// std::cout << "BODY:\n" << body << std::endl;
-	std::cout << "request:\n" << request << std::endl;
+	// std::cout << "request:\n" << request << std::endl;
 
 
 	// if(noDataReceived(bytesReceived))
@@ -181,7 +192,7 @@ void SimpleServer::readDataFromClient(int fdIndex)
 	// 	return ;
 	// }
 
-	_recvBuffer[fdIndex] = request;
+	// _recvBuffer[fdIndex] = request;
 }
 
 
@@ -218,9 +229,7 @@ int	SimpleServer::noDataReceived(int bytesReceived)
 
 int SimpleServer::isDataToWrite(const int& fdIndex)
 {
-	return (_poll_fds[fdIndex].revents & POLLOUT &&
-			(size_t)fdIndex < _recvBuffer.size() &&
-			!_recvBuffer[fdIndex].empty());
+	return (_poll_fds[fdIndex].revents & POLLOUT && !_recvBuffer[fdIndex].empty());
 }
 
 void SimpleServer::handler(int fdIndex)
