@@ -120,9 +120,6 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	std::cout << BG_GREEN << "isCgiRequest " << isCgiRequest << RESET << std::endl;
 	if(isCgiRequest > 0)
 	{
-		std::cout << BG_BRIGHT_MAGENTA << _requestLine._path << RESET << std::endl;
-		std::cout << BG_BRIGHT_MAGENTA << path << RESET << std::endl;
-		// _cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath());
 		std::string query = extractQueryString(_requestLine._path);
 		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath(), query);
 		_cgi.tokenizePath();
@@ -181,11 +178,14 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 
 	(void)server_fd;
+	bool isFile = true;
+
+	std::string path = getRequestedFile(isFile, config, route);
 
 	std::string query = "";
 	if(_requestLine._path.find("php") != std::string::npos)
 	{	
-		_cgi.setCgiParameter(client_fd, config, _requestLine._path, route.getCgiPath(), query);
+		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath(), query);
 		_cgi.tokenizePath();
 		_cgi.execute("POST", _rawBody);
 		return;
