@@ -86,19 +86,29 @@ void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, 
 			handlePost(client_fd, server_fd, config, route);
 			break;
 		case HttpMethod::DELETE:
-			handleDelete(client_fd);
+			handleDelete(client_fd, config);
 			break;
 		case HttpMethod::FORBIDDEN:
-			handleForbidden(client_fd);
+			handleForbidden(client_fd, config);
 			break;
 		default:
-			handleUnknown(client_fd);
+			handleUnknown(client_fd, config);
 			break;
 	}
 }
 
+std::string HttpRequest::extractQueryString(std::string& request)
+{
+	size_t pos = request.find('?');
+	if(pos != std::string::npos) // only at get
+	{
+		return request.substr(pos + 1);
+	}
+	return "";
+}
 void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
 {
+	
 	//check if we ALREADY HANDLED this request and are in downnloadmode.
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 	bool isFile = true;
@@ -110,21 +120,22 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	//evaluate downloadMode
 	if(path.empty())
 	{
-		sendErrorResponse(client_fd, 404);
+		sendErrorResponse(client_fd, 404, config);
 		return;
 	}
 	int isCgiRequest = checkCgi(path, route);
 	if (debug)std::cout << BG_GREEN << "isCgiRequest " << isCgiRequest << RESET << std::endl;
 	if(isCgiRequest > 0)
 	{
-		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath());
+		std::string query = extractQueryString(_requestLine._path);
+		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath(), query);
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
 		return;
 	}
 	else if (isCgiRequest < 0)
 	{
-		sendErrorResponse(client_fd, 500);
+		sendErrorResponse(client_fd, 500, config);
 		return;
 	}
 
@@ -140,7 +151,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	}
 	if(content.empty())
 	{
-		sendErrorResponse(client_fd, 403);
+		sendErrorResponse(client_fd, 403, config);
 		return;
 	}
 	sendResponse(client_fd, 200, content);
@@ -194,12 +205,9 @@ std::string HttpRequest::getContentType()
 	}
 }
 
-
-
-
-void HttpRequest::handleForbidden(const int& client_fd)
+void HttpRequest::handleForbidden(const int& client_fd, ServerConfig& config )
 {
-	sendErrorResponse(client_fd, 403);
+	sendErrorResponse(client_fd, 403, config);
 }
 
 
@@ -209,8 +217,7 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 	(void)server_fd;
-	(void)config;
-	(void)route;
+
 	if (debug)
 	extractRawBody();
 	{std::cout << "POST request incoming" << std::endl;
@@ -230,13 +237,28 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	// if(getContentType() != "")
 	// 	sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
 
-	sendErrorResponse(client_fd, 405);// wrong Code
+	sendErrorResponse(client_fd, 405,config);// wrong Code
+	bool isFile = true;
+
+	std::string path = getRequestedFile(isFile, config, route);
+
+	std::string query = "";
+	if(_requestLine._path.find("php") != std::string::npos)
+	{	
+		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath(), query);
+		_cgi.tokenizePath();
+		_cgi.execute("POST", _rawBody);
+		return;
+	}
+
+
+	sendErrorResponse(client_fd, 405, config);// wrong Code
 }
 
 
-void HttpRequest::handleUnknown(int fd)
+void HttpRequest::handleUnknown(int fd, ServerConfig& config)
 {
-	sendErrorResponse(fd, 405);
+	sendErrorResponse(fd, 405, config);
 }
 
 
@@ -247,7 +269,7 @@ int HttpRequest::deleteFile(const std::string& filename)
 }
 
 
-void HttpRequest::handleDelete(int fd)
+void HttpRequest::handleDelete(int fd, ServerConfig& config)
 {
 	//TODO checki f allowed to delete!!!!
 	std::string path = getPath();
@@ -259,12 +281,12 @@ void HttpRequest::handleDelete(int fd)
 
 	if(!fileExists(path))
 	{
-		sendErrorResponse(fd, 404);
+		sendErrorResponse(fd, 404, config);
 		return;		
 	}
 	if(!deleteFile(path))
 	{
-		sendErrorResponse(fd, 500);
+		sendErrorResponse(fd, 500, config);
 		return;
 	}
 	sendResponse(fd,204, "Resource deleted successfully");

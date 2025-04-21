@@ -1,7 +1,8 @@
+methods always set to false? ajehle - at least GET could be always set to true because setting up a server without methods makes no sense ?
 handleDelete response code
 
-cgi
-dir listing
+cgi ✅
+dir listing ✅
 errno output removen -> Error receiving data from client
 
 default error files, checking in sendErrorResponse if there is  a default file in this server, if so send it instead of response.
@@ -26,3 +27,23 @@ redirects
 
 errorcheck in config
 
+
+
+error pages?!!?!??!
+
+return values send() recv()
+
+error logfile wrong content
+
+setHostnamesToSystem and removeHostnamesFromSystem ✅
+
+{
+    config
+
+    -   error_page 502 server_name 500.html;    Error: stoi
+    -   	location / {
+		methods GET POST DELETE;
+		cgi /usr/bin/php-cgi;
+		123123 asdfadf;
+	}                                           Error: stoi
+}

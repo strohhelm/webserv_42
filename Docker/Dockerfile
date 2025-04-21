@@ -13,7 +13,8 @@ RUN apt-get install -y \
     zsh \
     nano \
     tree \
-	php-cgi
+	php-cgi \
+    siege
 
 
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && zsh

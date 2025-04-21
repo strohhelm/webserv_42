@@ -68,9 +68,10 @@ class SimpleServer
 		int 	bindAddressToSocket(int serverSocket_fd, struct sockaddr_in serviceAddress);
 		int		startListenOnSocket(int serverSocket_fd);
 
-		void	setHostnamesToSystem(); //TODO
-		void	removeHostnamesFromSystem(); //TODO
-
+		void	setHostnamesToSystem();
+		void	removeHostnamesFromSystem();
+		std::vector<std::string> readCurrentHosts(std::string pathToFile);
+		bool	isHostDefault(std::string host);
 
 		void	launch(void);
 		int		initPoll(void);

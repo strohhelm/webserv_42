@@ -48,7 +48,7 @@ int SimpleServer::initPoll(void)
 	poll() returns the number of descriptors that are ready for I/O, or -1 if an error occurred.  If the time limit expires, poll() returns 0.  If poll() returns with
     an error, including one due to an interrupted call, the fds array will be unmodified and the global variable errno will be set to indicate the error.
 */
-	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 0);
+	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 200);
 	// if (pollCount == 0)
 	// {
 	// 	// std::cout << "pollCount = 0" << std::endl;

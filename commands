@@ -1,0 +1,8 @@
+siege http://localhost:8080 -c 255 -t 1m -b
+
+255 clients
+1 minute
+benchmark
+
+
+top - to monitor processes
