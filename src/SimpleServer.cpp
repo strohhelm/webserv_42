@@ -28,16 +28,14 @@ _domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInter
 
 std::vector<std::string> SimpleServer::readCurrentHosts(std::string pathToFile)
 {
-	std::cout << "readCurrentHosts\n";
+	// std::cout << "readCurrentHosts\n";
 	std::vector<std::string> hostsInFile;
 	std::string buffer;
 	std::fstream readFile;
 
 	readFile.open(pathToFile, std::ios::in);
-	if(readFile.fail() == true)
+	if(readFile.fail() == true || !readFile.is_open())
 	{
-		std::cout << "error readCurrentHosts\n";
-
 		return {};
 	}
 	if(readFile.is_open())
@@ -78,9 +76,9 @@ void SimpleServer::removeHostnamesFromSystem()
 	}
 
 	std::ofstream writeFile(pathToFile);
-	if (!writeFile.is_open())
+	if (writeFile.fail() || !writeFile.is_open())
 	{
-		std::cerr << "Error: could not write to " << pathToFile << "\n";
+		std::cerr << "Error: could not open " << pathToFile << "\n";
 		return;
 	}
 
@@ -88,12 +86,12 @@ void SimpleServer::removeHostnamesFromSystem()
 	{
 		if (isHostDefault(host) || host.find("localhost") != std::string::npos)
 		{
-			std::cout << "Added: " << host << "\n";
-			writeFile << host << "\n"; // preserve default entries
+			// std::cout << "Added: " << host << "\n";
+			writeFile << host << "\n";
 		}
 		else
 		{
-			std::cout << "Removed: " << host << "\n";
+			// std::cout << "Removed: " << host << "\n";
 		}
 	}
 }
@@ -125,8 +123,6 @@ const char* SimpleServer::ServerConfigException::what() const noexcept
 {
 	return "ServerConfigError";
 }
-
-
 
 
 void SimpleServer::closeAllSockets(void)

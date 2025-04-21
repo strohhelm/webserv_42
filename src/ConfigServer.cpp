@@ -153,6 +153,8 @@ void	ServerConfig::checkValues(void)
 		throw std::runtime_error("Must have Server Name!");
 	if (_rootDir.empty())
 		throw std::runtime_error("Must have root directory!");
+	if(_routes.empty())
+		throw std::runtime_error("Must have route!");
 	for (auto& r:_routes)
 	{
 		r.second.checkValues(*this);
