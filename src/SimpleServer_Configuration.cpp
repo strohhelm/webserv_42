@@ -46,7 +46,8 @@ int SimpleServer::serverConfiguration(void)
 		if(bindAddressToSocket(serverSocket_fd, serviceAddress) < 0)
 		{
 			std::cout << RED << "BINDING SOCKET TO ADRESS FAILED" << RESET << std::endl;	
-			return 1;
+			// return 1;
+			break;
 		}
 		std::cout << GREEN << "BINDING SOCKET TO ADRESS SUCCESSFULL" << RESET << std::endl;	
 		
@@ -77,6 +78,8 @@ int SimpleServer::serverConfiguration(void)
 			std::cout<<GREEN<<"\""<<YELLOW<<i.first << GREEN<<"\", ";
 		std::cout<<"\n"<< RESET << std::endl;
 	}
+	if(_serverSocket_fds.empty())
+		return 1;
 	return 0;
 }
 

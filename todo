@@ -47,3 +47,5 @@ setHostnamesToSystem and removeHostnamesFromSystem ✅
 		123123 asdfadf;
 	}                                           Error: stoi
 }
+
+Error: [setHttp]: Syntax Error: "123" line: 11 -> directive not valid!

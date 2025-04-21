@@ -91,7 +91,7 @@ void SimpleServer::handlePolls(int pollCount)
 			handler(fdIndex);
 		}
 		else if (check > NEEDS_TO_WRITE  && isDataToWrite(fdIndex))
-			{_clients[client_fd].sendErrorResponse(client_fd, check);_clients[client_fd]._state.reset();}
+			_clients[client_fd].sendErrorResponse(client_fd, check, _serverConfigs[_listeningServerFromClient[client_fd]]);
 		fdIndex--;
 	}
 }
@@ -300,24 +300,25 @@ void SimpleServer::handler(int fdIndex)
 	
 	int client_fd = _poll_fds[fdIndex].fd;
 	int server_fd = _listeningServerFromClient[client_fd];
+	ServerConfig& config = _serverConfigs[server_fd];
 	HttpRequest &client = _clients[client_fd];
 	routeConfig route;
 	if (client._state._isValidRequest == 0)
 	{
 		client._state._isNewRequest = false;
-		int invalid = client.validateRequest(_serverConfigs[server_fd], route);
+		int invalid = client.validateRequest(config, route);
 		if (invalid != 0)
 		{
 			client._state._isValidRequest = -1;
 			int code = 404;
 			if (invalid < 0)
 				code = 400;
-			client.sendErrorResponse(client_fd, code);
+			client.sendErrorResponse(client_fd, code, config);
 			return;
 		}
 		client._state._isValidRequest = 1;
 	}
-	client.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd], route);
+	client.handleHttpRequest(client_fd, server_fd, config, route);
 
 	// removeClient(fdIndex);
 }

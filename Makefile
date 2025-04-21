@@ -18,7 +18,6 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
 				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
-				$(SRC_DIR)/Post.cpp \
 				$(SRC_DIR)/ServerConfig.cpp \
 				$(SRC_DIR)/ConfigMain.cpp \
 				$(SRC_DIR)/ConfigRoute.cpp \
@@ -26,6 +25,7 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/ConfigUtils.cpp \
 				$(SRC_DIR)/ConfigHelper.cpp \
 				$(SRC_DIR)/CGI.cpp 
+#				$(SRC_DIR)/Post.cpp 
 
 
 
@@ -33,6 +33,7 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 OBJECTS		= $(addprefix $(OBJ_DIR)/, $(notdir $(FUNCTIONS:.cpp=.o)))
 
 all : $(NAME)
+	mkdir -p logs
 
 # INTERNAL RULE
 $(NAME) : $(OBJECTS)

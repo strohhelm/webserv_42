@@ -231,7 +231,7 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	if (it != _headers.end())
 	{
 		std::cout << it->second << std::endl;
-		Post p(_requestLine._path, _rawBody, it->second, client_fd);
+		// Post p(_requestLine._path, _rawBody, it->second, client_fd);
 	}
 
 	// if(getContentType() != "")

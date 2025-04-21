@@ -22,6 +22,7 @@ _domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInter
 		closeAllSockets();
 		throw ServerConfigException();
 	}
+	
 	setHostnamesToSystem();
 	launch();
 }
