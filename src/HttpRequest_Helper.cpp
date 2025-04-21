@@ -1,6 +1,5 @@
 #include"../include/ServerConfig.hpp"
 
-#include <sys/stat.h> //stat
 #include <filesystem>
 
 /*
@@ -17,28 +16,29 @@
 bool HttpRequest::fileExists(const std::string& path)
 {
 	
-	std::cout << "file exists function path " << path << std::endl;
+	if (debug)std::cout << ORANGE<<"File " << path;
 	struct stat buffer;
 	if(stat(path.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode))
 	{
-		std::cout << "file exists" << std::endl;
+		if (debug)std::cout << " exists" <<RESET<< std::endl;
 		return true;
 	}
-	std::cout << "file exists not" << std::endl;
+	if (debug)std::cout << " exists not" << RESET<<std::endl;
 	return false;
 }
 
 
 bool HttpRequest::directoryExists(const std::string& path)
 {
+	if (debug)std::cout << ORANGE<<"Directory " << path;
 	struct stat buffer;
 	auto it = path.rbegin();
 	if(*it == '/' && stat(path.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))
 	{
-		std::cout << "dir exists" << std::endl;
+		if (debug)std::cout << " exists" << RESET<<std::endl;
 		return true;
 	}
-	std::cout << "dir exists not" << std::endl;
+	if (debug)std::cout << " exists not" << RESET<<std::endl;
 	return false;
 }
 
@@ -60,7 +60,7 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 
 	for (const auto& entry : std::filesystem::directory_iterator(fullPath))
 	{
-		std::cout << entry.path().filename() << std::endl;
+		if (debug)std::cout << entry.path().filename() << std::endl;
 		html << "<p>" << entry.path().filename();
 	}
 	html << "</p>";
@@ -102,20 +102,20 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 	}
 	fullPath = rootDir + path;
 
-	std::cout << "fullPath " << fullPath << std::endl;
+	if (debug)std::cout << ORANGE<<"Build fullPath: " << fullPath << std::endl;
 
 	auto it = _requestLine._path.rbegin();
 	if(*it == '/')
 	{
-		std::cout << "ends with /" << std::endl;
+		if (debug)std::cout << "ends with /" << std::endl;
 		// are there a default files and does one of them exist?
 		for(auto it : route._defaultFile)
 		{
-			std::cout << it << std::endl;
+			if (debug)std::cout << it << std::endl;
 		}
 		for(auto it : route._defaultFile)
 		{
-			std::cout << "it "<< it << std::endl;
+			if (debug)std::cout << "it "<< it << std::endl;
 			std::string temp = fullPath + it;
 			if(access(temp.c_str(), F_OK) == 0)// read access?
 			{
@@ -125,6 +125,7 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 		}
 		// return fullPath; //extract from config. if 2 indexes are availiable check all and give first that fits?
 	}
+	if(debug)std::cout<< RESET;
 	if(fullPath.find("..") != std::string::npos) //to avoid forbidden access
 	{
 		return "";
@@ -136,7 +137,7 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config,routeConfig& route)
 {
 	std::string fullPath = buildFullPath(config, route);
-	std::cout << "fullPath " << fullPath << std::endl;
+	if(debug)std::cout <<ORANGE<< "requested File " << RESET<<fullPath << std::endl;
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))

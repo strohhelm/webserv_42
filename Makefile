@@ -1,5 +1,5 @@
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 #-g -O0
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 -fsanitize=address -g -O0
 # -g -fsanitize=address	
 
 NAME		= webserv

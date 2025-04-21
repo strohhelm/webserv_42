@@ -35,9 +35,7 @@ enum State
 {
 	NEEDS_TO_READ,
 	NEEDS_TO_WRITE,
-	ERROR_501, // method longer than any implemented one
-	ERROR_414, //if uri is too long
-	ERROR_400, //if target contains whitespace | 400 or 301
+
 };
 
 struct requestLine 
@@ -50,8 +48,10 @@ struct requestLine
 struct RequestState
 {
 	std::string		_buffer;
-	size_t			_ContentBytesRecieved = 0;
-	size_t			_contentLength = 0;
+	int				_isNewRequest			= true;
+	int				_isValidRequest			= 0;
+	size_t			_ContentBytesRecieved	= 0;
+	size_t			_contentLength			= 0;
 	bool			_requestlineRecieved	= false;
 	bool			_requestlineParsed		= false;
 
@@ -60,9 +60,11 @@ struct RequestState
 
 	bool			_uploadEvaluated		= false;
 	bool			_uploadMode				= false;
+	
 	bool			_bodyRecieved			= false;
 	bool			_uploadComplete			= false;
 
+	bool			_downloadEvaluated		= false;
 	bool			_downloadMode			= false;
 	bool			_downloadComplete		= false;
 
@@ -72,6 +74,7 @@ struct RequestState
 	std::ofstream	_uploadFile;
 	std::string		_tempDownloadFilePath;
 	std::ifstream	_downloadFile;
+	void	reset();
 };
 
 class HttpRequest
@@ -97,20 +100,20 @@ class HttpRequest
 
 
 		HttpRequest(void);
-		int		parseHttpRequest(void);
-		int		clearOldRequest(void);
+		// int		parseHttpRequest(void);
+		// int		clearOldRequest(void);
 		size_t	extractContentLength(void);
 		int		extractAndTokenizeHeader(void);
-		int		extractRawBody(void);
+		void	extractRawBody(void);
 		int		extractRawRequestLine(void);
 		int		tokenizeRequestLine(void);
-		int		tokenizeBody(void);
+		void	tokenizeBody(void);
 	
 		void	setMethod(const std::string& method);
 		void	setPath(const std::string& path);
 		void	setVersion(const std::string& version);
  	
-		int			evaluateState(void);
+		int			evaluateState(int client_fd);
 		int			validateRequest(ServerConfig& config, routeConfig& route);
 		bool		validateHost(std::vector<std::string> &serverNames);
 		int			checkCgi(std::string path, routeConfig& route);

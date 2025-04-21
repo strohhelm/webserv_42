@@ -1,6 +1,5 @@
 #include "../include/ServerConfig.hpp"
 
-
 void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"Error_log Tokens:"<<std::endl;
@@ -125,7 +124,7 @@ MainConfig::MainConfig(std::string &filename)
 	// printConfTokens(tokens);
 	parseTokens<MainConfig>(tokens, directives, *this);
 	checkValues();
-	printConfig();
+	if (debug)printConfig();
 }
 
 

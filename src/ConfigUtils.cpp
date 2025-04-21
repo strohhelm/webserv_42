@@ -1,4 +1,4 @@
-#include "../include/SimpleServer.hpp"
+#include "../include/ServerConfig.hpp"
 
 void prepareLine(std::string &line, size_t lineNum)
 {

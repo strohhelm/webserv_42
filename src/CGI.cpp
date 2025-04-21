@@ -1,5 +1,4 @@
 
-#include "../include/Colors.hpp"
 #include <arpa/inet.h> // send()
 #include "../include/ServerConfig.hpp"
 #include <cerrno> // needs to be removed when done only for debugging
@@ -12,8 +11,8 @@ void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::strin
 	_config = &config;
 	_requestPath = requestPath;
 	_phpCgiPathStr = cgiPath;
-	std::cout << RED << _phpCgiPathStr << RESET << std::endl;
-	std::cout << RED << _requestPath << RESET << std::endl;
+	if (debug)std::cout << RED << _phpCgiPathStr << RESET << std::endl;
+	if (debug)std::cout << RED << _requestPath << RESET << std::endl;
 }
 
 void CGI::tokenizePath(void)
@@ -29,10 +28,10 @@ void CGI::tokenizePath(void)
 	{
 		_scriptPath = _requestPath;
 	}
-	// std::cout << "CGI _requestPath: " << _requestPath << std::endl;
-	// std::cout << "CGI _fullPath: " << _fullPath << std::endl;
-	// std::cout << "SCRIPT_FILENAME: " << _fullPath << std::endl;
-	// std::cout << "Checking file: " << (access(_fullPath.c_str(), F_OK) == 0 ? "Exists" : "DOES NOT EXIST") << std::endl;
+	if (debug)std::cout << "CGI _requestPath: " << _requestPath << std::endl;
+	if (debug)std::cout << "CGI _fullPath: " << _fullPath << std::endl;
+	if (debug)std::cout << "SCRIPT_FILENAME: " << _fullPath << std::endl;
+	if (debug)std::cout << "Checking file: " << (access(_fullPath.c_str(), F_OK) == 0 ? "Exists" : "DOES NOT EXIST") << std::endl;
 }
 
 
@@ -205,16 +204,16 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	httpResponse += cgiOutput;
 
 	/**********************************************************/
-	std::cout << "SCRIPT_FILENAME=" << _config->_rootDir + _scriptPath << std::endl;	//www/get.php
-	std::cout << "SCRIPT_NAME=" << _scriptPath << std::endl; ///get.php
-	std::cout << "argv\n"
+	if (debug)std::cout << "SCRIPT_FILENAME=" << _config->_rootDir + _scriptPath << std::endl;	//www/get.php
+	if (debug)std::cout << "SCRIPT_NAME=" << _scriptPath << std::endl; ///get.php
+	if (debug)std::cout << "argv\n"
 				<< _phpCgiPathStr.c_str() << "\n"
 				<< _config->_rootDir + _scriptPath << "\n"
 				<< "---\n"
 				<< std::endl;
 
 	/**********************************************************/
-	std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
+	if (debug)std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
 
 
 	send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0);
@@ -223,7 +222,7 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 // std::array<int, 3> a = {1, 2, 3};
 void CGI::execute(std::string method, std::string rawBody)
 {
-	std::cout << "CGI" << std::endl;
+	if (debug)std::cout << "CGI" << std::endl;
 	// init fds
 	_parent = {-1, -1};
 	_child = {-1, -1};

@@ -18,6 +18,7 @@
 #include <chrono>
 #include "./Colors.hpp"
 #include "./HttpRequest.hpp"
+#include "./Macros.hpp"
 
 
 enum class HttpMethod;

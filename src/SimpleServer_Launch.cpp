@@ -1,5 +1,4 @@
 #include "../include/SimpleServer.hpp"
-
 #include "../include/SignalHandler.hpp"
 
 
@@ -68,8 +67,11 @@ int SimpleServer::initPoll(void)
 void SimpleServer::handlePolls(int pollCount)
 {
 	int fdIndex = _poll_fds.size() - 1;
+	int client_fd;
+	int check = 0;
 	while (pollCount && fdIndex >= 0)
 	{
+		client_fd = _poll_fds[fdIndex].fd;
 		// std::cout << "fdIndex " << fdIndex << std::endl;
 		if(isDataToRead(fdIndex))
 		{
@@ -82,9 +84,9 @@ void SimpleServer::handlePolls(int pollCount)
 				readDataFromClient(fdIndex);
 			}
 		}
-		int check = _clients[_poll_fds[fdIndex].fd].evaluateState();
-
-		if(isDataToWrite(fdIndex))
+		if (_serverSocket_fds.count(client_fd) == 0)
+			check = _clients[client_fd].evaluateState(client_fd);
+		if(check == NEEDS_TO_WRITE && isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
 		}
@@ -142,18 +144,13 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 	_listeningServerFromClient[client_fd] = server_fd;
 }
 
-std::string& SimpleServer::readBytes()
-{
-	
-}
-
 
 int SimpleServer::readDataFromClient(int fdIndex)
 {
 
 	int		client_fd = _poll_fds[fdIndex].fd;
 	HttpRequest& client = _clients[client_fd]; // reference to current client
-	std::cout << "readDataFromClient" << std::endl;
+	if (debug)std::cout << ORANGE<<"ReadDataFromClient" <<RESET<< std::endl;
 
 
 	char	buffer[BUFFER_SIZE];
@@ -168,7 +165,7 @@ int SimpleServer::readDataFromClient(int fdIndex)
 		removeClient(fdIndex);  // Remove client on error
 		return 0;
 	}
-	// std::cout << std::string(buffer, bytesReceived) << std::endl;
+	// if (debug) std::cout << std::string(buffer, bytesReceived) << std::endl;
 	if (bytesReceived == 0)
 	{
 		// Connection was closed by the client
@@ -176,6 +173,8 @@ int SimpleServer::readDataFromClient(int fdIndex)
 		removeClient(fdIndex);
 		return 0;
 	}
+	if (client._state._isNewRequest)
+		client._state._isNewRequest = false;
 	client._state._buffer.append(std::string(buffer, bytesReceived));
 	_clientLastActivityTimes[client_fd] = std::chrono::steady_clock::now();
 	return 1;
@@ -188,6 +187,7 @@ void SimpleServer::removeClient(int fdIndex)
 	// close(client_fd);
 	// _poll_fds.erase(_poll_fds.begin() + fdIndex);
 	// Close the client socket
+	if (debug)std::cout<<ORANGE<<"removing client on fd: "<<client_fd<<RESET<<std::endl;
 	close(client_fd);
 	for (auto it = _poll_fds.begin(); it != _poll_fds.end(); ++it)
 	{
@@ -216,33 +216,40 @@ int	SimpleServer::noDataReceived(int bytesReceived)
 
 int SimpleServer::isDataToWrite(const int& fdIndex)
 {
-    return (_poll_fds[fdIndex].revents & POLLOUT && !_recvBuffer[fdIndex].empty());
+    return (_poll_fds[fdIndex].revents & POLLOUT);
 }
 
 
 
 void SimpleServer::handler(int fdIndex)
 {
-	_request.parseHttpRequest(_recvBuffer[fdIndex]);
-	_recvBuffer[fdIndex].clear();
+	// _request.parseHttpRequest(_recvBuffer[fdIndex]);
+	// _recvBuffer[fdIndex].clear();
 	
-	std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
-	_request.showHeader();
-	_request.showBody();
+	// std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
+	// _request.showHeader();
+	// _request.showBody();
 	
 	int client_fd = _poll_fds[fdIndex].fd;
 	int server_fd = _listeningServerFromClient[client_fd];
+	HttpRequest &client = _clients[client_fd];
 	routeConfig route;
-	int invalid =  _request.validateRequest(_serverConfigs[server_fd], route);
-	if (invalid != 0)
+	if (client._state._isValidRequest == 0)
 	{
-		int code = 404;
-		if (invalid < 0)
-			code = 400;
-		_request.sendErrorResponse(client_fd, code);
-		return;
+		client._state._isNewRequest = false;
+		int invalid = client.validateRequest(_serverConfigs[server_fd], route);
+		if (invalid != 0)
+		{
+			client._state._isValidRequest = -1;
+			int code = 404;
+			if (invalid < 0)
+				code = 400;
+			client.sendErrorResponse(client_fd, code);
+			return;
+		}
+		client._state._isValidRequest = 1;
 	}
-	_request.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd], route);
+	client.handleHttpRequest(client_fd, server_fd, _serverConfigs[server_fd], route);
 
 	// removeClient(fdIndex);
 }
