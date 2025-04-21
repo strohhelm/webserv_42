@@ -4,7 +4,7 @@ services:
     container_name: ubu
     image: ubui:latest
     ports:
-      - 8080:8080
+      - 8080-8089:8080-8089
     volumes:
       - ../.:/app
     working_dir: /app

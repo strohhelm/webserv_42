@@ -123,6 +123,7 @@ void CGI::buildEnvStrings(std::string method, std::string rawBody)
 	_envStrings = {
 		"GATEWAY_INTERFACE=CGI/1.1",
 		"REDIRECT_STATUS=200",
+		"SERVER_PROTOCOL=HTTP1.1",
 		"REQUEST_METHOD=" + method,
 		"SCRIPT_FILENAME=" + _scriptPath, //www/get.php
 		"SCRIPT_NAME=" + _scriptPath, ///get.php
