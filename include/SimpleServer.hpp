@@ -13,69 +13,82 @@
 #include <exception>
 
 #include <fcntl.h>
+#include <chrono>
 
+#include <unordered_set>
 
+#include "Macros.hpp"
+#include "ServerConfig.hpp"
 
-#include"HttpRequest.hpp"
 
 
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#define BUFFER_SIZE 2048
+
 
 class SimpleServer
 {
 	private:
-		int							_domain;
-		int							_type;
-		int							_protocol;
-		int							_port;
-		u_long						_networkInterface;
-		struct sockaddr_in			_serviceAddress;
-		socklen_t					_serviceAddressLen;
-		int							_maxAmountOfConnections;
+		int										_domain;
+		int										_type;
+		int										_protocol;
+		u_long									_networkInterface;
+		struct sockaddr_in						_serviceAddress;
+		socklen_t								_serviceAddressLen;
+		int										_maxAmountOfConnections; // from config?
 
-		int							_serverSocket_fd;
-
+		
 
 		std::vector<struct pollfd>				_poll_fds;
-		std::unordered_map<int, std::string>	_recvBuffer;
-
-		std::unordered_map<int, std::string>	_recvHeader;
-		std::unordered_map<int, bool>			_headerParsed;
-		std::unordered_map<int, int>			_clen;
-		std::unordered_map<int, std::string>	_recvBody;
-		std::unordered_map<int, bool>			_done;
+		// std::unordered_map<int, std::string>	_recvBuffer;
+		
+		
+		std::map<int, HttpRequest>				_clients;
 
 
+		std::vector<ServerConfig>				_rawConfigs;
+		std::map<int, ServerConfig>				_serverConfigs;
 
-		HttpRequest			_request;
+
+		std::unordered_set<int>					_serverSocket_fds;
+
+		std::unordered_map<int, int>			_listeningServerFromClient;
+		
+		std::unordered_map<int, std::chrono::steady_clock::time_point> _clientLastActivityTimes;
+
 
 	public:
-		SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections);
+		SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);
 		~SimpleServer();
 		
 		int		serverConfiguration(void);
-		int 	createSocket(void);
-		void 	initAddress(void);
-		int 	bindAddressToSocket(void);
-		int		startListenOnSocket(void);
+		int 	createSocket();
+		struct sockaddr_in	initAddress(int port);
+		int 	bindAddressToSocket(int serverSocket_fd, struct sockaddr_in serviceAddress);
+		int		startListenOnSocket(int serverSocket_fd);
+
+		void	setHostnamesToSystem(); //TODO
+		void	removeHostnamesFromSystem(); //TODO
+
 
 		void	launch(void);
 		int		initPoll(void);
-		void	handlePolls(void);
+		void	handlePolls(int pollCount);
 
-
-		int		isDataToRead(const int& fdIndex);
-		int		isDataToWrite(const int& fdIndex);
-		int		isNewConnection(const int& fdIndex);
-		void	acceptNewConnection(void);
+		void	checkState();
+		int		isDataToRead(const int&			fdIndex);
+		int		isDataToWrite(const int&		fdIndex);
+		bool	isNewConnection(const int&		fdIndex);
+		void	acceptNewConnection(const int&	fdIndex);
 		
-		void	readDataFromClient(int fdIndex);
-		int		noDataReceived(int bytesReceived);
-		void	removeClient(int fdIndex);
 
+		int				readDataFromClient(int	fdIndex);
+		std::string&	readBytes();
+		int				noDataReceived(int		bytesReceived);
+		void			removeClient(int		fdIndex);
+
+		void	closeAllSockets(void);
 
 		void	handler(int fdIndex);
 
@@ -85,7 +98,13 @@ class SimpleServer
 				const char* what() const noexcept override;
 		};
 
-		
+		void	closeConnection(int			fdIndex);
+		bool	shouldCloseConnection(int	fdIndex);
+		void	resetIdleTimeout(int		fdIndex);
+
+		void	checkIdleConnections(void);
+
+
 };
 
 #endif

@@ -1,5 +1,6 @@
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++17
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 -fsanitize=address -g -O0
+# -g -fsanitize=address	
 
 NAME		= webserv
 OBJ_DIR		= obj
@@ -18,6 +19,13 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
 				$(SRC_DIR)/Post.cpp \
+				$(SRC_DIR)/ServerConfig.cpp \
+				$(SRC_DIR)/ConfigMain.cpp \
+				$(SRC_DIR)/ConfigRoute.cpp \
+				$(SRC_DIR)/ConfigServer.cpp \
+				$(SRC_DIR)/ConfigUtils.cpp \
+				$(SRC_DIR)/ConfigHelper.cpp \
+				$(SRC_DIR)/CGI.cpp 
 
 
 

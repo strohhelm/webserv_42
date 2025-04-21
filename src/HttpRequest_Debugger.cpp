@@ -1,4 +1,5 @@
 #include"../include/HttpRequest.hpp"
+#include"../include/Macros.hpp"
 
 
 

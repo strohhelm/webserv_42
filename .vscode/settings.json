@@ -75,6 +75,10 @@
 		"mutex": "cpp",
 		"ratio": "cpp",
 		"stack": "cpp",
-		"filesystem": "cpp"
+		"filesystem": "cpp",
+		"unordered_set": "cpp",
+		"regex": "cpp",
+		"*.tpp": "cpp",
+		"regex": "cpp"
 	}
 }

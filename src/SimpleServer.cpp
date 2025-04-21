@@ -8,18 +8,19 @@ SimpleServer::~SimpleServer()
 	{
 		close(fd.fd);
 	}
+	closeAllSockets();
 }
 
-SimpleServer::SimpleServer(int domain, int type, int protocol, int port, u_long networkInterface, int maxAmountOfConnections) :
-_domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterface(networkInterface), _maxAmountOfConnections(maxAmountOfConnections)
+SimpleServer::SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections,std::vector<ServerConfig> configs) :
+_domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInterface), _maxAmountOfConnections(maxAmountOfConnections), _rawConfigs(configs)
 {
+
 	if(serverConfiguration())
 	{
-		close(_serverSocket_fd);
+		// close(_serverSocket_fd);
+		closeAllSockets();
 		throw ServerConfigException();
 	}
-	
-	std::cout << BG_BRIGHT_GREEN << "STARTING SERVER" << RESET << std::endl;
 	launch();
 }
 
@@ -27,4 +28,15 @@ _domain(domain), _type(type), _protocol(protocol), _port(port), _networkInterfac
 const char* SimpleServer::ServerConfigException::what() const noexcept
 {
 	return "ServerConfigError";
+}
+
+
+
+
+void SimpleServer::closeAllSockets(void)
+{
+	for(auto socket : _serverSocket_fds)
+	{
+		close(socket);
+	}
 }

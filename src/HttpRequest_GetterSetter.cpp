@@ -1,4 +1,4 @@
-#include"../include/HttpRequest.hpp"
+#include"../include/ServerConfig.hpp"
 
 /********************/
 /*		Helper		*/
@@ -34,9 +34,12 @@ void HttpRequest::setMethod(const std::string& method)
 	_requestLine._method = stringToHttpMethod(method);
 }
 
-const HttpMethod& HttpRequest::getMethod(void)
+HttpMethod HttpRequest::getMethod(routeConfig &route)
 {
-	return _requestLine._method;
+	if (route.checkMethod(_requestLine._method))
+		return (_requestLine._method );
+	else
+		return HttpMethod::FORBIDDEN;
 }
 
 void HttpRequest::setVersion(const std::string& version)

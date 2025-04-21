@@ -1,6 +1,5 @@
-#include"../include/HttpRequest.hpp"
+#include"../include/ServerConfig.hpp"
 
-#include <sys/stat.h> //stat
 #include <filesystem>
 
 /*
@@ -17,44 +16,40 @@
 bool HttpRequest::fileExists(const std::string& path)
 {
 	
-	std::cout << "file exists function path " << path << std::endl;
+	if (debug)std::cout << ORANGE<<"File " << path;
 	struct stat buffer;
 	if(stat(path.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode))
 	{
-		std::cout << "file exists" << std::endl;
+		if (debug)std::cout << " exists" <<RESET<< std::endl;
 		return true;
 	}
-	std::cout << "file exists not" << std::endl;
+	if (debug)std::cout << " exists not" << RESET<<std::endl;
 	return false;
-	
 }
 
 
 bool HttpRequest::directoryExists(const std::string& path)
 {
+	if (debug)std::cout << ORANGE<<"Directory " << path;
 	struct stat buffer;
-	if(stat(path.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))
+	auto it = path.rbegin();
+	if(*it == '/' && stat(path.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode))
 	{
-		std::cout << "dir exists" << std::endl;
+		if (debug)std::cout << " exists" << RESET<<std::endl;
 		return true;
 	}
-	std::cout << "dir exists not" << std::endl;
+	if (debug)std::cout << " exists not" << RESET<<std::endl;
 	return false;
 }
 
-bool HttpRequest::directoryListingIsOff()
-{
-	// check for config File
-	return false;
-}
 
-std::string HttpRequest::serveDirectory(std::string fullPath)
+std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config, routeConfig& route)
 {
 	std::stringstream html;
-	// std::cout << "serving Directory" << std::endl;
-	if(directoryListingIsOff())
+	(void)config;
+	if((!route.isDirListingActive()))
 		return"";
-
+	
 	html << "<!DOCTYPE html>\n"
 		 <<	"<html>\n"
 		 << "<head>\n"
@@ -65,7 +60,7 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 
 	for (const auto& entry : std::filesystem::directory_iterator(fullPath))
 	{
-		std::cout << entry.path().filename() << std::endl;
+		if (debug)std::cout << entry.path().filename() << std::endl;
 		html << "<p>" << entry.path().filename();
 	}
 	html << "</p>";
@@ -79,14 +74,58 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 	return html.str();
 }
 
-std::string HttpRequest::buildFullPath(void)
-{
-	std::string _rootDir = "www"; // extract from config file object
-	std::string fullPath = _rootDir + _requestLine._path;
-	if(_requestLine._path == "/")
+/*
+	size_t pos = _requestPath.find('?');
+	if(pos != std::string::npos) // only at get
 	{
-		return fullPath + "index.html"; //extract from config. if 2 indexes are availiable check all and give first that fits?
+		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
+		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
 	}
+	else // only at Post
+	{
+		_scriptPath = _requestPath;
+	}
+*/
+
+
+std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
+{
+	(void)config;
+	std::string rootDir = route.getRootDir();
+	std::string path = _requestLine._path;
+	std::string fullPath;
+	
+	size_t pos = path.find('?');
+	if (pos != std::string::npos)
+	{
+		path = path.substr(0, pos);
+	}
+	fullPath = rootDir + path;
+
+	if (debug)std::cout << ORANGE<<"Build fullPath: " << fullPath << std::endl;
+
+	auto it = _requestLine._path.rbegin();
+	if(*it == '/')
+	{
+		if (debug)std::cout << "ends with /" << std::endl;
+		// are there a default files and does one of them exist?
+		for(auto it : route._defaultFile)
+		{
+			if (debug)std::cout << it << std::endl;
+		}
+		for(auto it : route._defaultFile)
+		{
+			if (debug)std::cout << "it "<< it << std::endl;
+			std::string temp = fullPath + it;
+			if(access(temp.c_str(), F_OK) == 0)// read access?
+			{
+				fullPath += it; //extract from config. if 2 indexes are availiable check all and give first that fits?
+				break;
+			} 
+		}
+		// return fullPath; //extract from config. if 2 indexes are availiable check all and give first that fits?
+	}
+	if(debug)std::cout<< RESET;
 	if(fullPath.find("..") != std::string::npos) //to avoid forbidden access
 	{
 		return "";
@@ -95,26 +134,25 @@ std::string HttpRequest::buildFullPath(void)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile)
+std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config,routeConfig& route)
 {
-	std::string fullPath = buildFullPath();
+	std::string fullPath = buildFullPath(config, route);
+	if(debug)std::cout <<ORANGE<< "requested File " << RESET<<fullPath << std::endl;
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
 	{
 		isFile = false;
-		return(serveDirectory(fullPath));
+		return(serveDirectory(fullPath, config, route));
 	}
 	return "";
 }
 
 std::string HttpRequest::readFileContent(const std::string& path)
 {
-	std::cout << "path:::\n" << path << std::endl;
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
-
 		return "";
 	}
 	std::stringstream buffer;
@@ -123,12 +161,9 @@ std::string HttpRequest::readFileContent(const std::string& path)
 }
 
 
-void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& message)
+void HttpRequest::sendErrorResponse(int fd, int statusCode)
 {
-	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + message + "\r\n";
-	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
-	response += "Content-Type: text/plain\r\n\r\n";
-	response += message;
+	std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 }
@@ -136,13 +171,21 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, const std::string& m
 
 void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message)
 {
+	std::string response = buildResponse(statusCode, "OK" , message, "text/html");
 
-	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " OK\r\n";
-	response += "Content-Length: " + std::to_string(message.size()) + "\r\n";
-	response += "Content-Type: text/html\r\n";
-	response += "\r\n";
-	response += message;
-	
 	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
 
+}
+
+std::string HttpRequest::buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType)
+{
+	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + CodeMessage;
+	response += "\r\n";
+	response += "Content-Length: " + std::to_string(message.size());
+	response += "\r\n";
+	response += "Content-Type:" + contentType; 
+	response += "\r\n\r\n";
+	response += message;
+
+	return response;
 }
