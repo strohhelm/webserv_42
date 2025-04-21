@@ -43,7 +43,7 @@ void SimpleServer::handlePolls(void)
 	while (fdIndex >= 0)
 	{
 		// std::cout << "fdIndex " << fdIndex << std::endl;
-		if(isDataToRead(fdIndex))
+		if (isDataToRead(fdIndex))
 		{
 			if(isNewConnection(fdIndex))
 			{
@@ -54,7 +54,7 @@ void SimpleServer::handlePolls(void)
 				readDataFromClient(fdIndex);
 			}
 		}
-		if(isDataToWrite(fdIndex))
+		if(_done[fdIndex])
 		{
 			handler(fdIndex);
 		}
@@ -114,85 +114,72 @@ void SimpleServer::readDataFromClient(int fdIndex)
 {
 	std::cout << "readDataFromClient" << std::endl;
 	int		client_fd = _poll_fds[fdIndex].fd;
-	char	buffer[BUFFER_SIZE];
+	const int buffer_size = 4096;
+	char	buffer[buffer_size];
 	int		bytesReceived;
 	std::string request;
+	_done[fdIndex] = false;
 
-	// memset(&buffer, '\0', sizeof(buffer));
-	if (!_recvBuffer[fdIndex].size())
+	bytesReceived = recv(client_fd, buffer, buffer_size, 0);
+	
+	if (bytesReceived <= 0)
 	{
-		while (request.find("\r\n\r\n") == std::string::npos)
-		{
-			bytesReceived = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
-			if (bytesReceived <= 0)
-			{
-				std::cerr << "RECV ERROR." << std::endl;
-				break;
-			}
-			request.append(buffer, bytesReceived);
-		}
-		_recvBuffer[fdIndex] = request;
+		std::cerr << "RECV ERROR. " << bytesReceived << std::strerror(errno) << std::endl;
+		_recvBuffer[fdIndex].clear();
+		_recvHeader[fdIndex].clear();
+		_done[fdIndex] = false;
+		removeClient(fdIndex);
+		return;
+	}
+	_recvBuffer[fdIndex].append(buffer, bytesReceived);
+
+	std::cout << "buffer size: " <<  _recvBuffer[fdIndex].size() << std::endl;
+
+	if (!_recvHeader[fdIndex].size())
+	{
+		size_t end = _recvBuffer[fdIndex].find("\r\n\r\n"); // add npos check?
+		if (end == std::string::npos)
+			return;
+		_recvHeader[fdIndex] = _recvBuffer[fdIndex].substr(0, end + 4);
+		_headerParsed[fdIndex] = false;
+		std::cout << "Header received and stored\n";
+		// return;
 	}
 
-	size_t end = _recvBuffer[fdIndex].find("\r\n\r\n") + 4;
-	std::string header = _recvBuffer[fdIndex].substr(0, end);
-	std::string body = _recvBuffer[fdIndex].substr(end);
-
-	size_t begin = header.find("Content-Length: ");
-	if (begin != std::string::npos)
+	if (!_headerParsed[fdIndex])
 	{
-		begin = header.find(' ', begin) +1;
-		end = header.find('\r', begin);
-		std::string lenstr = header.substr(begin, end - begin);
-		if (lenstr.size())
+		size_t begin = _recvHeader[fdIndex].find("Content-Length:");
+		if (begin != std::string::npos)
 		{
-			int clen = std::stoi(lenstr);
-			std::cout << "clen: " << clen << std::endl;
+			begin = _recvHeader[fdIndex].find(' ', begin) +1;
+			size_t end = _recvHeader[fdIndex].find('\r', begin);
+			std::string lenstr = _recvHeader[fdIndex].substr(begin, end - begin);
+			if (lenstr.size())
+				_clen[fdIndex] = std::stoi(lenstr);
 
-			const int buffer_size = 4096;
-			char body_buffer[buffer_size];
-
-			int rlen = body.size();
-			while (rlen < clen)
-			{
-				int to_read = std::min(buffer_size, clen - rlen);
-				std::cout << "to_read: " << to_read << std::endl;
-				int bytes = recv(client_fd, body_buffer, to_read, 0);
-				if (bytes < 0)
-				{
-					// break;
-					std::cerr << "RECV ERROR. " << bytes << std::strerror(errno) << std::endl;
-					// _recvBuffer[fdIndex].append(body_buffer, bytes);
-					// exit(1);
-					return;
-				}
-				else if (bytes == 0)
-					break;
-				rlen += bytes;
-				std::cout << "bytes: " << bytes << std::endl;
-				_recvBuffer[fdIndex].append(body_buffer, bytes);
-			}
-			std::cout << "clen: " << clen << "rlen: " << rlen << std::endl;
 		}
+		else
+			_clen[fdIndex] = 0;
+		_headerParsed[fdIndex] = true;
+		std::cout << "Header parsed. clen: " << _clen[fdIndex] << std::endl;
+		// return;
 	}
-	else
-		std::cout << "not found" << std::endl;
+
+	size_t start = _recvBuffer[fdIndex].find("\r\n\r\n") + 4;
+	int blen = _recvBuffer[fdIndex].size() - start;
+
+	std::cout << "start: " << start << "size: " << _recvBuffer[fdIndex].size() << std::endl;
+
+	std::cout << "blen: " << blen << "clen: " << _clen[fdIndex] << std::endl;
+
+	if (blen < _clen[fdIndex])
+		return;
 
 	std::ofstream rq("request");
-	rq << _recvBuffer[fdIndex];
-
-	// std::cout << "HEADER:\n" << header << std::endl;
-	// std::cout << "BODY:\n" << body << std::endl;
-	// std::cout << "request:\n" << request << std::endl;
-
-
-	// if(noDataReceived(bytesReceived))
-	// {
-	// 	removeClient(fdIndex);
-	// 	return ;
-	// }
-
-	// _recvBuffer[fdIndex] = request;
+		rq << _recvBuffer[fdIndex];
+	_done[fdIndex] = true;
+	
+	return;
 }
 
 
@@ -236,6 +223,9 @@ void SimpleServer::handler(int fdIndex)
 {
 	_request.parseHttpRequest(_recvBuffer[fdIndex]);
 	_recvBuffer[fdIndex].clear();
+	_recvHeader[fdIndex].clear();
+	_done[fdIndex] = false;
+	 
 
 	// std::cout << RED << "requestLine: " << RESET << _request.getRawRequestLine() << std::endl;
 	_request.showHeader();

@@ -42,10 +42,11 @@ class SimpleServer
 		std::vector<struct pollfd>				_poll_fds;
 		std::unordered_map<int, std::string>	_recvBuffer;
 
-		std::unordered_map<int, int>			_clen;
 		std::unordered_map<int, std::string>	_recvHeader;
 		std::unordered_map<int, bool>			_headerParsed;
+		std::unordered_map<int, int>			_clen;
 		std::unordered_map<int, std::string>	_recvBody;
+		std::unordered_map<int, bool>			_done;
 
 
 
