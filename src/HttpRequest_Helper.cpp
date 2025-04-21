@@ -115,10 +115,10 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 		}
 		for(auto it : route._defaultFile)
 		{
-			if (debug)std::cout << "it "<< it << std::endl;
 			std::string temp = fullPath + it;
 			if(access(temp.c_str(), F_OK) == 0)// read access?
 			{
+				if (debug)std::cout << "default file found: "<< it << std::endl;
 				fullPath += it; //extract from config. if 2 indexes are availiable check all and give first that fits?
 				break;
 			} 
@@ -130,6 +130,8 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 	{
 		return "";
 	}
+	
+	if (debug)std::cout << ORANGE<<"fullPath: " << fullPath <<RESET<< std::endl;
 	return fullPath;
 }
 
@@ -166,6 +168,7 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode)
 	std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
+	_state.reset();
 }
 
 
@@ -174,7 +177,6 @@ void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message
 	std::string response = buildResponse(statusCode, "OK" , message, "text/html");
 
 	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
-
 }
 
 std::string HttpRequest::buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType)

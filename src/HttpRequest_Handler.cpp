@@ -208,19 +208,23 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 {
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
-
-	std::cout << "POST request incoming" << std::endl;
+	(void)server_fd;
+	(void)config;
+	(void)route;
+	if (debug)
+	extractRawBody();
+	{std::cout << "POST request incoming" << std::endl;
 	std::cout << "---" << std::endl;
-	std::cout << _rawRequestLine << std::endl;
-	// std::cout << _rawBody << std::endl;
-	std::cout << _requestLine._path << std::endl;
-	std::cout << "---" << std::endl;
+	std::cout << "Requestline:" <<_rawRequestLine << std::endl;
+	std::cout << "Body: " <<_rawBody << std::endl;
+	std::cout << "Path: " <<_requestLine._path << std::endl;
+	std::cout << "---" << std::endl;}
 	
 	auto it = _headers.find("Content-Type");
 	if (it != _headers.end())
 	{
 		std::cout << it->second << std::endl;
-		Post p(_requestLine._path, _rawBody, it->second, fd);
+		Post p(_requestLine._path, _rawBody, it->second, client_fd);
 	}
 
 	// if(getContentType() != "")

@@ -31,10 +31,12 @@ int HttpRequest::tokenizeRequestLine()
 
 void HttpRequest::extractRawBody()
 {
-	std::string line;
-	std::istringstream stream(_state._buffer);
-	while (std::getline(stream, line) && line != "\r"){}
-	std::getline(stream, _rawBody, '\0');
+	// std::string line;
+	// std::istringstream stream(_state._buffer);
+	// while (std::getline(stream, line) && line != "\r"){}
+	// std::getline(stream, _rawBody, '\0');
+	_rawBody = _state._buffer;
+	_state._buffer.clear();
 }
 
 
@@ -56,8 +58,8 @@ size_t HttpRequest::extractContentLength()
 {
 	try
 	{
-		if (_headers.count("ContentLength"))
-			return std::stoul(_headers["ContentLength"]);
+		if (_headers.count("Content-Length"))
+			return std::stoul(_headers["Content-Length"]);
 	}
 	catch(...){}
 	return 0;
@@ -77,6 +79,7 @@ void HttpRequest::eraseSpaceAndTab(std::string &key, std::string &value)
 
 int HttpRequest::extractAndTokenizeHeader()
 {
+	try{
 	int error = 0;
 	std::string line;
 	std::string header = _state._buffer.substr(0, _state._buffer.find("\r\n\r\n"));
@@ -104,6 +107,7 @@ int HttpRequest::extractAndTokenizeHeader()
 	_state._buffer = _state._buffer.substr(header.length() + 4); //cut the header from the buffer
 	if(debug)showHeader();
 	return error;
+	}catch(...){std::cout<<RED<<"ups1"<<std::endl;return 500;}
 }
 
 void HttpRequest::tokenizeBody()

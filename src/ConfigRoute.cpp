@@ -78,12 +78,12 @@ void	routeConfig::setAutoIndex(std::vector<confToken> &context, size_t lineNum)
 }
 void	routeConfig::setDefaultFiles(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"DefaultFile Tokens:"<<std::endl;
-	// printConfTokens(context);
+	std::cout<<"DefaultFile Tokens:"<<std::endl;
+	printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	for (auto t:context)
 	{
-		if (std::find(_defaultFile.begin(), _defaultFile.end(), line) != _defaultFile.end())
+		if (std::find(_defaultFile.begin(), _defaultFile.end(), t.str) != _defaultFile.end() || _defaultFile.empty())
 			_defaultFile.push_back(t.str);
 	}
 	if (!context.size())
@@ -137,6 +137,7 @@ bool	routeConfig::checkMethod(HttpMethod& method)
 
 bool	routeConfig::checkCgiPath()
 {
+	if(debug)std::cout<<ORANGE<<"CGI Extension:"<<_cgiExtension<<RESET<<std::endl;
 	if (!_cgiExtension.empty())
 	{
 		if (!access(_cgiExtension.c_str(), F_OK) && !access(_cgiExtension.c_str(), X_OK))

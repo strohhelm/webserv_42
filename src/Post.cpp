@@ -27,16 +27,16 @@ void Post::handleSignup()
 	userdata signup = urlDecode();
 
 	if (!signup.username.size() || !signup.password.size())
-		sendErrorResponse(fd, 420, "Please fill out all form fields");
+		sendErrorResponse(fd, 420);
 	if (_db.find(signup.username) == _db.end())
 	{
 		std::cout << "Username available!" << std::endl;
 		_db.insert({signup.username, signup.password});
-		std::string content = readFileContent("www/login.html");
+		std::string content = readFileContent("www/login/login.html");
 		sendResponse(fd, 200, content);
 	}
 	else
-		sendErrorResponse(fd, 420, "Username already taken");
+		sendErrorResponse(fd, 420);
 }
 
 void Post::handleLogin()
@@ -46,14 +46,14 @@ void Post::handleLogin()
 	userdata login = urlDecode();
 
 	if (!login.username.size() || !login.password.size())
-		sendErrorResponse(fd, 420, "Please fill out all form fields");
+		sendErrorResponse(fd, 420);
 	auto it = _db.find(login.username);
 	if (it == _db.end())
-		sendErrorResponse(fd, 420, "No user with this name");
+		sendErrorResponse(fd, 420);
 	else
 	{
 		if (it->second == login.password)
-			sendErrorResponse(fd, 420, "Login successfull");
+			sendErrorResponse(fd, 420);
 	}
 }
 
@@ -89,7 +89,7 @@ void Post::handleUpload()
 		output.close();
 	}
 
-	std::string html_content = readFileContent("www/upload.html");
+	std::string html_content = readFileContent("www/upload/upload.html");
 	sendResponse(fd, 200, html_content);
 
 }

@@ -90,6 +90,8 @@ void SimpleServer::handlePolls(int pollCount)
 		{
 			handler(fdIndex);
 		}
+		else if (check > NEEDS_TO_WRITE  && isDataToWrite(fdIndex))
+			{_clients[client_fd].sendErrorResponse(client_fd, check);_clients[client_fd]._state.reset();}
 		fdIndex--;
 	}
 }
