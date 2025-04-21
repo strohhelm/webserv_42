@@ -37,9 +37,7 @@ echo "<pre>";
 print_r($_SERVER);
 echo "</pre>";
 
-while (true) {
-    # code...
-}
+
 
 // End HTML
 echo "</body></html>";

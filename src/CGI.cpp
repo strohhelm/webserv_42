@@ -20,21 +20,19 @@ void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::strin
 
 void CGI::tokenizePath(void)
 {
-	
 	size_t pos = _requestPath.find('?');
 	std::cout << "CGI _requestPath: " << _requestPath << std::endl;
 	if(pos != std::string::npos) // only at get
 	{
 		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
 		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
-		std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
-		std::cout << "CGI _queryString: " << _queryString << std::endl;
-		
+		// std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
+		// std::cout << "CGI _queryString: " << _queryString << std::endl;
 	}
 	else // only at Post
 	{
 		_scriptPath = _requestPath;
-		std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
+		// std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
 	}
 }
 
@@ -110,12 +108,11 @@ void CGI::convertEnvStringsToChar(void)
 	}
 	_envp.push_back(nullptr);
 	
-	// debugging
-	for (char* env : _envp)
-	{
-		if (env) std::cerr << "env: " << env << std::endl;
-	}
-
+	// // debugging
+	// for (char* env : _envp)
+	// {
+	// 	if (env) std::cerr << "env: " << env << std::endl;
+	// }
 }
 
 void CGI::buildEnvStrings(std::string method, std::string rawBody)
@@ -125,8 +122,8 @@ void CGI::buildEnvStrings(std::string method, std::string rawBody)
 		"REDIRECT_STATUS=200",
 		"SERVER_PROTOCOL=HTTP1.1",
 		"REQUEST_METHOD=" + method,
-		"SCRIPT_FILENAME=" + _scriptPath, //www/get.php
-		"SCRIPT_NAME=" + _scriptPath, ///get.php
+		"SCRIPT_FILENAME=" + _scriptPath,	//www/get.php
+		"SCRIPT_NAME=" + _scriptPath, 		// get.php
 	};
 	
 	if (method == "GET") {
@@ -147,21 +144,14 @@ void CGI::handleChildProcess(std::string method, std::string rawBody)
 	closeAllPipes();
 
 	setArgv();
-
 	buildEnvStrings(method, rawBody);
-
 	convertEnvStringsToChar();
-
 
 	std::cerr << "Running: " << _phpCgiPathStr << " with script " << _argv[1] << std::endl;
 
-
 	execve(_phpCgiPathStr.c_str(), _argv, _envp.data());
 
-	// std::cerr << "execve failed: " << std::endl;
-	std::cerr << "argv[0]: " << _argv[0] << "\nargv[1]: " << _argv[1] << std::endl;
-
-	std::cerr << "execve failed: " << strerror(errno) << std::endl;
+	std::cerr << "execve failed: " << std::endl;
 
 	exit(1); //?!?!?!?!?!?!?!
 }
@@ -208,17 +198,17 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	httpResponse += "\r\n";
 	httpResponse += cgiOutput;
 
-	/**********************************************************/
-	std::cout << "SCRIPT_FILENAME=" << _config->_rootDir + _scriptPath << std::endl;	//www/get.php
-	std::cout << "SCRIPT_NAME=" << _scriptPath << std::endl; ///get.php
-	std::cout << "argv\n"
-				<< _phpCgiPathStr.c_str() << "\n"
-				<< _config->_rootDir + _scriptPath << "\n"
-				<< "---\n"
-				<< std::endl;
+	// /**********************************************************/
+	// std::cout << "SCRIPT_FILENAME=" << _config->_rootDir + _scriptPath << std::endl;	//www/get.php
+	// std::cout << "SCRIPT_NAME=" << _scriptPath << std::endl; ///get.php
+	// std::cout << "argv\n"
+	// 			<< _phpCgiPathStr.c_str() << "\n"
+	// 			<< _config->_rootDir + _scriptPath << "\n"
+	// 			<< "---\n"
+	// 			<< std::endl;
 
-	/**********************************************************/
-	std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
+	// /**********************************************************/
+	// std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
 
 
 	send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0);
@@ -228,6 +218,7 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 void CGI::execute(std::string method, std::string rawBody)
 {
 	std::cout << "CGI" << std::endl;
+
 	// init fds
 	_parent = {-1, -1};
 	_child = {-1, -1};
@@ -237,7 +228,6 @@ void CGI::execute(std::string method, std::string rawBody)
 		// sendErrorResponse(client_fd, 500, "Pipe creation failed"); //???
 		return;
 	}
-
 	pid_t pid = fork();
 	if (pid < 0)
 	{
@@ -245,11 +235,6 @@ void CGI::execute(std::string method, std::string rawBody)
 		// sendErrorResponse(client_fd, 500, "Fork failed");
 		return;
 	}
-	// 
-
-
-
-	// 
 	if(pid == 0)
 	{
 		handleChildProcess(method, rawBody);
@@ -258,6 +243,5 @@ void CGI::execute(std::string method, std::string rawBody)
 	{
 		handleParentProcess(method, rawBody);
 	}
-
 	closeAllPipes();
 }
