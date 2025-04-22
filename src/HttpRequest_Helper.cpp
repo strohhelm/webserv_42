@@ -162,7 +162,6 @@ std::string HttpRequest::readFileContent(const std::string& path)
 	return buffer.str();
 }
 
-
 void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config)
 {
 	std::string response;
@@ -180,7 +179,7 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config
 	}
 	else
 	{
-		content = "This is the default errorpage";
+		content = "This is the default errorpage for error " + std::to_string(statusCode);
 		contentType = "text/plain";
 	}
 	response = buildResponse(statusCode, StatusCode.at(statusCode), content, contentType);
