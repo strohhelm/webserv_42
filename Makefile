@@ -24,8 +24,8 @@ FUNCTIONS	=	$(SRC_DIR)/main.cpp \
 				$(SRC_DIR)/ConfigServer.cpp \
 				$(SRC_DIR)/ConfigUtils.cpp \
 				$(SRC_DIR)/ConfigHelper.cpp \
-				$(SRC_DIR)/CGI.cpp 
-#				$(SRC_DIR)/Post.cpp 
+				$(SRC_DIR)/CGI.cpp \
+				$(SRC_DIR)/Post.cpp \
 
 
 
@@ -52,6 +52,8 @@ clean :
 
 fclean : clean
 	$(REMOVE) $(NAME)
+	rm -rf ./file_upload/
+	rm -rf ./tmp_upload/
 
 re : fclean all
 

@@ -2,6 +2,8 @@
 
 #include "../include/HttpRequest.hpp"
 
+#include <filesystem>
+
 struct userdata
 {
 	std::string username;
@@ -14,14 +16,28 @@ class Post : public HttpRequest
   private:
 	std::string path;
 	std::string body;
-	std::string content;
-	int fd;
+	std::string _contentHeader;
+	const int &fd;
+
+	std::string _fileContent;
+
+	std::string _uploadDir = "file_upload";
+	std::string _tempDir = "tmp_upload";
+	std::string _fdPath;
+
+	bool _done = false;
+
+	RequestState &_state;
 
   public:
-	Post(std::string path, std::string body, std::string encoding, int fd);
+	Post(std::string path, std::string body, std::string encoding, const int &fd, RequestState &_state);
 
-	userdata urlDecode();
-	void handleSignup();
-	void handleLogin();
+	// userdata urlDecode();
+	// void handleSignup();
+	// void handleLogin();
 	void handleUpload();
+	void extractInfo();
+	void dirSetup();
+	void extractContent();
+	void writeContent();
 };

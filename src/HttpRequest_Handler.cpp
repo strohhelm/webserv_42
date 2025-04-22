@@ -8,7 +8,7 @@ bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 	std::string host = _headers["Host"];
 	host = host.substr(0, host.find(':'));
 	if (debug)std::cout<<GREEN<<"HOST: "<<YELLOW<<host<<std::endl;
-	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end())
+	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end() || host.find("10.12.5") != std::string::npos)
 		return true;
 	else
 		return false;
@@ -217,21 +217,21 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
 	(void)server_fd;
-
-	if (debug)
 	extractRawBody();
-	{std::cout << "POST request incoming" << std::endl;
-	std::cout << "---" << std::endl;
-	std::cout << "Requestline:" <<_rawRequestLine << std::endl;
-	std::cout << "Body: " <<_rawBody << std::endl;
-	std::cout << "Path: " <<_requestLine._path << std::endl;
-	std::cout << "---" << std::endl;}
-	
+	// if (debug)
+	// {std::cout << "POST request incoming" << std::endl;
+	// std::cout << "---" << std::endl;
+	// std::cout << "Requestline:" <<_rawRequestLine << std::endl;
+	// std::cout << "Body: " <<_rawBody << std::endl;
+	// std::cout << "Path: " <<_requestLine._path << std::endl;
+	// std::cout << "---" << std::endl;}
+
 	auto it = _headers.find("Content-Type");
 	if (it != _headers.end())
 	{
 		std::cout << it->second << std::endl;
-		// Post p(_requestLine._path, _rawBody, it->second, client_fd);
+		Post p(_requestLine._path, _rawBody, it->second, client_fd, _state);
+		return;
 	}
 
 	// if(getContentType() != "")
@@ -250,7 +250,6 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 		_cgi.execute("POST", _rawBody);
 		return;
 	}
-
 
 	sendErrorResponse(client_fd, 405, config);// wrong Code
 }
