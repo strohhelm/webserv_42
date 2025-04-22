@@ -114,13 +114,14 @@ class HttpRequest
 		void	setVersion(const std::string& version);
  	
 		int			evaluateState(int client_fd);
+		void		evaluateDownload(const int& client_fd, std::String& path, ServerConfig& config, routeConfig& route);
 		int			validateRequest(ServerConfig& config, routeConfig& route);
 		bool		validateHost(std::vector<std::string> &serverNames);
 		int			checkCgi(std::string path, routeConfig& route);
 		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
 		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
 		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handleDelete(int fd, ServerConfig& config);
+		void		handleDelete(int fd, ServerConfig& config, routeConfig &route);
 		void		handleUnknown(int fd, ServerConfig& config);
 		void		handleForbidden(const int& client_fd, ServerConfig& config);
 		void		sendErrorResponse(int fd, int statusCode, ServerConfig& config);
@@ -146,7 +147,7 @@ class HttpRequest
 		void		sendResponse(int fd,int statusCode, const std::string& message);
 		std::string	buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
 
-	std::string	buildFullPath(ServerConfig& config, routeConfig& route);
+		std::string	buildFullPath(ServerConfig& config, routeConfig& route);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
 		std::string	serveDirectory(std::string fullPath, ServerConfig& config,routeConfig& route);

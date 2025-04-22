@@ -34,6 +34,7 @@ OBJECTS		= $(addprefix $(OBJ_DIR)/, $(notdir $(FUNCTIONS:.cpp=.o)))
 
 all : $(NAME)
 	mkdir -p logs
+	mkdir -p temp
 
 # INTERNAL RULE
 $(NAME) : $(OBJECTS)

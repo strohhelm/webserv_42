@@ -37,7 +37,7 @@ void HttpRequest::setMethod(const std::string& method)
 HttpMethod HttpRequest::getMethod(routeConfig &route)
 {
 	if (route.checkMethod(_requestLine._method))
-		return (_requestLine._method );
+		return (_requestLine._method);
 	else
 		return HttpMethod::FORBIDDEN;
 }
