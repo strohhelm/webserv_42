@@ -173,9 +173,17 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config
 		
 		std::string pathToErrorPage = config._rootDir + "/" + config._errorPage[statusCode];
 		content = readFileContent(pathToErrorPage);
+		if(content == "")
+		{
+			content = "This is the default errorpage for error " + std::to_string(statusCode);
+			contentType = "text/plain";
+		}
+		else
+		{
+			contentType = "text/html";
+		}
 		std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
 		std::cout << "content " << content << std::endl;
-		contentType = "text/html";
 	}
 	else
 	{
