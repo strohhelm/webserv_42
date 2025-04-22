@@ -180,12 +180,10 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config
 	}
 	else
 	{
-		content = "";
+		content = "This is the default errorpage";
 		contentType = "text/plain";
 	}
 	response = buildResponse(statusCode, StatusCode.at(statusCode), content, contentType);
-	// std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
-
 	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 	_state.reset();
 }

@@ -320,8 +320,10 @@ int	HttpRequest::evaluateState(int client_fd)
 		if (pos != std::string::npos)
 			_state._requestlineRecieved = true;
 		else
-			return NEEDS_TO_READ;
+		{
 			if (debug)std::cout<<GREEN<<"Requestline recieved"<<RESET<<std::endl;
+			return NEEDS_TO_READ;
+		}
 	}
 	else
 		if (debug)std::cout<<GREEN<<"Requestline already recieved"<<RESET<<std::endl;

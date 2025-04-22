@@ -49,3 +49,25 @@ setHostnamesToSystem and removeHostnamesFromSystem ✅
 }
 
 Error: [setHttp]: Syntax Error: "123" line: 11 -> directive not valid!
+
+
+
+multiple root dir in one config works and takes last one and so does  indexes as well and listen and servernames <--- need to talk about this
+	server {
+		listen 8081;
+		server_name example1.org localhost;
+
+		root ./www/html/multipleserver;
+		root ./www/html;
+		index server8081.html ;
+		index server8081.html ;
+
+		location / {
+			methods GET POST DELETE;
+		}
+	}
+
+defaultLocation when no location is set?
+		location / {
+			methods GET POST DELETE;
+		}
