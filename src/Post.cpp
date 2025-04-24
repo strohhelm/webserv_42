@@ -58,6 +58,32 @@
 // }
 
 
+void Post::postRespond()
+{
+	std::string html_content = readFileContent("www/upload/upload.html");
+	sendResponse(fd, 200, html_content);
+	_state.reset();
+}
+
+size_t Post::findCheck(std::string hay, char needle, size_t pos)
+{
+	size_t re = hay.find(needle, pos);
+	if (re != std::string::npos)
+		return (re);
+	else // return negative value
+		throw std::runtime_error("ERROR with find return value in POST");
+}
+
+size_t Post::findCheck(std::string hay, std::string needle, size_t pos)
+{
+	size_t re = hay.find(needle, pos);
+	if (re != std::string::npos)
+		return (re);
+	else // return negative value
+		throw std::runtime_error("ERROR with find return value in POST. Unable to find: "+needle);
+}
+
+
 void Post::dirSetup()
 {
 	_fdPath = "/client_" + std::to_string(fd);
@@ -80,35 +106,30 @@ void Post::extractInfo()
 {
 	if (_state._filename.empty() && !body.empty())
 	{
-		size_t begin = body.find("filename");
-		begin = body.find('"', begin) + 1;
-		size_t end = body.find('"', begin);
+		size_t begin = findCheck(body, "filename", 0);
+		begin = findCheck(body, '"', begin) + 1;
+		size_t end = findCheck(body, '"', begin);
 	
 		_state._filename = body.substr(begin, end - begin);
 		std::cout << "filename: " << _state._filename << std::endl;
 	}
 	if(_state._openBoundary.empty())
 	{
-		size_t begin = _contentHeader.find("boundary=") + 9;
+		size_t begin = findCheck(_contentHeader, "boundary=", 0) + 9; // is the boundary size really always +9?
 		std::string boundary = _contentHeader.substr(begin);
 	
-		
 		_state._openBoundary = "--" + boundary;
-		// begin = body.find(boundary) + boundary.size();
-		// begin = body.find("\r\n\r\n", begin) + 4;
 		_state._closeBoundary = _state._openBoundary + "--";
-		
 	}
 }
-
 
 void Post::extractContent()
 {	
 	if (!_state._uploadMode)
 	{
-		size_t begin = body.find(_state._openBoundary) + _state._openBoundary.size();
-		begin = body.find("\r\n\r\n", begin) + 4;
-		size_t end = body.find("\r\n" + _state._closeBoundary, begin);
+		size_t begin = findCheck(body, _state._openBoundary, 0) + _state._openBoundary.size();
+		begin = findCheck(body, "\r\n\r\n", begin) + 4;
+		size_t end = findCheck(body, "\r\n" + _state._closeBoundary, begin);
 		_fileContent = body.substr(begin, end - begin);
 	}
 	else if (_state._uploadMode && !_state._filename.empty())
@@ -117,10 +138,10 @@ void Post::extractContent()
 
 		if(!_state._uploadFile.is_open())
 		{
-			begin = body.find(_state._openBoundary) + _state._openBoundary.size();
-			begin = body.find("\r\n\r\n", begin) + 4;
+			begin = findCheck(body, _state._openBoundary, 0) + _state._openBoundary.size();
+			begin = findCheck(body, "\r\n\r\n", begin) + 4;
 		}
-		size_t end = body.find("\r\n" + _state._closeBoundary, begin);
+		size_t end = findCheck(body, "\r\n" + _state._closeBoundary, begin);
 		if (end == std::string::npos)
 			_fileContent = body.substr(begin);
 		else
@@ -128,8 +149,6 @@ void Post::extractContent()
 			std::cout << RED << "Entire file recieved" << RESET << std::endl;
 			_fileContent = body.substr(begin, end - begin);
 			_done = true;
-			// std::cout << "boundary: " << _state._openBoundary << std::endl;
-			// std::cout << "boundary: " << _state._closeBoundary << std::endl;
 		}
 		std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;
 		if (_state._contentLength == _state._ContentBytesRecieved)
@@ -151,10 +170,8 @@ void Post::writeContent()
 			{
 				output.write(_fileContent.c_str(), _fileContent.size());
 				output.close();
+				postRespond();
 			}
-				std::string html_content = readFileContent("www/upload/upload.html");
-				sendResponse(fd, 200, html_content);
-				_state.reset();
 		}
 		else
 		{
@@ -166,10 +183,8 @@ void Post::writeContent()
 			}
 			if (_done)
 			{
-				_state._uploadFile.close();
-				std::string html_content = readFileContent("www/upload/upload.html");
-				sendResponse(fd, 200, html_content);
-				_state.reset();
+				std::rename((_tempDir + _fdPath + '/' + _state._filename).data(), (_uploadDir + _fdPath + '/' + _state._filename).data());
+				postRespond();
 			}
 		}
 	}
@@ -184,10 +199,6 @@ void Post::handleUpload()
 	dirSetup();
 	extractContent();
 	writeContent();
-
-	// std::string html_content = readFileContent("www/upload/upload.html");
-	// sendResponse(fd, 200, html_content);
-
 }
 
 Post::Post(std::string path, std::string body, std::string encoding, const int &fd, RequestState &_state) : 

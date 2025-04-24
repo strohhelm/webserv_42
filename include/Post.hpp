@@ -3,6 +3,7 @@
 #include "../include/HttpRequest.hpp"
 
 #include <filesystem>
+#include <cstdio>
 
 struct userdata
 {
@@ -40,4 +41,8 @@ class Post : public HttpRequest
 	void dirSetup();
 	void extractContent();
 	void writeContent();
+	void postRespond();
+	size_t findCheck(std::string hay, char needle, size_t pos);
+	size_t findCheck(std::string hay, std::string needle, size_t pos);
+
 };
