@@ -1,5 +1,5 @@
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 -fsanitize=address -g -O0
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 # -fsanitize=address -g -O0
 # -g -fsanitize=address	
 
 NAME		= webserv
@@ -9,23 +9,29 @@ INC_DIR		= include
 REMOVE		= rm -rf
 
 # INTERNAL FUNCTIONS
-FUNCTIONS	=	$(SRC_DIR)/main.cpp \
-				$(SRC_DIR)/SimpleServer.cpp \
-				$(SRC_DIR)/SimpleServer_Launch.cpp \
-				$(SRC_DIR)/SimpleServer_Configuration.cpp \
-				$(SRC_DIR)/HttpRequest_Helper.cpp \
-				$(SRC_DIR)/HttpRequest_Debugger.cpp \
-				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
-				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
-				$(SRC_DIR)/HttpRequest_Handler.cpp \
-				$(SRC_DIR)/ServerConfig.cpp \
+FUNCTIONS	=	$(SRC_DIR)/CGI.cpp \
+				$(SRC_DIR)/ConfigHelper.cpp \
 				$(SRC_DIR)/ConfigMain.cpp \
 				$(SRC_DIR)/ConfigRoute.cpp \
 				$(SRC_DIR)/ConfigServer.cpp \
 				$(SRC_DIR)/ConfigUtils.cpp \
-				$(SRC_DIR)/ConfigHelper.cpp \
-				$(SRC_DIR)/CGI.cpp 
-#				$(SRC_DIR)/Post.cpp 
+				$(SRC_DIR)/HttpRequest_Debugger.cpp \
+				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
+				$(SRC_DIR)/HttpRequest_Handler_Get.cpp \
+				$(SRC_DIR)/HttpRequest_Handler_Post.cpp \
+				$(SRC_DIR)/HttpRequest_Handler_State.cpp \
+				$(SRC_DIR)/HttpRequest_Handler.cpp \
+				$(SRC_DIR)/HttpRequest_Helper.cpp \
+				$(SRC_DIR)/HttpRequest_ParsingTokenizer.cpp \
+				$(SRC_DIR)/HttpRequest_SendResponse.cpp \
+				$(SRC_DIR)/HttpRequest_Validation.cpp \
+				$(SRC_DIR)/main.cpp \
+				$(SRC_DIR)/ServerConfig.cpp \
+				$(SRC_DIR)/SimpleServer_Configuration.cpp \
+				$(SRC_DIR)/SimpleServer_Launch.cpp \
+				$(SRC_DIR)/SimpleServer.cpp
+# $(SRC_DIR)/SimpleServer_Connection.cpp \4
+# $(SRC_DIR)/Post.cpp 
 
 
 

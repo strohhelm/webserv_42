@@ -5,7 +5,7 @@ bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 	std::string host = _headers["Host"];
 	host = host.substr(0, host.find(':'));
 	if (debug)std::cout<<GREEN<<"HOST: "<<YELLOW<<host<<std::endl;
-	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end())
+	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end() || host == "127.0.0.1" || (host.find("10.1") == 0) )
 		return true;
 	else
 		return false;

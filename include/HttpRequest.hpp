@@ -35,6 +35,8 @@ enum State
 {
 	NEEDS_TO_READ,
 	NEEDS_TO_WRITE,
+	SEND_ERROR,
+	READ_ERROR,
 
 };
 
@@ -67,12 +69,14 @@ struct RequestState
 	bool			_downloadEvaluated		= false;
 	bool			_downloadMode			= false;
 	bool			_downloadComplete		= false;
-
+	size_t			_downloadSize			= 0;
+	bool			_websitefile			= false;
 	bool			_readyToHandle			= false;
 	
+	int				_errorOcurred			= 0;
 	std::string		_tempUploadFilePath;
 	std::ofstream	_uploadFile;
-	std::string		_tempDownloadFilePath;
+	std::string		_downloadFileName;
 	std::ifstream	_downloadFile;
 	void	reset();
 };
@@ -114,7 +118,11 @@ class HttpRequest
 		void	setVersion(const std::string& version);
  	
 		int			evaluateState(int client_fd);
-		void		evaluateDownload(const int& client_fd, std::String& path, ServerConfig& config, routeConfig& route);
+		int			evaluateDownload(const int& client_fd, std::string& path, ServerConfig& config);
+		void		continueDownload(const int& client_fd);
+		void		singleGetRequest(const int& client_fd, std::string& path, ServerConfig& config, bool isFile);
+		int			evaluateFilepath(const int& client_fd, std::string& path, ServerConfig& config, routeConfig& route);
+		void		evaluateFiletype(std::string& filename);
 		int			validateRequest(ServerConfig& config, routeConfig& route);
 		bool		validateHost(std::vector<std::string> &serverNames);
 		int			checkCgi(std::string path, routeConfig& route);
@@ -145,7 +153,8 @@ class HttpRequest
 
 		std::string	getContentType();
 		void		sendResponse(int fd,int statusCode, const std::string& message);
-		std::string	buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
+		std::string	buildResponseHeader(int statusCode, size_t size, std::string contentType);
+		std::string buildDownloadHeader(int statusCode, size_t size, std::string& filename);
 
 		std::string	buildFullPath(ServerConfig& config, routeConfig& route);
 		bool		fileExists(const std::string& path);

@@ -11,12 +11,12 @@ std::string HttpRequest::extractQueryString(std::string& request)
 	return "";
 }
 
-void HttpRequest::evaluateDownload(const int& client_fd, std::string& path, ServerConfig& config, routeConfig& route)
+int HttpRequest::evaluateFilepath(const int& client_fd, std::string& path, ServerConfig& config, routeConfig& route)
 {
 	if(path.empty())
 	{
 		sendErrorResponse(client_fd, 404, config);
-		return;
+		return -1;
 	}
 	int isCgiRequest = checkCgi(path, route);
 	if (debug)std::cout << BG_GREEN << "isCgiRequest " << isCgiRequest << RESET << std::endl;
@@ -26,39 +26,120 @@ void HttpRequest::evaluateDownload(const int& client_fd, std::string& path, Serv
 		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath(), query);
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
-		return;
+		return 1;
 	}
 	else if (isCgiRequest < 0)
 	{
 		sendErrorResponse(client_fd, 500, config);
-		return;
+		return -1;
 	}
+	return 0;
+}
+
+void	HttpRequest::evaluateFiletype(std::string& filename)
+{
+	std::string fileend = filename.substr(filename.find_last_of('.'));
+
+	std::vector<std::string> endings = {".php", ".html", ".ico"};
+	if (std::find(endings.begin(), endings.end(), fileend)!= endings.end())
+		_state._websitefile = true;
 }
 
 
-void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
+
+int	HttpRequest::evaluateDownload(const int& client_fd, std::string& path, ServerConfig& config)
 {
-	
-	//check if we ALREADY HANDLED this request and are in downnloadmode.
-	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
-
-	(void)server_fd;
-	bool isFile = true;
-	std::string	content;
-	std::string path;
-	if (!_state._downloadEvaluated)
+	if (debug)std::cout << ORANGE<<"Evaluating Downloadmode" << RESET<<std::endl;
+	struct stat	fileinfo;
+	size_t		filesize;
+	std::string	filename;
+	filename = path.substr(path.find_last_of('/') + 1);
+	_state._downloadFileName = filename;
+	if (debug)std::cout << ORANGE<<"Filename: "<< filename << RESET<<std::endl;
+	if (stat(path.c_str(), &fileinfo) != 0)
 	{
-		
-		path = getRequestedFile(isFile, config, route);
-		if (debug)std::cout << BG_CYAN << "requested file path :" <<RESET<<CYAN<< path << RESET << std::endl;
+		sendErrorResponse(client_fd, 500, config);
+		return -1;
 	}
-	else
-		evaluateDownload();
+	filesize = fileinfo.st_size;
+	if (debug)std::cout << ORANGE<<"Filesize: "<< filesize << RESET<<std::endl;
 
-	
-	//evaluate downloadMode
+	evaluateFiletype(filename);
 
+	if (filesize > MAX_IN_MEMORY_BODY_SIZE)
+	{
 
+		_state._downloadMode = true;
+		_state._downloadFile.open(filename, std::ifstream::in);
+		if (!_state._downloadFile.is_open() || !_state._downloadFile.good())
+		{
+			sendErrorResponse(client_fd, 500, config);
+			return -1;
+		}
+		_state._downloadSize = filesize;
+	}
+	if (debug)std::cout << ORANGE<<"Downloadmode " << MAGENTA<< (_state._downloadMode  == true ? "true":"false") << RESET<<std::endl;
+	return 0;
+}
+
+void	HttpRequest::continueDownload(const int& client_fd)
+{
+	static int		status = 0;
+	static size_t	totalSent = 0;
+	char responseBuffer[MAX_IN_MEMORY_BODY_SIZE];
+
+	if (!status)
+	{
+		if (debug)std::cout << ORANGE<<"Starting Download" << RESET<<std::endl;
+
+		std::string response;
+		if (_state._websitefile)
+			response = buildResponseHeader(200, _state._downloadSize, "text/html");
+		else
+			response = buildDownloadHeader(200, _state._downloadSize, _state._downloadFileName);
+		if (debug)std::cout <<response<<std::endl;
+		
+		
+		size_t bytesSent = send(client_fd, response.c_str(), response.length(), 0);
+
+		if (bytesSent != response.length())
+		{
+			_state._errorOcurred = SEND_ERROR;
+			return;
+		}
+		totalSent += bytesSent;
+		status = 1;
+	}
+	if (status == 1)
+	{
+		_state._downloadFile.read(responseBuffer, MAX_IN_MEMORY_BODY_SIZE);
+		size_t bytesRead = _state._downloadFile.gcount();
+		if (_state._downloadFile.bad())
+		{
+			_state._errorOcurred = READ_ERROR;
+			return;
+		}
+		size_t bytesSent = send(client_fd, responseBuffer, bytesRead, 0);
+		if (bytesSent != bytesRead)
+		{
+			_state._errorOcurred = SEND_ERROR;
+			return;
+		}
+		if (debug)std::cout << ORANGE<<"\r Status: " << RESET << totalSent<< " / "<< _state._downloadSize<<std::endl;
+		if (_state._downloadFile.eof())
+		{
+			if (debug)std::cout << ORANGE<<"Download successful!" << RESET<<std::endl;
+			_state._downloadFile.close();
+			status = 0;
+			totalSent = 0;
+			_state.reset();
+		}
+	}
+}
+
+void	HttpRequest::singleGetRequest(const int& client_fd, std::string& path, ServerConfig& config, bool isFile)
+{
+	std::string	content;
 	if (debug)std::cout << BG_BRIGHT_BLUE <<"Root directory:"<<RESET<<BLUE<< config._rootDir << RESET << std::endl;
 	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
 	if(isFile)
@@ -72,9 +153,41 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 	if(content.empty())
 	{
 		sendErrorResponse(client_fd, 403, config);
-		return;
+		return ;
 	}
 	sendResponse(client_fd, 200, content);
 	_state.reset();
+	return ;
+}
+
+
+void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
+{
+	
+	//check if we ALREADY HANDLED this request and are in downnloadmode.
+	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
+
+	(void)server_fd;
+	bool isFile = true;
+	std::string path;
+	if (!_state._downloadEvaluated)
+	{
+		_state._downloadEvaluated = true;
+		path = getRequestedFile(isFile, config, route);
+		if (debug)std::cout << BG_CYAN << "requested file path :" <<RESET<<CYAN<< path << RESET << std::endl;
+		if (evaluateFilepath(client_fd, path, config, route) != 0)
+			return;
+		if (evaluateDownload(client_fd, path, config) != 0)
+			return;
+	}
+	if (_state._downloadMode)
+	{
+		continueDownload(client_fd);
+	}
+	else
+	{
+		singleGetRequest(client_fd, path, config, isFile);
+	}
+	return;
 }
 
