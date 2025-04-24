@@ -15,6 +15,7 @@ int HttpRequest::evaluateFilepath(const int& client_fd, std::string& path, Serve
 {
 	if(path.empty())
 	{
+		if (debug)std::cout << BG_BRIGHT_RED<<"Filepath empty " << RESET<<std::endl;
 		sendErrorResponse(client_fd, 404, config);
 		return -1;
 	}
@@ -30,6 +31,7 @@ int HttpRequest::evaluateFilepath(const int& client_fd, std::string& path, Serve
 	}
 	else if (isCgiRequest < 0)
 	{
+		if (debug)std::cout << BG_BRIGHT_RED<<"CGI executable not valid " << RESET<<std::endl;
 		sendErrorResponse(client_fd, 500, config);
 		return -1;
 	}
@@ -58,6 +60,7 @@ int	HttpRequest::evaluateDownload(const int& client_fd, std::string& path, Serve
 	if (debug)std::cout << ORANGE<<"Filename: "<< filename << RESET<<std::endl;
 	if (stat(path.c_str(), &fileinfo) != 0)
 	{
+		if (debug)std::cout << BG_BRIGHT_RED<<"stat function error" << RESET<<std::endl;
 		sendErrorResponse(client_fd, 500, config);
 		return -1;
 	}
@@ -65,14 +68,16 @@ int	HttpRequest::evaluateDownload(const int& client_fd, std::string& path, Serve
 	if (debug)std::cout << ORANGE<<"Filesize: "<< filesize << RESET<<std::endl;
 
 	evaluateFiletype(filename);
+	if (debug)std::cout << ORANGE<<"Filetype " << MAGENTA<< (_state._downloadMode  == true ? "web":"other") << RESET<<std::endl;
 
-	if (filesize > MAX_IN_MEMORY_BODY_SIZE)
+	if (filesize > MAX_SEND_BYTES)
 	{
 
 		_state._downloadMode = true;
-		_state._downloadFile.open(filename, std::ifstream::in);
-		if (!_state._downloadFile.is_open() || !_state._downloadFile.good())
+		_state._downloadFile.open(path, std::ios::in);
+		if (!_state._downloadFile.is_open() || _state._downloadFile.bad())
 		{
+			if (debug)std::cout << BG_BRIGHT_RED<<"File opening error" << RESET<<std::endl;
 			sendErrorResponse(client_fd, 500, config);
 			return -1;
 		}
@@ -84,11 +89,11 @@ int	HttpRequest::evaluateDownload(const int& client_fd, std::string& path, Serve
 
 void	HttpRequest::continueDownload(const int& client_fd)
 {
-	static int		status = 0;
+	static int		init = 0;
 	static size_t	totalSent = 0;
-	char responseBuffer[MAX_IN_MEMORY_BODY_SIZE];
+	char responseBuffer[MAX_SEND_BYTES];
 
-	if (!status)
+	if (init == 0)
 	{
 		if (debug)std::cout << ORANGE<<"Starting Download" << RESET<<std::endl;
 
@@ -104,37 +109,42 @@ void	HttpRequest::continueDownload(const int& client_fd)
 
 		if (bytesSent != response.length())
 		{
+			if (debug)std::cout << BG_BRIGHT_RED<<"Sending header error" << RESET<<std::endl;
 			_state._errorOcurred = SEND_ERROR;
 			return;
 		}
 		totalSent += bytesSent;
-		status = 1;
+		init = 1;
 	}
-	if (status == 1)
+	if (init == 1)
 	{
-		_state._downloadFile.read(responseBuffer, MAX_IN_MEMORY_BODY_SIZE);
+		_state._downloadFile.read(responseBuffer, MAX_SEND_BYTES);
 		size_t bytesRead = _state._downloadFile.gcount();
 		if (_state._downloadFile.bad())
 		{
+			if (debug)std::cout << BG_BRIGHT_RED<<"File reading error" << RESET<<std::endl;
 			_state._errorOcurred = READ_ERROR;
 			return;
 		}
 		size_t bytesSent = send(client_fd, responseBuffer, bytesRead, 0);
+		totalSent += bytesRead;
 		if (bytesSent != bytesRead)
 		{
+			if (debug)std::cout << BG_BRIGHT_RED<<"Sending body error" << RESET<<std::endl;
+			if (debug)std::cout << BG_BRIGHT_RED<<"BytesRead: "<<bytesRead<<" BytesSent: "<<bytesSent << RESET<<std::endl;
 			_state._errorOcurred = SEND_ERROR;
 			return;
 		}
-		if (debug)std::cout << ORANGE<<"\r Status: " << RESET << totalSent<< " / "<< _state._downloadSize<<std::endl;
 		if (_state._downloadFile.eof())
 		{
-			if (debug)std::cout << ORANGE<<"Download successful!" << RESET<<std::endl;
+			if (debug)std::cout << BG_BRIGHT_GREEN<<"Download successful!" << RESET<<std::endl;
 			_state._downloadFile.close();
-			status = 0;
+			init = 0;
 			totalSent = 0;
 			_state.reset();
 		}
 	}
+	if (debug)std::cout << ORANGE<<"\rStatus: " << RESET << totalSent<< " / "<< _state._downloadSize<<std::endl;
 }
 
 void	HttpRequest::singleGetRequest(const int& client_fd, std::string& path, ServerConfig& config, bool isFile)
@@ -152,6 +162,7 @@ void	HttpRequest::singleGetRequest(const int& client_fd, std::string& path, Serv
 	}
 	if(content.empty())
 	{
+		if (debug)std::cout << BG_BRIGHT_RED<<"Content empty " << RESET<<std::endl;
 		sendErrorResponse(client_fd, 403, config);
 		return ;
 	}
@@ -180,7 +191,7 @@ void HttpRequest::handleGet(const int& client_fd, const int& server_fd, ServerCo
 		if (evaluateDownload(client_fd, path, config) != 0)
 			return;
 	}
-	if (_state._downloadMode)
+	if (_state._downloadMode == true)
 	{
 		continueDownload(client_fd);
 	}

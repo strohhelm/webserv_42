@@ -34,6 +34,16 @@ void SimpleServer::launch(void)
 			std::cerr << RED << "Poll error, retrying..." << RESET << std::endl;
 			continue; 
 		}
+		if (debug)
+		{
+			std::cout<<"Clients: ";
+			for (auto &x:_clients)
+			{
+				(void )x;
+				std::cout<< "x ";
+			}
+			std::cout<<std::endl;
+		}
 		handlePolls(pollcount);
 		checkIdleConnections();
 	}
@@ -91,7 +101,10 @@ void SimpleServer::handlePolls(int pollCount)
 			handler(fdIndex);
 		}
 		else if (check > NEEDS_TO_WRITE  && isDataToWrite(fdIndex))
+		{
+			if (debug)std::cout << BG_BRIGHT_RED<<"State Error" << RESET<<std::endl;
 			_clients[client_fd].sendErrorResponse(client_fd, check, _serverConfigs[_listeningServerFromClient[client_fd]]);
+		}
 		fdIndex--;
 	}
 }
@@ -300,25 +313,26 @@ void SimpleServer::handler(int fdIndex)
 	
 	int client_fd = _poll_fds[fdIndex].fd;
 	int server_fd = _listeningServerFromClient[client_fd];
-	ServerConfig& config = _serverConfigs[server_fd];
+	// ServerConfig& config = _serverConfigs[server_fd];
 	HttpRequest &client = _clients[client_fd];
-	routeConfig route;
 	if (client._state._isValidRequest == 0)
 	{
 		client._state._isNewRequest = false;
-		int invalid = client.validateRequest(config, route);
+		client._config = &(_serverConfigs[server_fd]);
+		int invalid = client.validateRequest();
 		if (invalid != 0)
 		{
 			client._state._isValidRequest = -1;
 			int code = 404;
 			if (invalid < 0)
 				code = 400;
+			if (debug)std::cout << BG_BRIGHT_RED<<"invalid request " << RESET<<std::endl;
 			client.sendErrorResponse(client_fd, code, config);
 			return;
 		}
 		client._state._isValidRequest = 1;
 	}
-	client.handleHttpRequest(client_fd, server_fd, config, route);
+	client.handleHttpRequest(client_fd, server_fd);
 
 	// removeClient(fdIndex);
 }

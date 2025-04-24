@@ -2,43 +2,50 @@
 
 
 
-void HttpRequest::handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route)
+void HttpRequest::handleHttpRequest()
 {
-	switch (getMethod(route))
+	if (debug)std::cout << BG_BRIGHT_RED<<"Route: " << RESET<<std::endl;
+	if (debug)std::cout << RED<< (*_route)._methods[0]<<route._methods[1]<<route._methods[2] << RESET<<std::endl;
+
+	if (debug)std::cout << BG_BRIGHT_RED<<"Method: " << static_cast<int>(getMethod()) << RESET<<std::endl;
+	
+	switch (getMethod())
 	{
 		case HttpMethod::GET:
-			handleGet(client_fd, server_fd, config, route);
+			handleGet();
 			break;
 		case HttpMethod::POST:
-			handlePost(client_fd, server_fd, config, route);
+			handlePost();
 			break;
 		case HttpMethod::DELETE:
-			handleDelete(client_fd, config, route);
+			handleDelete();
 			break;
 		case HttpMethod::FORBIDDEN:
-			handleForbidden(client_fd, config);
+			handleForbidden();
 			break;
 		default:
-			handleUnknown(client_fd, config);
+			handleUnknown();
 			break;
 	}
 }
 
 
 
-void HttpRequest::handleForbidden(const int& client_fd, ServerConfig& config )
+void HttpRequest::handleForbidden()
 {
+	if (debug)std::cout << BG_BRIGHT_RED<<"Forbidden Method" << RESET<<std::endl;
 	sendErrorResponse(client_fd, 403, config);
 }
 
 
-void HttpRequest::handleUnknown(int fd, ServerConfig& config)
+void HttpRequest::handleUnknown(int fd)
 {
+	if (debug)std::cout << BG_BRIGHT_RED<<"Unkown Method" << RESET<<std::endl;
 	sendErrorResponse(fd, 405, config);
 }
 
 
-void HttpRequest::handleDelete(int fd, ServerConfig& config, routeConfig &route)
+void HttpRequest::handleDelete(int fd)
 {
 	//TODO check if allowed to delete!!!!
 
@@ -80,20 +87,29 @@ void RequestState::reset()
 
 	_uploadEvaluated		= false;
 	_uploadMode				= false;
+	
 	_bodyRecieved			= false;
 	_uploadComplete			= false;
 
 	_downloadEvaluated		= false;
 	_downloadMode			= false;
 	_downloadComplete		= false;
-
+	_downloadSize			= 0;
+	_websitefile			= false;
 	_readyToHandle			= false;
 	
-	// _tempUploadFilePath.clear();
-	// if (_uploadFile.is_open())
-	// 	_uploadFile.close;
-	// std::string		_tempDownloadFilePath;
-	// std::ifstream	_downloadFile;
+	_errorOcurred			= 0;
+	
+	if (_uploadFile.is_open())
+		_uploadFile.close();
+	_uploadFile.clear();
+	
+	if (_downloadFile.is_open())
+		_downloadFile.close();
+	_downloadFile.clear();
+
+	_tempUploadFilePath.clear();
+	_downloadFileName.clear();
 	if (debug)std::cout<<ORANGE<<"State reset"<<RESET<<std::endl;
 }
 
@@ -106,5 +122,6 @@ HttpRequest::HttpRequest()
 	_body.clear();
 	_httpResponse.clear();
 	_requestLine._path.clear();
+	_requestLine._method = HttpMethod::UNKNOWN;
 	_requestLine._version.clear();
 }

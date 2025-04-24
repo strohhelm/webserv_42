@@ -11,8 +11,8 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config
 		
 		std::string pathToErrorPage = config._rootDir + "/" + config._errorPage[statusCode];
 		content = readFileContent(pathToErrorPage);
-		if(debug)std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
-		if(debug)std::cout << "content " << content << std::endl;
+		// if(debug)std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
+		// if(debug)std::cout << "content " << content << std::endl;
 		contentType = "text/html";
 	}
 	else

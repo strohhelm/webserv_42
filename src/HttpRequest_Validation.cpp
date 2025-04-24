@@ -11,7 +11,7 @@ bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 		return false;
 }
 
-int	HttpRequest::checkCgi(std::string path, routeConfig& route)
+int	HttpRequest::checkCgi(std::string path)
 {
 	// std::string filename = path.substr(path.find_last_of("/"), path.size() - path.find_last_of("/"));
 	// bool check = (filename.substr(filename.size() - 4, filename.size()) == ".php");
@@ -22,19 +22,19 @@ int	HttpRequest::checkCgi(std::string path, routeConfig& route)
 	if(!endsWithPhp)
 		return 0;
 
-	if (endsWithPhp && route.checkCgiPath())
+	if (endsWithPhp && (*_route).checkCgiPath())
 		return 1;
 	else 
 		return -1;
 
 }
 
-int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
+int HttpRequest::validateRequest(void)
 {
 	if (debug)std::cout<<ORANGE<<"Validating request"<<RESET<<std::endl;
 	std::string path = _requestLine._path;
-	auto routes = config._routes;
-	if (!validateHost(config._serverNames))
+	auto &routes = (*_config)._routes;
+	if (!validateHost((*_config)._serverNames))
 	{
 		if (debug)std::cout << BG_BRIGHT_MAGENTA << "Host invalid" << RESET << std::endl;
 		return -1;
@@ -45,7 +45,7 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 		auto tmp = routes.find(path);
 		if (tmp != routes.end())
 		{
-			route = tmp->second;
+			_route = &(tmp->second);
 			if (debug)std::cout << BG_BRIGHT_MAGENTA << "Request Valid" << RESET << std::endl;
 			return 0;
 		}
@@ -53,10 +53,10 @@ int HttpRequest::validateRequest(ServerConfig& config, routeConfig& route)
 		{
 			if (path.find_last_of('/') == path.find_first_of('/'))
 			{
-				auto it = config._routes.find("/");
-				if ( it != config._routes.end())
+				auto it = (*_config)._routes.find("/");
+				if ( it != (*_config)._routes.end())
 				{
-					route = it->second;
+					_route = &(it->second);
 					if (debug)std::cout << BG_BRIGHT_MAGENTA << "Request Valid" << RESET << std::endl;
 					return 0;
 				}

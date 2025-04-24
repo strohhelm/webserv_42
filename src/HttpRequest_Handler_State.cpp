@@ -1,13 +1,25 @@
 #include "../include/ServerConfig.hpp"
 
 
+void	HttpRequest::printState(void)
+{
+	std::stringstream print;
+	print<<CYAN<<"_downloadEvaluated: "<< (_state._downloadEvaluated ==true? "true": "false") <<RESET<<std::endl;
+	print<<CYAN<<"_downloadMode: "<< (_state._downloadMode ==true? "true": "false") <<RESET<<std::endl;
+	print<<CYAN<<"_websitefile: "<< (_state._websitefile ==true? "true": "false") <<RESET<<std::endl;
+	print<<CYAN<<"_uploadFile: "<< _state._downloadFileName <<RESET<<std::endl;
+	print<<CYAN<<"Method: "<< static_cast<int>(_requestLine._method)  <<RESET;
+	// print<<CYAN<<": "<< (_state. ==true? "true": "false") <<RESET<<std::endl;
+	std::cout<<print.str()<<std::endl;
+}
 int	HttpRequest::evaluateState(int client_fd)
 {
 	//if there is no bytes recieved on this conection after the last request it will not loop and look through the buffer.
 	//this flag is set by the readfromclient function as soon as the first byte is recieved for a new request
 	if (_state._isNewRequest) 
 		return NEEDS_TO_READ;
-	if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<client_fd<<RESET":"<<std::endl;
+		if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<client_fd<<RESET":"<<std::endl;
+	if (debug)printState();
 	if (!_state._requestlineRecieved)
 	{
 		if (debug)	std::cout<<YELLOW<<"Requestline not recieved"<<RESET<<std::endl;

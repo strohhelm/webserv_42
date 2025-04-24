@@ -74,6 +74,7 @@ struct RequestState
 	bool			_readyToHandle			= false;
 	
 	int				_errorOcurred			= 0;
+
 	std::string		_tempUploadFilePath;
 	std::ofstream	_uploadFile;
 	std::string		_downloadFileName;
@@ -96,6 +97,10 @@ class HttpRequest
 		std::string _httpResponse;
 		
 		CGI	_cgi;
+		routeConfig		*_route;
+		ServerConfig	*_config;
+		int				_client_fd;
+		int				_server_fd;
 	// const ServerConfig& _config;
 	
 	public:
@@ -117,22 +122,23 @@ class HttpRequest
 		void	setPath(const std::string& path);
 		void	setVersion(const std::string& version);
  	
+		void		printState(void);
 		int			evaluateState(int client_fd);
-		int			evaluateDownload(const int& client_fd, std::string& path, ServerConfig& config);
+		int			evaluateDownload(const int& client_fd, std::string& path);
 		void		continueDownload(const int& client_fd);
-		void		singleGetRequest(const int& client_fd, std::string& path, ServerConfig& config, bool isFile);
-		int			evaluateFilepath(const int& client_fd, std::string& path, ServerConfig& config, routeConfig& route);
+		void		singleGetRequest(const int& client_fd, std::string& path, bool isFile);
+		int			evaluateFilepath(const int& client_fd, std::string& path);
 		void		evaluateFiletype(std::string& filename);
-		int			validateRequest(ServerConfig& config, routeConfig& route);
+		int			validateRequest(void);
 		bool		validateHost(std::vector<std::string> &serverNames);
-		int			checkCgi(std::string path, routeConfig& route);
-		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
-		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handleDelete(int fd, ServerConfig& config, routeConfig &route);
-		void		handleUnknown(int fd, ServerConfig& config);
-		void		handleForbidden(const int& client_fd, ServerConfig& config);
-		void		sendErrorResponse(int fd, int statusCode, ServerConfig& config);
+		int			checkCgi(std::string path);
+		void		handleHttpRequest(const int& client_fd, const int& server_fd);
+		void		handleGet(const int& client_fd, const int& server_fd,);
+		void		handlePost(const int& client_fd, const int& server_fd,);
+		void		handleDelete(int fd, routeConfig &route);
+		void		handleUnknown(int fd);
+		void		handleForbidden(const int& client_fd);
+		void		sendErrorResponse(int fd, int statusCode);
 		HttpMethod	stringToHttpMethod(const std::string& method);
 
 		HttpMethod			getMethod(routeConfig &route);
@@ -148,7 +154,7 @@ class HttpRequest
 		void	showBody(void);
 
 
-		std::string	getRequestedFile(bool& isFile, ServerConfig& config, routeConfig& route);
+		std::string	getRequestedFile(bool& isFile,);
 		std::string	readFileContent(const std::string& path);
 
 		std::string	getContentType();
@@ -156,10 +162,10 @@ class HttpRequest
 		std::string	buildResponseHeader(int statusCode, size_t size, std::string contentType);
 		std::string buildDownloadHeader(int statusCode, size_t size, std::string& filename);
 
-		std::string	buildFullPath(ServerConfig& config, routeConfig& route);
+		std::string	buildFullPath(void);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
-		std::string	serveDirectory(std::string fullPath, ServerConfig& config,routeConfig& route);
+		std::string	serveDirectory(std::string fullPath);
 		int			deleteFile(const std::string& filename);
 
 		/********************************************************/
@@ -170,7 +176,7 @@ class HttpRequest
 		std::string extractQueryString(std::string& request);
 
 
-		// void executeCGI(const int& client_fd, ServerConfig& config);
+		// void executeCGI(const int& client_fd);
 
 
 };
