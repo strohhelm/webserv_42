@@ -60,9 +60,11 @@
 
 void Post::postRespond()
 {
+	_state.reset();
+	if (_state._uploadFile.is_open())
+		_state._uploadFile.close();
 	std::string html_content = readFileContent("www/upload/upload.html");
 	sendResponse(fd, 200, html_content);
-	_state.reset();
 }
 
 size_t Post::findCheck(std::string hay, char needle, size_t pos)
@@ -71,7 +73,11 @@ size_t Post::findCheck(std::string hay, char needle, size_t pos)
 	if (re != std::string::npos)
 		return (re);
 	else // return negative value
-		throw std::runtime_error("ERROR with find return value in POST");
+	{
+		std::cerr << YELLOW << "Error in find wrapper." << RESET << std::endl;
+		return (-1);
+	}
+		// throw std::runtime_error("ERROR with find return value in POST");
 }
 
 size_t Post::findCheck(std::string hay, std::string needle, size_t pos)
@@ -80,7 +86,11 @@ size_t Post::findCheck(std::string hay, std::string needle, size_t pos)
 	if (re != std::string::npos)
 		return (re);
 	else // return negative value
-		throw std::runtime_error("ERROR with find return value in POST. Unable to find: "+needle);
+	{
+		std::cerr << YELLOW << "Error in find wrapper." << RESET << std::endl;
+		return (-1);
+	}
+		// throw std::runtime_error("ERROR with find return value in POST. Unable to find: "+needle);
 }
 
 
@@ -140,20 +150,14 @@ void Post::extractContent()
 		{
 			begin = findCheck(body, _state._openBoundary, 0) + _state._openBoundary.size();
 			begin = findCheck(body, "\r\n\r\n", begin) + 4;
-		}
-		size_t end = findCheck(body, "\r\n" + _state._closeBoundary, begin);
-		if (end == std::string::npos)
 			_fileContent = body.substr(begin);
-		else
-		{
-			std::cout << RED << "Entire file recieved" << RESET << std::endl;
-			_fileContent = body.substr(begin, end - begin);
-			_done = true;
 		}
 		std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;
 		if (_state._contentLength == _state._ContentBytesRecieved)
 		{
 			std::cout << RED << "Entire file recieved" << RESET << std::endl;
+			size_t end = findCheck(body, "\r\n" + _state._closeBoundary, begin);
+			_fileContent = body.substr(begin, end - begin);
 			_done = true;
 		}
 	}

@@ -3,7 +3,7 @@
 //Header to set all default values in the program to avoid looking for them in case of necessary change.
 extern bool debug;
 //Buffersize to recieve in SimpleServer_Launch.cpp
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4024
 #define MAX_IN_MEMORY_BODY_SIZE 1048576 //1 MB
 #define MAX_URI_LENGTH 8000 //recommended by rcp
 #define MAX_METHOD_LENGTH sizeof("DELETE")
