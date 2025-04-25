@@ -26,7 +26,6 @@ FUNCTIONS	=	$(SRC_DIR)/CGI.cpp \
 				$(SRC_DIR)/HttpRequest_SendResponse.cpp \
 				$(SRC_DIR)/HttpRequest_Validation.cpp \
 				$(SRC_DIR)/main.cpp \
-				$(SRC_DIR)/ServerConfig.cpp \
 				$(SRC_DIR)/SimpleServer_Configuration.cpp \
 				$(SRC_DIR)/SimpleServer_Launch.cpp \
 				$(SRC_DIR)/SimpleServer.cpp

@@ -63,11 +63,10 @@ bool HttpRequest::directoryExists(const std::string& path)
 }
 
 
-std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config, routeConfig& route)
+std::string HttpRequest::serveDirectory(std::string fullPath)
 {
 	std::stringstream html;
-	(void)config;
-	if((!route.isDirListingActive()))
+	if((!(*_route).isDirListingActive()))
 		return"";
 	
 	html << "<!DOCTYPE html>\n"
@@ -108,10 +107,9 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 */
 
 
-std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
+std::string HttpRequest::buildFullPath(void)
 {
-	(void)config;
-	std::string rootDir = route.getRootDir();
+	std::string rootDir = (*_route).getRootDir();
 	std::string path = _requestLine._path;
 	std::string fullPath;
 	
@@ -129,11 +127,11 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 	{
 		if (debug)std::cout << "ends with /" << std::endl;
 		// are there a default files and does one of them exist?
-		for(auto it : route._defaultFile)
+		for(auto it : (*_route)._defaultFile)
 		{
 			if (debug)std::cout << it << std::endl;
 		}
-		for(auto it : route._defaultFile)
+		for(auto it : (*_route)._defaultFile)
 		{
 			std::string temp = fullPath + it;
 			if(access(temp.c_str(), F_OK) == 0)// read access?
@@ -156,16 +154,16 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config,routeConfig& route)
+std::string HttpRequest::getRequestedFile(bool& isFile)
 {
-	std::string fullPath = buildFullPath(config, route);
+	std::string fullPath = buildFullPath();
 	if(debug)std::cout <<ORANGE<< "requested File " << RESET<<fullPath << std::endl;
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
 	{
 		isFile = false;
-		return(serveDirectory(fullPath, config, route));
+		return(serveDirectory(fullPath));
 	}
 	return "";
 }

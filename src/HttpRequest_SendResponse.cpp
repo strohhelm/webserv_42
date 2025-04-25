@@ -1,15 +1,15 @@
 #include "../include/ServerConfig.hpp"
 
-void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config)
+void HttpRequest::sendErrorResponse(int statusCode)
 {
 	std::string response;
 	std::string content;
 	std::string contentType;
-	auto it = config._errorPage.find(statusCode);
-	if(it != config._errorPage.end())
+	auto it = (*_config)._errorPage.find(statusCode);
+	if(it != (*_config)._errorPage.end())
 	{
 		
-		std::string pathToErrorPage = config._rootDir + "/" + config._errorPage[statusCode];
+		std::string pathToErrorPage = (*_config)._rootDir + "/" + (*_config)._errorPage[statusCode];
 		content = readFileContent(pathToErrorPage);
 		// if(debug)std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
 		// if(debug)std::cout << "content " << content << std::endl;
@@ -23,12 +23,12 @@ void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config
 	response = buildResponseHeader(statusCode,  content.length(), contentType);
 	// std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 	response += content;
-	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
+	send(_client_fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 	_state.reset();
 }
 
 
-void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message)
+void HttpRequest::sendResponse(int statusCode, const std::string& message)
 {
 	std::string response;
 	if (_state._websitefile)
@@ -37,7 +37,7 @@ void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message
 		response = buildDownloadHeader(statusCode,  message.length(), _state._downloadFileName);
 	if (debug)std::cout<<ORANGE<<"Headers: "<<RESET<<std::endl<<response<<std::endl;
 	response += message;
-	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
+	send(_client_fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
 }
 
 std::string HttpRequest::buildResponseHeader(int statusCode, size_t size, std::string contentType)

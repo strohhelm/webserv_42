@@ -2,11 +2,10 @@
 #include "../include/Post.hpp"
 
 
-void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route)
+void HttpRequest::handlePost(void)
 {
 	// If Content-Length is missing for a POST request, return 411 Length Required.
 	// If Content-Length does not match the actual body size, return 400 Bad Request
-	(void)server_fd;
 
 	if (debug)
 	extractRawBody();
@@ -27,20 +26,20 @@ void HttpRequest::handlePost(const int& client_fd, const int& server_fd, ServerC
 	// if(getContentType() != "")
 	// 	sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
 
-	sendErrorResponse(client_fd, 405,config);// wrong Code
+	sendErrorResponse(405);// wrong Code
 	bool isFile = true;
 
-	std::string path = getRequestedFile(isFile, config, route);
+	std::string path = getRequestedFile(isFile);
 
 	std::string query = "";
 	if(_requestLine._path.find("php") != std::string::npos)
 	{	
-		_cgi.setCgiParameter(client_fd, config, path, route.getCgiPath(), query);
+		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(), query);
 		_cgi.tokenizePath();
 		_cgi.execute("POST", _rawBody);
 		return;
 	}
 
 
-	sendErrorResponse(client_fd, 405, config);// wrong Code
+	sendErrorResponse(405);// wrong Code
 }

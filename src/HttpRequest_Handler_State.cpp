@@ -12,14 +12,13 @@ void	HttpRequest::printState(void)
 	// print<<CYAN<<": "<< (_state. ==true? "true": "false") <<RESET<<std::endl;
 	std::cout<<print.str()<<std::endl;
 }
-int	HttpRequest::evaluateState(int client_fd)
+int	HttpRequest::evaluateState(void)
 {
 	//if there is no bytes recieved on this conection after the last request it will not loop and look through the buffer.
 	//this flag is set by the readfromclient function as soon as the first byte is recieved for a new request
-	if (_state._isNewRequest) 
-		return NEEDS_TO_READ;
-		if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<client_fd<<RESET":"<<std::endl;
-	if (debug)printState();
+	if (_state._isNewRequest){return NEEDS_TO_READ;}
+	if (debug){std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<_client_fd<<RESET":"<<std::endl;}
+	if (debug){printState();}
 	if (!_state._requestlineRecieved)
 	{
 		if (debug)	std::cout<<YELLOW<<"Requestline not recieved"<<RESET<<std::endl;
@@ -31,7 +30,7 @@ int	HttpRequest::evaluateState(int client_fd)
 		else
 			return NEEDS_TO_READ;
 
-			if (debug)std::cout<<GREEN<<"Requestline recieved"<<RESET<<std::endl;
+		if (debug)std::cout<<GREEN<<"Requestline recieved"<<RESET<<std::endl;
 	}
 	else
 		if (debug)std::cout<<GREEN<<"Requestline already recieved"<<RESET<<std::endl;
@@ -63,7 +62,7 @@ int	HttpRequest::evaluateState(int client_fd)
 			_state._headersRecieved = true;
 		else
 		{
-			if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<client_fd<<BG_BRIGHT_GREEN<<": NEEDS TO READ"<<RESET<<std::endl;
+			if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<_client_fd<<BG_BRIGHT_GREEN<<": NEEDS TO READ"<<RESET<<std::endl;
 			return NEEDS_TO_READ;
 		}
 		if (debug)std::cout<<GREEN<<"Headers recieved"<<RESET<<std::endl;
@@ -118,7 +117,7 @@ int	HttpRequest::evaluateState(int client_fd)
 			{
 				if (_state._buffer.length() < _state._contentLength)
 				{
-					if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<client_fd<<BG_BRIGHT_GREEN<<": NEEDS TO READ"<<RESET<<std::endl;
+					if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<_client_fd<<BG_BRIGHT_GREEN<<": NEEDS TO READ"<<RESET<<std::endl;
 					return NEEDS_TO_READ;
 				}
 				// else
@@ -134,6 +133,6 @@ int	HttpRequest::evaluateState(int client_fd)
 		default:
 			;
 	}
-	if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<client_fd<<BG_BRIGHT_GREEN<<": NEEDS TO WRITE"<<RESET<<std::endl;
+	if (debug)std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<_client_fd<<BG_BRIGHT_GREEN<<": NEEDS TO WRITE"<<RESET<<std::endl;
 	return NEEDS_TO_WRITE;
 }

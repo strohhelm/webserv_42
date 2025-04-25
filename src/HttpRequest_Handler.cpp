@@ -5,7 +5,7 @@
 void HttpRequest::handleHttpRequest()
 {
 	if (debug)std::cout << BG_BRIGHT_RED<<"Route: " << RESET<<std::endl;
-	if (debug)std::cout << RED<< (*_route)._methods[0]<<route._methods[1]<<route._methods[2] << RESET<<std::endl;
+	if (debug)std::cout << RED<< (*_route)._methods[0]<<(*_route)._methods[1]<<(*_route)._methods[2] << RESET<<std::endl;
 
 	if (debug)std::cout << BG_BRIGHT_RED<<"Method: " << static_cast<int>(getMethod()) << RESET<<std::endl;
 	
@@ -34,18 +34,18 @@ void HttpRequest::handleHttpRequest()
 void HttpRequest::handleForbidden()
 {
 	if (debug)std::cout << BG_BRIGHT_RED<<"Forbidden Method" << RESET<<std::endl;
-	sendErrorResponse(client_fd, 403, config);
+	sendErrorResponse(403);
 }
 
 
-void HttpRequest::handleUnknown(int fd)
+void HttpRequest::handleUnknown(void)
 {
 	if (debug)std::cout << BG_BRIGHT_RED<<"Unkown Method" << RESET<<std::endl;
-	sendErrorResponse(fd, 405, config);
+	sendErrorResponse(405);
 }
 
 
-void HttpRequest::handleDelete(int fd)
+void HttpRequest::handleDelete(void)
 {
 	//TODO check if allowed to delete!!!!
 
@@ -55,19 +55,19 @@ void HttpRequest::handleDelete(int fd)
 		path.erase(path.begin());
 	}
 	if (debug)std::cout << BG_BRIGHT_BLACK << "DELETE: "<<RESET<<BLACK<<path << RESET << std::endl;
-	if (route._uploadPath.empty() || path.find(route._uploadPath) != std::string::npos)
-		sendErrorResponse(fd, 401, config);
+	if ((*_route)._uploadPath.empty() || path.find((*_route)._uploadPath) != std::string::npos)
+		sendErrorResponse(401);
 	if(!fileExists(path))
 	{
-		sendErrorResponse(fd, 404, config);
+		sendErrorResponse(404);
 		return;
 	}
 	if(!deleteFile(path))
 	{
-		sendErrorResponse(fd, 500, config);
+		sendErrorResponse(500);
 		return;
 	}
-	sendResponse(fd, 204, "Resource deleted successfully");
+	sendResponse(204, "Resource deleted successfully");
 	_state.reset();
 }
 

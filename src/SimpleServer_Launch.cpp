@@ -34,16 +34,16 @@ void SimpleServer::launch(void)
 			std::cerr << RED << "Poll error, retrying..." << RESET << std::endl;
 			continue; 
 		}
-		if (debug)
-		{
-			std::cout<<"Clients: ";
-			for (auto &x:_clients)
-			{
-				(void )x;
-				std::cout<< "x ";
-			}
-			std::cout<<std::endl;
-		}
+		// if (debug && pollcount > 0)
+		// {
+		// 	std::cout<<"Clients: ";
+		// 	for (auto &x:_clients)
+		// 	{
+		// 		(void )x;
+		// 		std::cout<< "x ";
+		// 	}
+		// 	std::cout<<std::endl;
+		// }
 		handlePolls(pollcount);
 		checkIdleConnections();
 	}
@@ -95,7 +95,7 @@ void SimpleServer::handlePolls(int pollCount)
 			}
 		}
 		if (_serverSocket_fds.count(client_fd) == 0)
-			check = _clients[client_fd].evaluateState(client_fd);
+			check = _clients[client_fd].evaluateState();
 		if(check == NEEDS_TO_WRITE && isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
@@ -103,7 +103,7 @@ void SimpleServer::handlePolls(int pollCount)
 		else if (check > NEEDS_TO_WRITE  && isDataToWrite(fdIndex))
 		{
 			if (debug)std::cout << BG_BRIGHT_RED<<"State Error" << RESET<<std::endl;
-			_clients[client_fd].sendErrorResponse(client_fd, check, _serverConfigs[_listeningServerFromClient[client_fd]]);
+			_clients[client_fd].sendErrorResponse(check);
 		}
 		fdIndex--;
 	}
@@ -319,6 +319,8 @@ void SimpleServer::handler(int fdIndex)
 	{
 		client._state._isNewRequest = false;
 		client._config = &(_serverConfigs[server_fd]);
+		client._client_fd = client_fd;
+		client._server_fd = server_fd;
 		int invalid = client.validateRequest();
 		if (invalid != 0)
 		{
@@ -327,12 +329,12 @@ void SimpleServer::handler(int fdIndex)
 			if (invalid < 0)
 				code = 400;
 			if (debug)std::cout << BG_BRIGHT_RED<<"invalid request " << RESET<<std::endl;
-			client.sendErrorResponse(client_fd, code, config);
+			client.sendErrorResponse(code);
 			return;
 		}
 		client._state._isValidRequest = 1;
 	}
-	client.handleHttpRequest(client_fd, server_fd);
+	client.handleHttpRequest();
 
 	// removeClient(fdIndex);
 }

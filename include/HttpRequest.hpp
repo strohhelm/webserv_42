@@ -97,13 +97,13 @@ class HttpRequest
 		std::string _httpResponse;
 		
 		CGI	_cgi;
+		// const ServerConfig& _config;
+		
+		public:
+		int				_server_fd;
+		int				_client_fd;
 		routeConfig		*_route;
 		ServerConfig	*_config;
-		int				_client_fd;
-		int				_server_fd;
-	// const ServerConfig& _config;
-	
-	public:
 		RequestState	_state;
 
 
@@ -123,25 +123,25 @@ class HttpRequest
 		void	setVersion(const std::string& version);
  	
 		void		printState(void);
-		int			evaluateState(int client_fd);
-		int			evaluateDownload(const int& client_fd, std::string& path);
-		void		continueDownload(const int& client_fd);
-		void		singleGetRequest(const int& client_fd, std::string& path, bool isFile);
-		int			evaluateFilepath(const int& client_fd, std::string& path);
+		int			evaluateState(void);
+		int			evaluateDownload(std::string& path);
+		void		continueDownload(void);
+		void		singleGetRequest(std::string& path, bool isFile);
+		int			evaluateFilepath(std::string& path);
 		void		evaluateFiletype(std::string& filename);
 		int			validateRequest(void);
 		bool		validateHost(std::vector<std::string> &serverNames);
 		int			checkCgi(std::string path);
-		void		handleHttpRequest(const int& client_fd, const int& server_fd);
-		void		handleGet(const int& client_fd, const int& server_fd,);
-		void		handlePost(const int& client_fd, const int& server_fd,);
-		void		handleDelete(int fd, routeConfig &route);
-		void		handleUnknown(int fd);
-		void		handleForbidden(const int& client_fd);
-		void		sendErrorResponse(int fd, int statusCode);
+		void		handleHttpRequest();
+		void		handleGet(void);
+		void		handlePost(void);
+		void		handleDelete(void);
+		void		handleUnknown(void);
+		void		handleForbidden(void);
+		void		sendErrorResponse(int statusCode);
 		HttpMethod	stringToHttpMethod(const std::string& method);
 
-		HttpMethod			getMethod(routeConfig &route);
+		HttpMethod			getMethod(void);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
 		
@@ -154,11 +154,11 @@ class HttpRequest
 		void	showBody(void);
 
 
-		std::string	getRequestedFile(bool& isFile,);
+		std::string	getRequestedFile(bool& isFile);
 		std::string	readFileContent(const std::string& path);
 
 		std::string	getContentType();
-		void		sendResponse(int fd,int statusCode, const std::string& message);
+		void		sendResponse(int statusCode, const std::string& message);
 		std::string	buildResponseHeader(int statusCode, size_t size, std::string contentType);
 		std::string buildDownloadHeader(int statusCode, size_t size, std::string& filename);
 
@@ -176,7 +176,7 @@ class HttpRequest
 		std::string extractQueryString(std::string& request);
 
 
-		// void executeCGI(const int& client_fd);
+		// void executeCGI();
 
 
 };
