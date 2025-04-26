@@ -26,7 +26,6 @@
 #define SOCKET_HPP
 
 
-
 class SimpleServer
 {
 	private:
@@ -36,20 +35,14 @@ class SimpleServer
 		u_long									_networkInterface;
 		struct sockaddr_in						_serviceAddress;
 		socklen_t								_serviceAddressLen;
-		int										_maxAmountOfConnections; // from config?
-
-		
+		MainConfig&								_config;
 
 		std::vector<struct pollfd>				_poll_fds;
 		// std::unordered_map<int, std::string>	_recvBuffer;
 		
-		
 		std::map<int, HttpRequest>				_clients;
 
-
-		std::vector<ServerConfig>				_rawConfigs;
 		std::map<int, ServerConfig>				_serverConfigs;
-
 
 		std::unordered_set<int>					_serverSocket_fds;
 
@@ -59,7 +52,7 @@ class SimpleServer
 
 
 	public:
-		SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections, std::vector<ServerConfig> configs);
+		SimpleServer(int domain, int type, int protocol, u_long networkInterface, MainConfig& config);
 		~SimpleServer();
 		
 		int		serverConfiguration(void);
@@ -85,8 +78,6 @@ class SimpleServer
 		
 
 		int				readDataFromClient(int	fdIndex);
-		std::string&	readBytes();
-		int				noDataReceived(int		bytesReceived);
 		void			removeClient(int		fdIndex);
 
 		void	closeAllSockets(void);

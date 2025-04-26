@@ -34,10 +34,10 @@ void HttpRequest::setMethod(const std::string& method)
 	_requestLine._method = stringToHttpMethod(method);
 }
 
-HttpMethod HttpRequest::getMethod(routeConfig &route)
+HttpMethod HttpRequest::getMethod(void)
 {
-	if (route.checkMethod(_requestLine._method))
-		return (_requestLine._method );
+	if ((*_route).checkMethod(_requestLine._method))
+		return (_requestLine._method);
 	else
 		return HttpMethod::FORBIDDEN;
 }

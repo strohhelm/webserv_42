@@ -41,7 +41,13 @@ void MainConfig::setTimeout(std::vector<confToken> &context, size_t lineNum)
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
 		throw std::runtime_error("Value error in directive 'keepalive_timeout': \"" + context[0].str + "\" not a number");
 	else
-		_keepalive_timeout = std::stoul(context[0].str);
+	{
+		try
+		{
+			_keepalive_timeout = std::stoul(context[0].str);
+		}
+		catch(std::exception& e){throw std::runtime_error("Shit went down in stoul() keepalive_timeout context.");}
+	}
 }
 
 void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
@@ -78,8 +84,8 @@ void MainConfig::setDefaultValues(void)
 {
 	_error_log = DEFAULT_ERROR_LOG;
 	_access_log = DEFAULT_ACCESS_LOG;
-	_worker_connections = 10;
-	_keepalive_timeout = 75;
+	_worker_connections = DEFAULT_MAX_WORKER_CONNECTIONS;
+	_keepalive_timeout = DEFAULT_TIMEOUT;
 	_http.clear();
 }
 
@@ -87,6 +93,8 @@ void MainConfig::checkValues(void)
 {
 	if (_worker_connections < 1)
 		throw std::runtime_error("Value worker_connections in main context not valid, must be bigger than 1.");
+	else if (_worker_connections >= 10240)
+		throw std::runtime_error("Value worker_connections in main context not valid, must be smaller than 10240.");
 	if (! _http.size())
 		throw std::runtime_error("Must have servers!!!");
 	for (auto& server:_http)

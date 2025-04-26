@@ -11,6 +11,26 @@
 
 414 URI Too Long → Request path too long.
 */
+int HttpRequest::deleteFile(const std::string& filename)
+{
+	return (remove(filename.c_str()) == 0);
+}
+
+
+std::string HttpRequest::getContentType()
+{
+	auto type = _headers.find("Content-Type");
+	
+	if(type == _headers.end())
+	{
+		return "";
+	}
+	else
+	{
+		if (debug) std::cout << BG_BRIGHT_BLACK << "Content-Type: "<<RESET<<BLACK<<type->second << RESET << std::endl;
+		return type->second;
+	}
+}
 
 
 bool HttpRequest::fileExists(const std::string& path)
@@ -43,12 +63,18 @@ bool HttpRequest::directoryExists(const std::string& path)
 }
 
 
-std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& config, routeConfig& route)
+std::string HttpRequest::serveDirectory(std::string fullPath)
 {
-	std::stringstream html;
-	(void)config;
-	if((!route.isDirListingActive()))
+	if((!(*_route).isDirListingActive()))
 		return"";
+	std::string tempdir(DEFAULT_DOWNLOAD_PATH);
+	std::string filename = tempdir + "dirListing.html";
+	std::ofstream html(filename, std::ios::out);
+	if (!html.is_open() || html.bad())
+	{
+		
+		return "erroropen";
+	}
 	
 	html << "<!DOCTYPE html>\n"
 		 <<	"<html>\n"
@@ -67,11 +93,8 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 		
 	html <<	"</body>\n"
 		 <<	"</html>\n";
-
-
-
-
-	return html.str();
+	html.close();
+	return filename;
 }
 
 /*
@@ -88,10 +111,9 @@ std::string HttpRequest::serveDirectory(std::string fullPath, ServerConfig& conf
 */
 
 
-std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
+std::string HttpRequest::buildFullPath(void)
 {
-	(void)config;
-	std::string rootDir = route.getRootDir();
+	std::string rootDir = (*_route).getRootDir();
 	std::string path = _requestLine._path;
 	std::string fullPath;
 	
@@ -109,11 +131,11 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 	{
 		if (debug)std::cout << "ends with /" << std::endl;
 		// are there a default files and does one of them exist?
-		for(auto it : route._defaultFile)
+		for(auto it : (*_route)._defaultFile)
 		{
 			if (debug)std::cout << it << std::endl;
 		}
-		for(auto it : route._defaultFile)
+		for(auto it : (*_route)._defaultFile)
 		{
 			std::string temp = fullPath + it;
 			if(access(temp.c_str(), F_OK) == 0)// read access?
@@ -136,16 +158,16 @@ std::string HttpRequest::buildFullPath(ServerConfig& config, routeConfig& route)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile, ServerConfig& config,routeConfig& route)
+std::string HttpRequest::getRequestedFile(void)
 {
-	std::string fullPath = buildFullPath(config, route);
+
+	std::string fullPath = buildFullPath();
 	if(debug)std::cout <<ORANGE<< "requested File " << RESET<<fullPath << std::endl;
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
 	{
-		isFile = false;
-		return(serveDirectory(fullPath, config, route));
+		return(serveDirectory(fullPath));
 	}
 	return "";
 }
@@ -155,63 +177,9 @@ std::string HttpRequest::readFileContent(const std::string& path)
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
-		return "";
+		return "erroropen";
 	}
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
-}
-
-void HttpRequest::sendErrorResponse(int fd, int statusCode, ServerConfig& config)
-{
-	std::string response;
-	std::string content;
-	std::string contentType;
-	auto it = config._errorPage.find(statusCode);
-	if(it != config._errorPage.end())
-	{
-		
-		std::string pathToErrorPage = config._rootDir + "/" + config._errorPage[statusCode];
-		content = readFileContent(pathToErrorPage);
-		if(content == "")
-		{
-			content = "This is the default errorpage for error " + std::to_string(statusCode);
-			contentType = "text/plain";
-		}
-		else
-		{
-			contentType = "text/html";
-		}
-		std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
-		std::cout << "content " << content << std::endl;
-	}
-	else
-	{
-		content = "This is the default errorpage for error " + std::to_string(statusCode);
-		contentType = "text/plain";
-	}
-	response = buildResponse(statusCode, StatusCode.at(statusCode), content, contentType);
-	send(fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
-	_state.reset();
-}
-
-
-void HttpRequest::sendResponse(int fd,int statusCode, const std::string& message)
-{
-	std::string response = buildResponse(statusCode, "OK" , message, "text/html");
-
-	send(fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
-}
-
-std::string HttpRequest::buildResponse(int& statusCode, std::string CodeMessage, const std::string& message, std::string contentType)
-{
-	std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + CodeMessage;
-	response += "\r\n";
-	response += "Content-Length: " + std::to_string(message.size());
-	response += "\r\n";
-	response += "Content-Type:" + contentType; 
-	response += "\r\n\r\n";
-	response += message;
-
-	return response;
 }

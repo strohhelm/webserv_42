@@ -4,7 +4,7 @@
 
 int SimpleServer::serverConfiguration(void)
 {
-	for(auto conf : _rawConfigs)
+	for(auto conf : _config._http)
 	{
 		int					serverSocket_fd;
 		struct sockaddr_in	serviceAddress;
@@ -72,7 +72,7 @@ int SimpleServer::serverConfiguration(void)
 
 		_serverConfigs[serverSocket_fd] = conf;
 		
-		std::cout << BG_BRIGHT_GREEN << BOLD<<"SERVER SETUP SUCCESSFUL:" <<RESET<<" "<< YELLOW << conf._serverNames[0];
+		std::cout << BG_BRIGHT_GREEN << BOLD <<"SERVER SETUP SUCCESSFUL:" <<RESET<<" "<< YELLOW << conf._serverNames[0];
 		std::cout << GREEN << " PORT: " << YELLOW <<  conf._port << GREEN<<" locations: ";
 		for (auto i:conf._routes)
 			std::cout<<GREEN<<"\""<<YELLOW<<i.first << GREEN<<"\", ";
@@ -92,7 +92,7 @@ int SimpleServer::createSocket(void)
 
 int SimpleServer::startListenOnSocket(int serverSocket_fd)
 {
-	return listen(serverSocket_fd, _maxAmountOfConnections);
+	return listen(serverSocket_fd, _config._worker_connections);
 }
 
 struct sockaddr_in SimpleServer::initAddress(int port)

@@ -10,7 +10,7 @@ void SimpleServer::checkIdleConnections(void)
 	for (auto it = _clientLastActivityTimes.begin(); it != _clientLastActivityTimes.end(); ) {
 		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
 		
-		if (elapsed.count() > 10)
+		if (elapsed.count() >static_cast<long long> (_config._keepalive_timeout))
 		{
 			std::cout << "Closing idle connection on fd: " << it->first << std::endl;
 			close(it->first);
@@ -34,6 +34,16 @@ void SimpleServer::launch(void)
 			std::cerr << RED << "Poll error, retrying..." << RESET << std::endl;
 			continue; 
 		}
+		// if (debug && pollcount > 0)
+		// {
+		// 	std::cout<<"Clients: ";
+		// 	for (auto &x:_clients)
+		// 	{
+		// 		(void )x;
+		// 		std::cout<< "x ";
+		// 	}
+		// 	std::cout<<std::endl;
+		// }
 		handlePolls(pollcount);
 		checkIdleConnections();
 	}
@@ -85,13 +95,16 @@ void SimpleServer::handlePolls(int pollCount)
 			}
 		}
 		if (_serverSocket_fds.count(client_fd) == 0)
-			check = _clients[client_fd].evaluateState(client_fd);
+			check = _clients[client_fd].evaluateState();
 		if(check == NEEDS_TO_WRITE && isDataToWrite(fdIndex))
 		{
 			handler(fdIndex);
 		}
 		else if (check > NEEDS_TO_WRITE  && isDataToWrite(fdIndex))
-			_clients[client_fd].sendErrorResponse(client_fd, check, _serverConfigs[_listeningServerFromClient[client_fd]]);
+		{
+			if (debug)std::cout << BG_BRIGHT_RED<<"State Error" << RESET<<std::endl;
+			_clients[client_fd].sendErrorResponse(check);
+		}
 		fdIndex--;
 	}
 }
@@ -125,8 +138,9 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 		std::cerr << RED << "new Client connection FAILED" << strerror(errno) << RESET<< std::endl; //ERNO !?!?!?!?!?!?!??!
 		return;
 	}
-	std::cout << GREEN << "new Client connection SUCCESSFULL: " << RESET << client_fd << std::endl;
-	
+	std::cout << GREEN << "new Client connection SUCCESSFULL! " << RESET;
+	unsigned char* bytes = (unsigned char*)&client_addr.sin_addr;
+	std::cout<<GREEN<< "Client IP: "<<RESET<< (int)bytes[0] << "."<< (int)bytes[1] << "."<< (int)bytes[2] << "."<< (int)bytes[3] <<GREEN<<" fd: "<<RESET<<client_fd<< std::endl;
 	if(fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0)
 	{
 		std::cout << RED << "clientConfiguration FAILED" << RESET << std::endl;	
@@ -269,11 +283,11 @@ void SimpleServer::removeClient(int fdIndex)
 }
 
 
-int	SimpleServer::noDataReceived(int bytesReceived)
-{
-	// check -1 and 0 seperate !!! eval sheet
-	return (bytesReceived <= 0);
-}
+// int	SimpleServer::noDataReceived(int bytesReceived)
+// {
+// 	// check -1 and 0 seperate !!! eval sheet
+// 	return (bytesReceived <= 0);
+// }
 
 // int SimpleServer::isDataToWrite(const int& fdIndex)
 // {
@@ -300,25 +314,26 @@ void SimpleServer::handler(int fdIndex)
 	
 	int client_fd = _poll_fds[fdIndex].fd;
 	int server_fd = _listeningServerFromClient[client_fd];
-	ServerConfig& config = _serverConfigs[server_fd];
+	// ServerConfig& config = _serverConfigs[server_fd];
 	HttpRequest &client = _clients[client_fd];
-	routeConfig route;
 	if (client._state._isValidRequest == 0)
 	{
 		client._state._isNewRequest = false;
-		int invalid = client.validateRequest(config, route);
+		client._config = &(_serverConfigs[server_fd]);
+		client._client_fd = client_fd;
+		client._server_fd = server_fd;
+		int invalid = client.validateRequest();
 		if (invalid != 0)
 		{
 			client._state._isValidRequest = -1;
 			int code = 404;
 			if (invalid < 0)
 				code = 400;
-			client.sendErrorResponse(client_fd, code, config);
+			if (debug)std::cout << BG_BRIGHT_RED<<"invalid request " << RESET<<std::endl;
+			client.sendErrorResponse(code);
 			return;
 		}
 		client._state._isValidRequest = 1;
 	}
-	client.handleHttpRequest(client_fd, server_fd, config, route);
-
-	// removeClient(fdIndex);
+	client.handleHttpRequest();
 }

@@ -65,7 +65,7 @@ void	CGI::closeAllPipes(void)
 	close(_parent[READ_FD]);
 	close(_parent[WRITE_FD]);
 	close(_child[READ_FD]);
-	close(_child[WRITE_FD]);	
+	close(_child[WRITE_FD]);
 }
 
 void	CGI::setArgv(void)

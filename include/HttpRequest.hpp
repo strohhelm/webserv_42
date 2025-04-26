@@ -35,6 +35,8 @@ enum State
 {
 	NEEDS_TO_READ,
 	NEEDS_TO_WRITE,
+	SEND_ERROR,
+	READ_ERROR,
 
 };
 
@@ -67,12 +69,15 @@ struct RequestState
 	bool			_downloadEvaluated		= false;
 	bool			_downloadMode			= false;
 	bool			_downloadComplete		= false;
-
+	size_t			_downloadSize			= 0;
+	bool			_websitefile			= false;
 	bool			_readyToHandle			= false;
 	
+	int				_errorOcurred			= 0;
+
 	std::string		_tempUploadFilePath;
 	std::ofstream	_uploadFile;
-	std::string		_tempDownloadFilePath;
+	std::string		_downloadFileName;
 	std::ifstream	_downloadFile;
 	void	reset();
 };
@@ -92,9 +97,13 @@ class HttpRequest
 		std::string _httpResponse;
 		
 		CGI	_cgi;
-	// const ServerConfig& _config;
-	
-	public:
+		// const ServerConfig& _config;
+		
+		public:
+		int				_server_fd;
+		int				_client_fd;
+		routeConfig		*_route;
+		ServerConfig	*_config;
 		RequestState	_state;
 
 
@@ -112,21 +121,34 @@ class HttpRequest
 		void	setMethod(const std::string& method);
 		void	setPath(const std::string& path);
 		void	setVersion(const std::string& version);
- 	
-		int			evaluateState(int client_fd);
-		int			validateRequest(ServerConfig& config, routeConfig& route);
+		//STATE
+		void		printState(void);
+		int			evaluateState(void);
+		//GET
+		int			evaluateDownload(std::string& path);
+		void		continueDownload(void);
+		void		singleGetRequest(std::string& path);
+		int			evaluateFilepath(std::string& path);
+		void		evaluateFiletype(std::string& filename);
+		//VALIDATE
+		int			validateRequest(void);
 		bool		validateHost(std::vector<std::string> &serverNames);
-		int			checkCgi(std::string path, routeConfig& route);
-		void		handleHttpRequest(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig &route);
-		void		handleGet(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handlePost(const int& client_fd, const int& server_fd, ServerConfig& config, routeConfig& route);
-		void		handleDelete(int fd, ServerConfig& config);
-		void		handleUnknown(int fd, ServerConfig& config);
-		void		handleForbidden(const int& client_fd, ServerConfig& config);
-		void		sendErrorResponse(int fd, int statusCode, ServerConfig& config);
+		int			checkCgi(std::string path);
+		//HANDLER
+		void		handleHttpRequest();
+		void		handleGet(void);
+		void		handlePost(void);
+		void		handleDelete(void);
+		void		handleUnknown(void);
+		void		handleForbidden(void);
+		//SEND
+		void		sendErrorResponse(int statusCode);
 		HttpMethod	stringToHttpMethod(const std::string& method);
+		void		sendResponse(int statusCode, const std::string& message);
+		std::string	buildResponseHeader(int statusCode, size_t size, std::string contentType);
+		std::string buildDownloadHeader(int statusCode, size_t size, std::string& filename);
 
-		HttpMethod			getMethod(routeConfig &route);
+		HttpMethod			getMethod(void);
 		const std::string&	getPath(void);
 		const std::string&	getHttpResponse(void);
 		
@@ -137,19 +159,15 @@ class HttpRequest
 
 		void	showHeader(void);
 		void	showBody(void);
-
-
-		std::string	getRequestedFile(bool& isFile, ServerConfig& config, routeConfig& route);
-		std::string	readFileContent(const std::string& path);
-
 		std::string	getContentType();
-		void		sendResponse(int fd,int statusCode, const std::string& message);
-		std::string	buildResponse(int& statusCode, std::string CodeMessage,const std::string& message, std::string contentType);
-
-	std::string	buildFullPath(ServerConfig& config, routeConfig& route);
+		
+		//FILE FINDING
+		std::string	getRequestedFile(void);
+		std::string	readFileContent(const std::string& path);
+		std::string	buildFullPath(void);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);
-		std::string	serveDirectory(std::string fullPath, ServerConfig& config,routeConfig& route);
+		std::string	serveDirectory(std::string fullPath);
 		int			deleteFile(const std::string& filename);
 
 		/********************************************************/
@@ -160,7 +178,7 @@ class HttpRequest
 		std::string extractQueryString(std::string& request);
 
 
-		// void executeCGI(const int& client_fd, ServerConfig& config);
+		// void executeCGI();
 
 
 };
