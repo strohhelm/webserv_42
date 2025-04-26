@@ -1,11 +1,11 @@
-methods always set to false? ajehle - at least GET could be always set to true because setting up a server without methods makes no sense ?
+methods always set to false? ajehle - at least GET could be always set to true because setting up a server without methods makes no sense ?✅
 handleDelete response code
 
 cgi ✅
 dir listing ✅
 errno output removen -> Error receiving data from client
 
-default error files, checking in sendErrorResponse if there is  a default file in this server, if so send it instead of response.
+default error files, checking in sendErrorResponse if there is  a default file in this server, if so send it instead of response.✅
 
 location \.php as default cgi path or keep as is.
 
@@ -15,44 +15,27 @@ return value check from send and revieve
 
 Headers check -> some headers have to be there and cant be sent twice also-> 400 HOST check!
 
-understand the subject!
+understand the subject!✅
 
-checking port numbers when setting up sockets so that only the first siver on certain port in the config file will listen on that port.
+checking port numbers when setting up sockets so that only the first siver on certain port in the config file will listen on that port.✅
 
 
-downloadin get request has to send chunked with great files!
+downloadin get request has to send chunked with great files!✅
 
 
 redirects
 
 errorcheck in config
 
-
-
-error pages?!!?!??!
-
-return values send() recv()
-
 error logfile wrong content
 
 setHostnamesToSystem and removeHostnamesFromSystem ✅
 
-{
-    config
-
-    -   error_page 502 server_name 500.html;    Error: stoi
-    -   	location / {
-		methods GET POST DELETE;
-		cgi /usr/bin/php-cgi;
-		123123 asdfadf;
-	}                                           Error: stoi
-}
-
-Error: [setHttp]: Syntax Error: "123" line: 11 -> directive not valid!
 
 
 
-multiple root dir in one config works and takes last one and so does  indexes as well and listen and servernames <--- need to talk about this
+multiple root dir in one config works and takes last one and so does  indexes as well and listen and servernames <--- need to talk about this(andi)
+(philipp):except for severnames it overwrites the values like ginx does (except nginx accumulates also the listen directive->multiple ports per server)
 	server {
 		listen 8081;
 		server_name example1.org localhost;
@@ -67,7 +50,7 @@ multiple root dir in one config works and takes last one and so does  indexes as
 		}
 	}
 
-defaultLocation when no location is set?
+defaultLocation when no location is set? << interesting (philipp)
 		location / {
 			methods GET POST DELETE;
 		}

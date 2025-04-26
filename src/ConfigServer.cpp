@@ -1,8 +1,5 @@
 #include "../include/ServerConfig.hpp"
 
-
-
-
 void	ServerConfig::setPort(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"setPort Tokens:"<<std::endl;
@@ -17,13 +14,13 @@ void	ServerConfig::setPort(std::vector<confToken> &context, size_t lineNum)
 								+ line + " \"" \
 								+ context[0].str + "\""
 								+ " -> only numbers allowed");
-
 }
 
 void	ServerConfig::setServerNames(std::vector<confToken> &context, size_t lineNum)
 {
 	// std::cout<<"ServerNames Tokens:"<<std::endl;
 	// printConfTokens(context);
+
 	std::string line = std::to_string(lineNum);
 	if (! context.size())
 		throw std::runtime_error("Syntax error in directive 'server_names': Too few arguments! line: " + line);
@@ -31,6 +28,7 @@ void	ServerConfig::setServerNames(std::vector<confToken> &context, size_t lineNu
 	{
 		_serverNames.push_back(it->str);
 	}
+	
 }
 void	ServerConfig::setErrorPages(std::vector<confToken> &context, size_t lineNum)
 {
@@ -86,6 +84,7 @@ void	ServerConfig::setIndex(std::vector<confToken>	&context, size_t lineNum)
 {
 	// std::cout<<"setIndex Tokens:"<<std::endl;
 	// printConfTokens(context);
+	std::vector<std::string> tmp;
 	std::string line = std::to_string(lineNum);
 	if (context.size() < 1)
 		throw std::runtime_error("Syntax error in directive 'index': Too few arguments! line: " + line);
@@ -95,8 +94,11 @@ void	ServerConfig::setIndex(std::vector<confToken>	&context, size_t lineNum)
 		// struct stat sb;
 		// if (stat(it->str.data(), &sb) != 0)
 		// 	throw std::runtime_error("File not found: " + it->str + " " + "line: " + std::to_string((it->lineNum)));
-		_indexFile.push_back(it->str);
+		tmp.push_back(it->str);
 	}
+	if (!_indexFile.empty())
+		_indexFile.clear();
+	_indexFile = tmp;
 }
 void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 {
@@ -107,14 +109,6 @@ void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 		throw std::runtime_error("Syntax error in directive 'listen' line: "  + line);
 	else
 	{
-		/*
-		// struct stat sb;
-		// if (stat(context[0].str.data(), &sb) != 0)
-		// 	throw std::runtime_error("In directive 'root' line: " + std::to_string(lineNum) \
-		// 							+ " -> File not found: \"" \
-		// 							+ context[0].str + "\"");
-		// else
-		*/
 			_rootDir = context[0].str;
 	}
 }
