@@ -122,7 +122,7 @@ void	ServerConfig::setRoute(std::vector<confToken>	&context, size_t lineNum)
 	std::vector<confToken> routeContext;
 	routeContext.insert(routeContext.begin(), context.begin() + 2, context.end() - 1);
 	if (_routes.find(path) == _routes.end())
-		_routes.insert({path, routeConfig(routeContext)});
+		_routes.insert({path, routeConfig(path, routeContext)});
 	else
 		throw std::runtime_error("[setRoute]: Route \"" + path + "\" set twice! line: " + line);
 

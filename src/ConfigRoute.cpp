@@ -3,8 +3,6 @@
 
 void	routeConfig::setMethods(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"Methods Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() > 3)
 		throw std::runtime_error("[setMethods]: Too many arguments to directive 'methods' line: " + line);
@@ -28,35 +26,28 @@ void	routeConfig::setMethods(std::vector<confToken> &context, size_t lineNum)
 }
 void	routeConfig::setRedirect(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"RedirectCode Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 2)
 		throw std::runtime_error("Syntax error in directive 'redirect' line: " + line);
+	if (!_redirect.second.empty())
+		return;
 	if (all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
 	{
-		if (context[0].str[0] == '3')
+		int code = std::stoi(context[0].str);
+		if (code < 200 || StatusCode.find(code) != StatusCode.end())
 		{
-			int code = std::stoi(context[0].str);
-			if (StatusCode.find(code) != StatusCode.end())
-			{
-				_redirectCode = code;
-			}
-			else
-				throw std::runtime_error("Status code \"" + context[0].str + "\" not valid. line" + line);
+				_redirect.first = code;
 		}
 		else
-			throw std::runtime_error("Status code \"" + context[0].str + "\" must begin with '3'. line" + line);
+			throw std::runtime_error("Status code \"" + context[0].str + "\" must be be valid and >= 200'. line" + line);
 	}
 	else
 		throw std::runtime_error("Status code \"" + context[0].str + "\" not numeric. line" + line);
-	_redirectPath = context[1].str; //Error handling here? My gut says no , better in handling logic.
+	_redirect.second = context[1].str;
 }
 
 void	routeConfig::setRootDir(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"RootDir Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 1)
 		throw std::runtime_error("Syntax error in directive 'root' line: " + line);
@@ -64,8 +55,6 @@ void	routeConfig::setRootDir(std::vector<confToken> &context, size_t lineNum)
 }
 void	routeConfig::setAutoIndex(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"AutoIndex Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive 'redirect' line: " + line);
@@ -78,8 +67,6 @@ void	routeConfig::setAutoIndex(std::vector<confToken> &context, size_t lineNum)
 }
 void	routeConfig::setDefaultFiles(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"DefaultFile Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	for (auto t:context)
 	{
@@ -92,8 +79,6 @@ void	routeConfig::setDefaultFiles(std::vector<confToken> &context, size_t lineNu
 
 void	routeConfig::setUploadPath(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"UploadPath Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 1)
 		throw std::runtime_error("Syntax error in directive 'upload_path' line: " + line);
@@ -102,19 +87,18 @@ void	routeConfig::setUploadPath(std::vector<confToken> &context, size_t lineNum)
 }
 void	routeConfig::setCGIExtension(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"CGI Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 2)
 		throw std::runtime_error("Syntax error in directive 'cgi' line: " + line + " Usage: [ cgi <extension> <path_to_executable> ]");
 	_cgiExtension[context[0].str] = context[1].str;
 }
 
-void routeConfig::setDefaultValues()
+void routeConfig::setDefaultValues(std::string& path)
 {
+	_path = path;
 	_methods[0] = true; _methods[1] = false; _methods[2] = false;
-	_redirectCode = 0;
-	_redirectPath.clear();
+	_redirect.first = 0;
+	_redirect.second.clear();
 	_rootDir.clear();
 	_dirListing = false;
 	_uploadPath.clear();
@@ -157,8 +141,7 @@ void routeConfig::printConfig(std::string path)
 	std::stringstream print;
 	print<<ORANGE<<UNDERLINE<<"ROUTE CONFIG:"<< GREEN<<"\""<<path<<"\""<< RESET<<"\n";
 	print<<"Methods: "<<BLUE;if (_methods[0]) print<<"GET ";if(_methods[1])print<<"POST ";if(_methods[2])print<<"DELETE ";print<<RESET<<"\n";
-	print<<"Redirect Code: "<<BLUE<<_redirectCode<<RESET<<"\n";
-	print<<"Redirect Path: "<<BLUE<<_redirectPath<<RESET<<"\n";
+	print<<"Redirect: "<<BLUE<<_redirect.first<<RESET<<"Redirect Path: "<<BLUE<<_redirect.second<<RESET<<"\n";
 	print<<"Root Dir: "<<BLUE<<_rootDir<<RESET<<"\n";
 	print<<"Autoindex: "<<BLUE<<(_dirListing ? "ON" : "OFF")<<RESET<<"\n";
 	print<<"Default File: "<<BLUE;
@@ -176,9 +159,9 @@ routeConfig::routeConfig(void)
 	_errorcode = routeError::INVALID;
 }
 
-routeConfig::routeConfig(std::vector<confToken> &context)
+routeConfig::routeConfig(std::string& path, std::vector<confToken> &context)
 {
-	setDefaultValues();
+	setDefaultValues(path);
 	std::map <std::string, void(routeConfig::*)(std::vector<confToken> &, size_t lineNum)> directives;
 	directives.insert({std::string("methods"),		&routeConfig::setMethods});
 	directives.insert({std::string("return"),		&routeConfig::setRedirect});
@@ -188,8 +171,6 @@ routeConfig::routeConfig(std::vector<confToken> &context)
 	directives.insert({std::string("upload_path"),	&routeConfig::setUploadPath});
 	directives.insert({std::string("cgi"),			&routeConfig::setCGIExtension});
 	// std::cout<<" ------------------------------------------------Location--------------------------------------------------------"<<std::endl;
-	// std::cout<<"Route Tokens:"<<std::endl;
-	// printConfTokens(context);
 	parseTokens<routeConfig>(context, directives, *this);
 	// std::cout<<"------Location end ----"<<std::endl;
 }

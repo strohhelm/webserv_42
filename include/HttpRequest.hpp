@@ -141,8 +141,12 @@ class HttpRequest
 		void		handleDelete(void);
 		void		handleUnknown(void);
 		void		handleForbidden(void);
+		void		handleRedirect();
+
 		//SEND
 		void		sendErrorResponse(int statusCode);
+		void		sendRedirectResponse(int statusCode, const std::string& message);
+
 		HttpMethod	stringToHttpMethod(const std::string& method);
 		void		sendResponse(int statusCode, const std::string& message);
 		std::string	buildResponseHeader(int statusCode, size_t size, std::string contentType);

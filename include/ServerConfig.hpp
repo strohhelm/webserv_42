@@ -50,9 +50,9 @@ class routeConfig
 {
 	public:
 
+	std::string					_path;
 	bool						_methods[3]; //Define a list of accepted HTTP methods for the route
-	int 						_redirectCode;
-	std::string					_redirectPath; //Define a HTTP redirection
+	std::pair<int, std::string>	_redirect; //Define a HTTP redirection
 	std::string					_rootDir; //Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
 	bool						_dirListing; //Turn on or off directory listing.
 	std::vector<std::string>	_defaultFile; //Set a default file to answer if the request is a directory.
@@ -60,10 +60,10 @@ class routeConfig
 	std::map<std::string, std::string>	_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
 	routeError					_errorcode;
 	
-	routeConfig(std::vector<confToken> &context);
+	routeConfig(std::string& path, std::vector<confToken> &context);
 	routeConfig();
 	void	printConfig(std::string path);
-	void	setDefaultValues(void);
+	void	setDefaultValues(std::string& path);
 	void	checkValues(ServerConfig& conf);
 	bool	checkMethod(HttpMethod& method);
 	int		checkCgiPath(std::string fileextension);

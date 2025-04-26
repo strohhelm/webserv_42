@@ -333,6 +333,8 @@ void SimpleServer::handler(int fdIndex)
 			client.sendErrorResponse(code);
 			return;
 		}
+		if (debug)std::cout << ORANGE << "Request Valid" << RESET << std::endl;
+		if (debug)std::cout<<ORANGE<<"Route: "<<RESET << (*(client._route))._path <<std::endl;
 		client._state._isValidRequest = 1;
 	}
 	client.handleHttpRequest();

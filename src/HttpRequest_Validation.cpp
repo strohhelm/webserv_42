@@ -41,7 +41,6 @@ int HttpRequest::validateRequest(void)
 		if (tmp != routes.end())
 		{
 			_route = &(tmp->second);
-			if (debug)std::cout << BG_BRIGHT_MAGENTA << "Request Valid" << RESET << std::endl;
 			return 0;
 		}
 		else
@@ -52,7 +51,6 @@ int HttpRequest::validateRequest(void)
 				if ( it != (*_config)._routes.end())
 				{
 					_route = &(it->second);
-					if (debug)std::cout << BG_BRIGHT_MAGENTA << "Request Valid" << RESET << std::endl;
 					return 0;
 				}
 			}
@@ -61,7 +59,6 @@ int HttpRequest::validateRequest(void)
 			break;
 			path = path.substr(0, pos);
 		}
-	}
-	if (debug)std::cout << BG_BRIGHT_MAGENTA << "Request invalid" << RESET << std::endl;
+	}	
 	return 1;
 }

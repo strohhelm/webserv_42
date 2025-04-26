@@ -4,31 +4,52 @@
 
 void HttpRequest::handleHttpRequest()
 {
-	if (debug)std::cout << BG_BRIGHT_RED<<"Route: " << RESET<<std::endl;
-	if (debug)std::cout << RED<< (*_route)._methods[0]<<(*_route)._methods[1]<<(*_route)._methods[2] << RESET<<std::endl;
-
-	if (debug)std::cout << BG_BRIGHT_RED<<"Method: " << static_cast<int>(getMethod()) << RESET<<std::endl;
-	
-	switch (getMethod())
+	if ((*_route)._redirect.second.empty())
 	{
-		case HttpMethod::GET:
-			handleGet();
-			break;
-		case HttpMethod::POST:
-			handlePost();
-			break;
-		case HttpMethod::DELETE:
-			handleDelete();
-			break;
-		case HttpMethod::FORBIDDEN:
-			handleForbidden();
-			break;
-		default:
-			handleUnknown();
-			break;
+		switch (getMethod())
+		{
+			case HttpMethod::GET:
+				handleGet();
+				break;
+			case HttpMethod::POST:
+				handlePost();
+				break;
+			case HttpMethod::DELETE:
+				handleDelete();
+				break;
+			case HttpMethod::FORBIDDEN:
+				handleForbidden();
+				break;
+			default:
+				handleUnknown();
+				break;
+		}
 	}
+	else
+		handleRedirect();
 }
 
+void	HttpRequest::handleRedirect()
+{
+	int code = (*_route)._redirect.first;
+	std::string tmp = (*_route)._redirect.second;
+	if (code <300)
+	{
+		if (debug)std::cout << ORANGE <<"Redirect 2xx response" << RESET<<std::endl;	
+		sendResponse(code, tmp);
+	}
+	else if (code < 400)
+	{
+	if (debug)std::cout << ORANGE <<"Redirect response" << RESET<<std::endl;
+		sendRedirectResponse(code, tmp);
+	}
+	else
+	{
+	if (debug)std::cout << ORANGE <<"Redirect error response" << RESET<<std::endl;
+		sendErrorResponse(code);
+	}
+	_state.reset();
+}
 
 
 void HttpRequest::handleForbidden()
