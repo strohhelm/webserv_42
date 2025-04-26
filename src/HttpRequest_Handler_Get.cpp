@@ -21,12 +21,15 @@ int HttpRequest::evaluateFilepath(std::string& path)
 	}
 	int isCgiRequest = checkCgi(path);
 	if (debug)std::cout << BG_GREEN << "isCgiRequest " << isCgiRequest << RESET << std::endl;
+	
 	if(isCgiRequest > 0)
 	{
 		std::string query = extractQueryString(_requestLine._path);
-		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(), query);
+		std::filesystem::path filename = (path.substr(0, path.find('?')));
+		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(filename.extension()), query);
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
+		_state.reset();
 		return 1;
 	}
 	else if (isCgiRequest < 0)

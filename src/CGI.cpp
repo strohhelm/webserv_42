@@ -33,7 +33,6 @@ void CGI::tokenizePath(void)
 		_scriptPath = _requestPath;
 		// std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
 	}
-	if (debug)std::cout << "CGI _requestPath: " << _requestPath << std::endl;
 	if (debug)std::cout << "CGI _fullPath: " << _fullPath << std::endl;
 	if (debug)std::cout << "SCRIPT_FILENAME: " << _fullPath << std::endl;
 	if (debug)std::cout << "Checking file: " << (access(_fullPath.c_str(), F_OK) == 0 ? "Exists" : "DOES NOT EXIST") << std::endl;

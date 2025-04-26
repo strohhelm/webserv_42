@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 
+
 const std::map<int, const std::string> StatusCode = {
 	{100, "continue"},
 	{101, "Switching Protocols"},

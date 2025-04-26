@@ -27,18 +27,17 @@ void HttpRequest::handlePost(void)
 	// 	sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
 
 	sendErrorResponse(405);// wrong Code
-
+	return;
 	std::string path = getRequestedFile();
 
 	std::string query = "";
 	if(_requestLine._path.find("php") != std::string::npos)
-	{	
-		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(), query);
+	{
+		std::filesystem::path filename = (path.substr(0, path.find('?')));
+		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(filename.extension()), query);
 		_cgi.tokenizePath();
 		_cgi.execute("POST", _rawBody);
 		return;
 	}
-
-
 	sendErrorResponse(405);// wrong Code
 }

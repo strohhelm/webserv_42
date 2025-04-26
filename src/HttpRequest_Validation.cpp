@@ -16,17 +16,12 @@ int	HttpRequest::checkCgi(std::string path)
 	// std::string filename = path.substr(path.find_last_of("/"), path.size() - path.find_last_of("/"));
 	// bool check = (filename.substr(filename.size() - 4, filename.size()) == ".php");
 
-	bool endsWithPhp = path.size() >= 4 && path.substr(path.size() - 4) == ".php";
 
-	if (debug)std::cout << ORANGE<<"ends with .php " << (endsWithPhp == true ? "true" : "false") <<RESET<< std::endl;
-	if(!endsWithPhp)
-		return 0;
-
-	if (endsWithPhp && (*_route).checkCgiPath())
-		return 1;
-	else 
-		return -1;
-
+	std::filesystem::path filepath(path.substr(0, path.find('?')));
+	
+	int iscgi = (*_route).checkCgiPath(filepath.extension());
+	if (debug)std::cout << ORANGE<<"is CGI " << filepath.extension().string()<<" "<<MAGENTA<< (iscgi == 1 ? "true" : "false") << RESET<< std::endl;
+	return iscgi;
 }
 
 int HttpRequest::validateRequest(void)

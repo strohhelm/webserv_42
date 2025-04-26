@@ -57,7 +57,7 @@ class routeConfig
 	bool						_dirListing; //Turn on or off directory listing.
 	std::vector<std::string>	_defaultFile; //Set a default file to answer if the request is a directory.
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
-	std::string					_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
+	std::map<std::string, std::string>	_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
 	routeError					_errorcode;
 	
 	routeConfig(std::vector<confToken> &context);
@@ -66,8 +66,8 @@ class routeConfig
 	void	setDefaultValues(void);
 	void	checkValues(ServerConfig& conf);
 	bool	checkMethod(HttpMethod& method);
-	bool	checkCgiPath();
-	std::string& getCgiPath();
+	int		checkCgiPath(std::string fileextension);
+	std::string& getCgiPath(std::string fileextension);
 	void	setMethods(std::vector<confToken>		&context, size_t lineNum);
 	void	setRedirect(std::vector<confToken>		&context, size_t lineNum);
 	void	setRootDir(std::vector<confToken>		&context, size_t lineNum);

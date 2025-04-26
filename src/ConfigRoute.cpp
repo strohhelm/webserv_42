@@ -78,8 +78,8 @@ void	routeConfig::setAutoIndex(std::vector<confToken> &context, size_t lineNum)
 }
 void	routeConfig::setDefaultFiles(std::vector<confToken> &context, size_t lineNum)
 {
-	std::cout<<"DefaultFile Tokens:"<<std::endl;
-	printConfTokens(context);
+	// std::cout<<"DefaultFile Tokens:"<<std::endl;
+	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	for (auto t:context)
 	{
@@ -105,9 +105,9 @@ void	routeConfig::setCGIExtension(std::vector<confToken> &context, size_t lineNu
 	// std::cout<<"CGI Tokens:"<<std::endl;
 	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
-	if (context.size() != 1)
-		throw std::runtime_error("Syntax error in directive 'cgi' line: " + line);
-	_cgiExtension = context[0].str;
+	if (context.size() != 2)
+		throw std::runtime_error("Syntax error in directive 'cgi' line: " + line + " Usage: [ cgi <extension> <path_to_executable> ]");
+	_cgiExtension[context[0].str] = context[1].str;
 }
 
 void routeConfig::setDefaultValues()
@@ -135,20 +135,21 @@ bool	routeConfig::checkMethod(HttpMethod& method)
 	return(_methods[static_cast<int>(method)]);
 }
 
-bool	routeConfig::checkCgiPath()
+int	routeConfig::checkCgiPath(std::string fileextension)
 {
-	if(debug)std::cout<<ORANGE<<"CGI Extension:"<<_cgiExtension<<RESET<<std::endl;
-	if (!_cgiExtension.empty())
+	if (_cgiExtension.find(fileextension) != _cgiExtension.end())
 	{
-		if (!access(_cgiExtension.c_str(), F_OK) && !access(_cgiExtension.c_str(), X_OK))
-			return true;
+		if (!access(_cgiExtension[fileextension].c_str(), F_OK) && !access(_cgiExtension[fileextension].c_str(), X_OK))
+			return 1;
+		else
+			return -1;
 	}
-	return false;
+	return 0;
 }
 
-std::string& routeConfig::getCgiPath()
+std::string& routeConfig::getCgiPath(std::string fileextension)
 {
-	return _cgiExtension;
+	return _cgiExtension[fileextension];
 }
 
 void routeConfig::printConfig(std::string path)
@@ -165,7 +166,9 @@ void routeConfig::printConfig(std::string path)
 		print<<i<<" ";
 	print<<RESET<<"\n";
 	print<<"Upload Path: "<<BLUE<<_uploadPath<<RESET<<"\n";
-	print<<"cgi extension: "<<BLUE<<_cgiExtension<<RESET<<"\n";
+	print<<"CGI : "<<BLUE<<RESET<<"\n";
+	for (auto i: _cgiExtension)
+		print<<"[ "<<i.first<<" -> "<< i.second<<" ]";
 	std::cout<<print.str()<<std::endl;
 }
 routeConfig::routeConfig(void)
