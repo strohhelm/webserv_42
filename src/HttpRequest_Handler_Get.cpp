@@ -16,7 +16,7 @@ int HttpRequest::evaluateFilepath(std::string& path)
 	if(path.empty())
 	{
 		if (debug)std::cout << BG_BRIGHT_RED<<"Filepath empty " << RESET<<std::endl;
-		sendErrorResponse( 404);
+		sendErrorResponse(404);
 		return -1;
 	}
 	int isCgiRequest = checkCgi(path);
@@ -135,6 +135,7 @@ void	HttpRequest::continueDownload()
 			_state._errorOcurred = SEND_ERROR;
 			return;
 		}
+		if (debug)std::cout << ORANGE<<"\rStatus: " << RESET << totalSent<< " / "<< _state._downloadSize<<std::endl;
 		if (_state._downloadFile.eof())
 		{
 			if (debug)std::cout << BG_BRIGHT_GREEN<<"Download successful!" << RESET<<std::endl;
@@ -144,30 +145,35 @@ void	HttpRequest::continueDownload()
 			_state.reset();
 		}
 	}
-	if (debug)std::cout << ORANGE<<"\rStatus: " << RESET << totalSent<< " / "<< _state._downloadSize<<std::endl;
 }
 
-void	HttpRequest::singleGetRequest(std::string& path, bool isFile)
+void	HttpRequest::singleGetRequest(std::string& path)
 {
-	std::string	content;
 	if (debug)std::cout << BG_BRIGHT_BLUE <<"Root directory:"<<RESET<<BLUE<< (*_config)._rootDir << RESET << std::endl;
-	// std::cout << BG_BRIGHT_BLUE << "path " << path << RESET << std::endl;
-	if(isFile)
-	{
-		content = readFileContent(path);
-	}
-	else
-	{
-		content = path;
-	}
+	
+	std::string	content;
+	content = readFileContent(path);
+	
 	if(content.empty())
 	{
 		if (debug)std::cout << BG_BRIGHT_RED<<"Content empty " << RESET<<std::endl;
 		sendErrorResponse(403);
 		return ;
 	}
+	else if (content == "erroropen")
+	{
+		if (debug)std::cout << BG_BRIGHT_RED<<"ERROR opening temp dirlisting file!" << RESET<<std::endl;
+		sendErrorResponse(500);
+		return ;
+	}
 	sendResponse(200, content);
 	_state.reset();
+	if (path == "./temp/dirListing.html")
+	{
+		std::filesystem::path p = path;
+		if (std::filesystem::exists(p))
+			std::filesystem::remove(p);
+	}
 	return ;
 }
 
@@ -178,12 +184,11 @@ void HttpRequest::handleGet()
 	//check if we ALREADY HANDLED this request and are in downnloadmode.
 	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 
-	bool isFile = true;
 	std::string path;
 	if (!_state._downloadEvaluated)
 	{
 		_state._downloadEvaluated = true;
-		path = getRequestedFile(isFile);
+		path = getRequestedFile();
 		if (debug)std::cout << BG_CYAN << "requested file path :" <<RESET<<CYAN<< path << RESET << std::endl;
 		if (evaluateFilepath(path) != 0)
 			return;
@@ -196,7 +201,7 @@ void HttpRequest::handleGet()
 	}
 	else
 	{
-		singleGetRequest(path, isFile);
+		singleGetRequest(path);
 	}
 	return;
 }

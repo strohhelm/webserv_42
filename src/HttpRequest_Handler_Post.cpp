@@ -27,9 +27,8 @@ void HttpRequest::handlePost(void)
 	// 	sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code 
 
 	sendErrorResponse(405);// wrong Code
-	bool isFile = true;
 
-	std::string path = getRequestedFile(isFile);
+	std::string path = getRequestedFile();
 
 	std::string query = "";
 	if(_requestLine._path.find("php") != std::string::npos)

@@ -10,7 +10,7 @@ void SimpleServer::checkIdleConnections(void)
 	for (auto it = _clientLastActivityTimes.begin(); it != _clientLastActivityTimes.end(); ) {
 		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
 		
-		if (elapsed.count() > 10)
+		if (elapsed.count() >static_cast<long long> (_config._keepalive_timeout))
 		{
 			std::cout << "Closing idle connection on fd: " << it->first << std::endl;
 			close(it->first);
@@ -138,8 +138,9 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 		std::cerr << RED << "new Client connection FAILED" << strerror(errno) << RESET<< std::endl; //ERNO !?!?!?!?!?!?!??!
 		return;
 	}
-	std::cout << GREEN << "new Client connection SUCCESSFULL: " << RESET << client_fd << std::endl;
-	
+	std::cout << GREEN << "new Client connection SUCCESSFULL! " << RESET;
+	unsigned char* bytes = (unsigned char*)&client_addr.sin_addr;
+	std::cout<<GREEN<< "Client IP: "<<RESET<< (int)bytes[0] << "."<< (int)bytes[1] << "."<< (int)bytes[2] << "."<< (int)bytes[3] <<GREEN<<" fd: "<<RESET<<client_fd<< std::endl;
 	if(fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0)
 	{
 		std::cout << RED << "clientConfiguration FAILED" << RESET << std::endl;	
@@ -282,11 +283,11 @@ void SimpleServer::removeClient(int fdIndex)
 }
 
 
-int	SimpleServer::noDataReceived(int bytesReceived)
-{
-	// check -1 and 0 seperate !!! eval sheet
-	return (bytesReceived <= 0);
-}
+// int	SimpleServer::noDataReceived(int bytesReceived)
+// {
+// 	// check -1 and 0 seperate !!! eval sheet
+// 	return (bytesReceived <= 0);
+// }
 
 // int SimpleServer::isDataToWrite(const int& fdIndex)
 // {
@@ -335,6 +336,4 @@ void SimpleServer::handler(int fdIndex)
 		client._state._isValidRequest = 1;
 	}
 	client.handleHttpRequest();
-
-	// removeClient(fdIndex);
 }

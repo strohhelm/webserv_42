@@ -12,8 +12,8 @@ SimpleServer::~SimpleServer()
 	removeHostnamesFromSystem();
 }
 
-SimpleServer::SimpleServer(int domain, int type, int protocol, u_long networkInterface, int maxAmountOfConnections,std::vector<ServerConfig> configs) :
-_domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInterface), _maxAmountOfConnections(maxAmountOfConnections), _rawConfigs(configs)
+SimpleServer::SimpleServer(int domain, int type, int protocol, u_long networkInterface, MainConfig& config) :
+_domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInterface), _config(config)
 {
 
 	if(serverConfiguration())
@@ -52,7 +52,7 @@ std::vector<std::string> SimpleServer::readCurrentHosts(std::string pathToFile)
 
 bool SimpleServer::isHostDefault(std::string host)
 {
-	for(auto& conf : _rawConfigs )
+	for(auto& conf : _config._http)
 	{
 		for (auto& name : conf._serverNames)
 		{
@@ -109,7 +109,7 @@ void SimpleServer::setHostnamesToSystem(void)
 	}
 	if(writeFile.is_open())
 	{
-		for(auto& conf : _rawConfigs )
+		for(auto& conf : _config._http )
 		{
 			for (auto& name : conf._serverNames)
 			{

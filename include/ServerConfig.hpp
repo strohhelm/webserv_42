@@ -142,7 +142,7 @@ class MainConfig
 		public:
 		MainConfig() = delete;
 		MainConfig(std::string &filename);
-		~MainConfig(){};
+		~MainConfig() = default;
 		MainConfig(MainConfig& src) = delete;
 		MainConfig& operator=(MainConfig &src) = delete;
 		void	checkValues(void);

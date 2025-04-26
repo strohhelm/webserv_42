@@ -2,17 +2,18 @@
 #include <string>
 #include <sstream>
 #include <sys/stat.h>
+#include <sys/resource.h>
 
-void eraseSpaceAndTab(std::string &key, std::string &value)
-{
-	if (std::isspace(value.front()))
-		value.erase(0, 1);
-	if (std::isspace(value.back()))
-		value.erase(value.length() - 1, 1);
-	(void)key;
+// void eraseSpaceAndTab(std::string &key, std::string &value)
+// {
+	// if (std::isspace(value.front()))
+	// 	value.erase(0, 1);
+	// if (std::isspace(value.back()))
+	// 	value.erase(value.length() - 1, 1);
+	// (void)key;
 	// key.erase(key.find_last_not_of(" \t") + 1);
 	// value.erase(0, value.find_first_not_of(" \t")); //idk what it does
-}
+// }
 
 int main (int argc, char** argv)
 {
@@ -61,6 +62,16 @@ int main (int argc, char** argv)
     // std::cout << "Last status change time: " << ctime(&fileinfo.st_ctime);
 
 
-	std::string path = "HttpRequest_Handler_Get.cpp";
-	std::cout<<path.substr(path.find_last_of('/') + 1)<<std::endl;
+	// std::string path = "HttpRequest_Handler_Get.cpp";
+	// std::cout<<path.substr(path.find_last_of('/') + 1)<<std::endl;
+
+
+		struct rlimit limit;
+		if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+			std::cout << "Max open file descriptors: " << limit.rlim_cur << std::endl;
+			std::cout << "Hard limit: " << limit.rlim_max << std::endl;
+		} else {
+			perror("getrlimit");
+		}
+
 }

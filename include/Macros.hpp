@@ -20,6 +20,8 @@ extern bool debug;
 #define ACCESS "access"
 #define ERROR "error"
 #define CLOSE "close"
+#define DEFAULT_MAX_WORKER_CONNECTIONS 1024
+#define DEFAULT_TIMEOUT 75
 
 
 #endif

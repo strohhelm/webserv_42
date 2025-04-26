@@ -121,25 +121,32 @@ class HttpRequest
 		void	setMethod(const std::string& method);
 		void	setPath(const std::string& path);
 		void	setVersion(const std::string& version);
- 	
+		//STATE
 		void		printState(void);
 		int			evaluateState(void);
+		//GET
 		int			evaluateDownload(std::string& path);
 		void		continueDownload(void);
-		void		singleGetRequest(std::string& path, bool isFile);
+		void		singleGetRequest(std::string& path);
 		int			evaluateFilepath(std::string& path);
 		void		evaluateFiletype(std::string& filename);
+		//VALIDATE
 		int			validateRequest(void);
 		bool		validateHost(std::vector<std::string> &serverNames);
 		int			checkCgi(std::string path);
+		//HANDLER
 		void		handleHttpRequest();
 		void		handleGet(void);
 		void		handlePost(void);
 		void		handleDelete(void);
 		void		handleUnknown(void);
 		void		handleForbidden(void);
+		//SEND
 		void		sendErrorResponse(int statusCode);
 		HttpMethod	stringToHttpMethod(const std::string& method);
+		void		sendResponse(int statusCode, const std::string& message);
+		std::string	buildResponseHeader(int statusCode, size_t size, std::string contentType);
+		std::string buildDownloadHeader(int statusCode, size_t size, std::string& filename);
 
 		HttpMethod			getMethod(void);
 		const std::string&	getPath(void);
@@ -152,16 +159,11 @@ class HttpRequest
 
 		void	showHeader(void);
 		void	showBody(void);
-
-
-		std::string	getRequestedFile(bool& isFile);
-		std::string	readFileContent(const std::string& path);
-
 		std::string	getContentType();
-		void		sendResponse(int statusCode, const std::string& message);
-		std::string	buildResponseHeader(int statusCode, size_t size, std::string contentType);
-		std::string buildDownloadHeader(int statusCode, size_t size, std::string& filename);
-
+		
+		//FILE FINDING
+		std::string	getRequestedFile(void);
+		std::string	readFileContent(const std::string& path);
 		std::string	buildFullPath(void);
 		bool		fileExists(const std::string& path);
 		bool		directoryExists(const std::string& path);

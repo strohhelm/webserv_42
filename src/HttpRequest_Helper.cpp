@@ -65,9 +65,16 @@ bool HttpRequest::directoryExists(const std::string& path)
 
 std::string HttpRequest::serveDirectory(std::string fullPath)
 {
-	std::stringstream html;
 	if((!(*_route).isDirListingActive()))
 		return"";
+	std::string tempdir(DEFAULT_DOWNLOAD_PATH);
+	std::string filename = tempdir + "dirListing.html";
+	std::ofstream html(filename, std::ios::out);
+	if (!html.is_open() || html.bad())
+	{
+		
+		return "erroropen";
+	}
 	
 	html << "<!DOCTYPE html>\n"
 		 <<	"<html>\n"
@@ -86,11 +93,8 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 		
 	html <<	"</body>\n"
 		 <<	"</html>\n";
-
-
-
-
-	return html.str();
+	html.close();
+	return filename;
 }
 
 /*
@@ -154,15 +158,15 @@ std::string HttpRequest::buildFullPath(void)
 }
 
 
-std::string HttpRequest::getRequestedFile(bool& isFile)
+std::string HttpRequest::getRequestedFile(void)
 {
+
 	std::string fullPath = buildFullPath();
 	if(debug)std::cout <<ORANGE<< "requested File " << RESET<<fullPath << std::endl;
 	if(fileExists(fullPath) && !directoryExists(fullPath))
 		return(fullPath);
 	if(directoryExists(fullPath))
 	{
-		isFile = false;
 		return(serveDirectory(fullPath));
 	}
 	return "";
@@ -173,7 +177,7 @@ std::string HttpRequest::readFileContent(const std::string& path)
 	std::ifstream file(path, std::ios::binary);
 	if(!file.is_open())
 	{
-		return "";
+		return "erroropen";
 	}
 	std::stringstream buffer;
 	buffer << file.rdbuf();
