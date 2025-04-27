@@ -1,15 +1,6 @@
 #include "../include/ServerConfig.hpp"
 
 
-std::string HttpRequest::extractQueryString(std::string& request)
-{
-	size_t pos = request.find('?');
-	if(pos != std::string::npos) // only at get
-	{
-		return request.substr(pos + 1);
-	}
-	return "";
-}
 
 int HttpRequest::evaluateFilepath(std::string& path)
 {

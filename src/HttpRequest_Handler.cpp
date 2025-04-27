@@ -35,6 +35,7 @@ void	HttpRequest::handleRedirect()
 	std::string tmp = (*_route)._redirect.second;
 	if (code <300)
 	{
+		_state._websitefile = true;
 		if (debug)std::cout << ORANGE <<"Redirect 2xx response" << RESET<<std::endl;	
 		sendResponse(code, tmp);
 	}

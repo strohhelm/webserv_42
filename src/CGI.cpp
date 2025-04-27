@@ -4,6 +4,15 @@
 #include <cerrno> // needs to be removed when done only for debugging
 #include <cstring> // needs to be removed when done only for debugging
 
+std::string HttpRequest::extractQueryString(std::string& request)
+{
+	size_t pos = request.find('?');
+	if(pos != std::string::npos) // only at get
+	{
+		return request.substr(pos + 1);
+	}
+	return "";
+}
 
 void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::string& requestPath, std::string& cgiPath, std::string& query)
 {
