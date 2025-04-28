@@ -148,7 +148,14 @@ void	ServerConfig::checkValues(void)
 	if (_rootDir.empty())
 		throw std::runtime_error("Must have root directory!");
 	if (_routes.empty())
-		throw std::runtime_error("Must have at least 1 location!");
+	{
+		std::cout<<BG_BRIGHT_RED<<"Warning, no location specified! Default to \"/\" with GET enabled."<<RESET<<std::endl;
+		routeConfig tmp;
+		std::string s = "/";
+		tmp.setDefaultValues(s);
+		_routes["/"]= tmp;
+		// throw std::runtime_error("Must have at least 1 location!");
+	}
 	for (auto& r:_routes)
 	{
 		r.second.checkValues(*this);

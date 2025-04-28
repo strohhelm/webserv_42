@@ -35,7 +35,7 @@ setHostnamesToSystem and removeHostnamesFromSystem ✅
 
 
 multiple root dir in one config works and takes last one and so does  indexes as well and listen and servernames <--- need to talk about this(andi)
-(philipp):except for severnames it overwrites the values like ginx does (except nginx accumulates also the listen directive->multiple ports per server)
+(philipp):except for severnames it overwrites the values like nginx does (except nginx accumulates also the listen directive->multiple ports per server)
 	server {
 		listen 8081;
 		server_name example1.org localhost;
@@ -50,7 +50,7 @@ multiple root dir in one config works and takes last one and so does  indexes as
 		}
 	}
 
-defaultLocation when no location is set? << interesting (philipp)
+defaultLocation when no location is set? << ✅ inlcuded but up to discussion
 		location / {
 			methods GET POST DELETE;
 		}
