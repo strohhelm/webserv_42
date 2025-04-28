@@ -1,5 +1,5 @@
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 # -fsanitize=address -g -O0
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++17  -fsanitize=address -g -O0
 # -g -fsanitize=address	
 
 NAME		= webserv
@@ -29,7 +29,6 @@ FUNCTIONS	=	$(SRC_DIR)/CGI.cpp \
 				$(SRC_DIR)/SimpleServer_Configuration.cpp \
 				$(SRC_DIR)/SimpleServer_Launch.cpp \
 				$(SRC_DIR)/SimpleServer.cpp
-# $(SRC_DIR)/SimpleServer_Connection.cpp \4
 # $(SRC_DIR)/Post.cpp 
 
 

@@ -54,3 +54,6 @@ defaultLocation when no location is set? << interesting (philipp)
 		location / {
 			methods GET POST DELETE;
 		}
+
+
+more than on hhtp context makes error
