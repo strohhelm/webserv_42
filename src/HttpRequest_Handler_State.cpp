@@ -91,12 +91,12 @@ int	HttpRequest::evaluateState(void)
 
 	//evaluates if the incoming content is too long to keep in the buffer in memory.
 	//in that case it will set _uoploadMode to true so POST handler knows what to do
-	if (!_state._uploadEvaluated)
+	if (!_state._uploadModeEvaluated)
 	{
 		if (debug)std::cout<<YELLOW<<"Upload not evaluated"<<RESET<<std::endl;
 		if (_requestLine._method == HttpMethod::POST && _state._contentLength > MAX_IN_MEMORY_BODY_SIZE)
 		_state._uploadMode = true; //chunked request might not have header content-length!! ->transfer encoding
-		_state._uploadEvaluated = true;
+		_state._uploadModeEvaluated = true;
 		if (debug)std::cout<<GREEN<<"Upload evaluated"<<RESET<<std::endl;
 	}
 	else

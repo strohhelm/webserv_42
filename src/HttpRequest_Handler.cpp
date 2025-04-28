@@ -107,9 +107,9 @@ void RequestState::reset()
 	_headersRecieved		= false;
 	_headersParsed			= false;
 
-	_uploadEvaluated		= false;
+	_uploadModeEvaluated	= false;
 	_uploadMode				= false;
-	
+	_isCgiPost				= 0;
 	_bodyRecieved			= false;
 	_uploadComplete			= false;
 

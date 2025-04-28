@@ -61,8 +61,9 @@ struct RequestState
 	bool			_headersParsed			= false;
 
 	bool			_uploadEvaluated		= false;
+	bool			_uploadModeEvaluated	= false;
 	bool			_uploadMode				= false;
-	
+	int				_isCgiPost				= 0;
 	bool			_bodyRecieved			= false;
 	bool			_uploadComplete			= false;
 
