@@ -1,197 +1,176 @@
 #include "../include/Post.hpp"
 
-// std::map<std::string, std::string> _db;
-
-// userdata Post::urlDecode()
-// {
-// 	size_t	pos = 0;
-// 	size_t	begin;
-// 	size_t	end;
-// 	userdata re;
-
-// 	begin = body.find('=', pos) + 1;
-// 	end = body.find('&', begin);
-// 	re.username = body.substr(begin, end - begin);
-// 	std::cout << re.username << std::endl;
-// 	begin = body.find('=', end) + 1;
-// 	re.password = body.substr(begin, body.size() - begin);
-// 	std::cout << re.password << std::endl;
-
-// 	return (re);
-// }
-
-// void Post::handleSignup()
-// {
-// 	std::cout << "- New User -" << std::endl;
-
-// 	userdata signup = urlDecode();
-
-// 	if (!signup.username.size() || !signup.password.size())
-// 		sendErrorResponse(fd, 420);
-// 	if (_db.find(signup.username) == _db.end())
-// 	{
-// 		std::cout << "Username available!" << std::endl;
-// 		_db.insert({signup.username, signup.password});
-// 		std::string content = readFileContent("www/login/login.html");
-// 		sendResponse(fd, 200, content);
-// 	}
-// 	else
-// 		sendErrorResponse(fd, 420);
-// }
-
-// void Post::handleLogin()
-// {
-// 	std::cout << "- Login Request -" << std::endl;
-
-// 	userdata login = urlDecode();
-
-// 	if (!login.username.size() || !login.password.size())
-// 		sendErrorResponse(fd, 420);
-// 	auto it = _db.find(login.username);
-// 	if (it == _db.end())
-// 		sendErrorResponse(fd, 420);
-// 	else
-// 	{
-// 		if (it->second == login.password)
-// 			sendErrorResponse(fd, 420);
-// 	}
-// }
-
-
 void Post::postRespond()
 {
 	_state.reset();
-	if (_state._uploadFile.is_open())
-		_state._uploadFile.close();
+	// if (_state._uploadFile.is_open())
+	// 	_state._uploadFile.close();
 	std::string html_content = readFileContent("www/upload/upload.html");
 	sendResponse(fd, 200, html_content);
 }
 
-size_t Post::findCheck(std::string hay, char needle, size_t pos)
+void Post::checkFilename(std::filesystem::path filePath)
 {
-	size_t re = hay.find(needle, pos);
-	if (re != std::string::npos)
-		return (re);
-	else // return negative value
+	int i = 1;
+	while (std::filesystem::exists(filePath))
 	{
-		std::cerr << YELLOW << "Error in find wrapper." << RESET << std::endl;
-		return (-1);
+		size_t end = filePath.stem().string().find("_", 0);
+		std::string new_stem;
+		if (end == std::string::npos)
+			new_stem = filePath.stem().string() + "_" + std::to_string(i);
+		else
+			new_stem = filePath.stem().string().substr(0, end) + "_" + std::to_string(i);
+		filePath.replace_filename(new_stem + filePath.extension().string());
+		i++;
 	}
-		// throw std::runtime_error("ERROR with find return value in POST");
+	_state._filename = filePath.filename().string();
 }
 
-size_t Post::findCheck(std::string hay, std::string needle, size_t pos)
+int Post::dirSetup()
 {
-	size_t re = hay.find(needle, pos);
-	if (re != std::string::npos)
-		return (re);
-	else // return negative value
-	{
-		std::cerr << YELLOW << "Error in find wrapper." << RESET << std::endl;
-		return (-1);
-	}
-		// throw std::runtime_error("ERROR with find return value in POST. Unable to find: "+needle);
-}
-
-
-void Post::dirSetup()
-{
-	_fdPath = "/client_" + std::to_string(fd);
+	_path = "client_" + std::to_string(fd);
 	if (_state._uploadMode)
 	{
 		std::cout << RED << "UPLOAD MODE SET" << RESET << std::endl;
 		if (!std::filesystem::exists(_tempDir) && !std::filesystem::is_directory(_tempDir))
 			std::filesystem::create_directory(_tempDir);
-		if (!std::filesystem::exists(_tempDir + _fdPath) && !std::filesystem::is_directory(_tempDir + _fdPath))
-			std::filesystem::create_directory(_tempDir + _fdPath);
+		if (!std::filesystem::exists(_tempDir / _path) && !std::filesystem::is_directory(_tempDir / _path))
+			std::filesystem::create_directory(_tempDir / _path);
 	}
 	if (!std::filesystem::exists(_uploadDir) && !std::filesystem::is_directory(_uploadDir))
 		std::filesystem::create_directory(_uploadDir);
-	if (!std::filesystem::exists(_uploadDir + _fdPath) && !std::filesystem::is_directory(_uploadDir + _fdPath))
-		std::filesystem::create_directory(_uploadDir + _fdPath);
-
+	if (!std::filesystem::exists(_uploadDir / _path) && !std::filesystem::is_directory(_uploadDir / _path))
+		std::filesystem::create_directory(_uploadDir / _path);
+	return(1);
 }	
 
-void Post::extractInfo()
+int Post::extractInfo()
 {
-	if (_state._filename.empty() && !body.empty())
+	size_t begin = 0;
+	size_t end = 0;
+	if(_state._openBoundary.empty())
 	{
-		size_t begin = findCheck(body, "filename", 0);
-		begin = findCheck(body, '"', begin) + 1;
-		size_t end = findCheck(body, '"', begin);
-	
+		begin = _contentHeader.find("boundary=", 0);
+		if (begin == std::string::npos){
+			std::cerr << "Couldnt find boundary in extract info" << std::endl; 
+			return(0);
+		}
+		begin += 9;
+
+		_state._openBoundary =  "--" + _contentHeader.substr(begin);
+		_state._closeBoundary = _state._openBoundary + "--";
+		std::cout << "OpenBoundary: " << _state._openBoundary << std::endl << "CloseBoundary: " << _state._closeBoundary << std::endl;
+	}
+	if (_state._filename.empty() && body.size())
+	{
+		begin = body.find("filename=\"", 0);
+		if (begin == std::string::npos){
+			std::cerr << "Couldnt find filename in extract info" << std::endl;
+			return(0);
+
+		}
+		begin += 10;
+
+		end = body.find('"', begin);
+		if(end == std::string::npos){
+			std::cerr << "Couldnt find filename end in extract info" << std::endl;
+			return(0);
+		}
+
 		_state._filename = body.substr(begin, end - begin);
 		std::cout << "filename: " << _state._filename << std::endl;
 	}
-	if(_state._openBoundary.empty())
-	{
-		size_t begin = findCheck(_contentHeader, "boundary=", 0) + 9; // is the boundary size really always +9?
-		std::string boundary = _contentHeader.substr(begin);
-	
-		_state._openBoundary = "--" + boundary;
-		_state._closeBoundary = _state._openBoundary + "--";
-	}
+	return (1);
 }
 
-void Post::extractContent()
+int Post::extractContent()
 {	
+	size_t begin = 0;
+	size_t end = 0;
+
 	if (!_state._uploadMode)
 	{
-		size_t begin = findCheck(body, _state._openBoundary, 0) + _state._openBoundary.size();
-		begin = findCheck(body, "\r\n\r\n", begin) + 4;
-		size_t end = findCheck(body, "\r\n" + _state._closeBoundary, begin);
+		if ((begin = body.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
+			std::cerr << "Couldnt find open boundary in body in extract content" << std::endl;
+			return(0);
+		}
+		if ((end = body.find("\r\n" + _state._closeBoundary, begin)) == std::string::npos){
+			std::cerr << "Couldnt find close boundary in body in extract content" << std::endl;
+			return(0);
+		}
 		_fileContent = body.substr(begin, end - begin);
 	}
 	else if (_state._uploadMode && !_state._filename.empty())
 	{
-		size_t begin = 0;
-
 		if(!_state._uploadFile.is_open())
 		{
-			begin = findCheck(body, _state._openBoundary, 0) + _state._openBoundary.size();
-			begin = findCheck(body, "\r\n\r\n", begin) + 4;
+			if ((begin = body.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
+				std::cerr << "Couldnt find open boundary in body in extract content" << std::endl;
+				return(0);
+			}
 			_fileContent = body.substr(begin);
 		}
-		std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;
-		if (_state._contentLength == _state._ContentBytesRecieved)
+		if(_state._uploadFile.is_open())
 		{
-			std::cout << RED << "Entire file recieved" << RESET << std::endl;
-			size_t end = findCheck(body, "\r\n" + _state._closeBoundary, begin);
-			_fileContent = body.substr(begin, end - begin);
-			_done = true;
+			end = body.find("\r\n" + _state._closeBoundary, begin);
+			if (end == std::string::npos)
+				_fileContent = body;
+			else
+			{
+				std::cout << GREEN << "Entire file recieved" << RESET << std::endl;
+				_fileContent = body.substr(begin, end - begin);
+				_done = true;
+			}
+			std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;
 		}
 	}
+	return(1);
 }
 
-void Post::writeContent()
+int Post::writeContent()
 {
 	if (!_fileContent.empty())
 	{	
 		if (!_state._uploadMode)
 		{
-			std::ofstream output(_uploadDir + _fdPath + '/' + _state._filename, std::ios::binary);
+			checkFilename(_uploadDir / _path / _state._filename);
+			std::ofstream output(_uploadDir / _path / _state._filename, std::ios::binary);
 			if (output.is_open())
 			{
 				output.write(_fileContent.c_str(), _fileContent.size());
 				output.close();
 				postRespond();
 			}
+			else{
+				std::cerr << "Unable to open file." << std::endl;
+				return (0);
+			}
 		}
 		else
 		{
 			if (!_state._uploadFile.is_open())
-				_state._uploadFile.open(_tempDir + _fdPath + '/' + _state._filename, std::ios::binary | std::ios::app);
+			{
+				checkFilename(_tempDir / _path / _state._filename);
+				_state._uploadFile.open(_tempDir / _path / _state._filename, std::ios::binary | std::ios::app);
+			}
 			if (_state._uploadFile.is_open())
 			{
 				_state._uploadFile << _fileContent;
 			}
+			else{
+				std::cerr << "Unable to open file." << std::endl;
+				return (0);
+			}
 			if (_done)
 			{
-				std::rename((_tempDir + _fdPath + '/' + _state._filename).data(), (_uploadDir + _fdPath + '/' + _state._filename).data());
+				std::string curr_name = _state._filename;
+				checkFilename(_uploadDir / _path / _state._filename);
+				std::rename((_tempDir / _path / curr_name).c_str(), (_uploadDir / _path / _state._filename).c_str());
 				postRespond();
 			}
 		}
 	}
+	return (1);
 }
 
 void Post::handleUpload()
@@ -199,19 +178,27 @@ void Post::handleUpload()
 	if(!body.empty())
 		_state._ContentBytesRecieved += body.size();
 	std::cout << RED << "Entered Post" << RESET << std::endl;
-	extractInfo();
-	dirSetup();
-	extractContent();
-	writeContent();
+	if (!extractInfo()){
+		std::cout << "Returned from extractInfo" << std::endl;
+		return;
+	}
+	if (!dirSetup()){
+		std::cout << "Returned from dirSetup" << std::endl;
+		return;
+	}
+	if (!extractContent()){
+		std::cout << "Returned from extractContent" << std::endl;
+		return;
+	}
+	if (!writeContent()){
+		std::cout << "Returned from writeContent" << std::endl;
+		return;
+	}
 }
 
 Post::Post(std::string path, std::string body, std::string encoding, const int &fd, RequestState &_state) : 
 path(path), body(body), _contentHeader(encoding), fd(fd), _state(_state)
 {
-	// if (path == "/signup")
-	// 	handleSignup();
-	// if (path == "/login")
-	// 	handleLogin();
 	if (path == "/upload")
 		handleUpload();
 }

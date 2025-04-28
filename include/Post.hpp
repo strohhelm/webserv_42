@@ -5,13 +5,6 @@
 #include <filesystem>
 #include <cstdio>
 
-struct userdata
-{
-	std::string username;
-	std::string password;
-
-};
-
 class Post : public HttpRequest
 {
   private:
@@ -25,6 +18,7 @@ class Post : public HttpRequest
 	std::string _uploadDir = "file_upload";
 	std::string _tempDir = "tmp_upload";
 	std::string _fdPath;
+	std::filesystem::path _path;
 
 	bool _done = false;
 
@@ -33,16 +27,15 @@ class Post : public HttpRequest
   public:
 	Post(std::string path, std::string body, std::string encoding, const int &fd, RequestState &_state);
 
-	// userdata urlDecode();
-	// void handleSignup();
-	// void handleLogin();
+
 	void handleUpload();
-	void extractInfo();
-	void dirSetup();
-	void extractContent();
-	void writeContent();
+	int extractInfo();
+	int dirSetup();
+	int extractContent();
+	int writeContent();
 	void postRespond();
-	size_t findCheck(std::string hay, char needle, size_t pos);
-	size_t findCheck(std::string hay, std::string needle, size_t pos);
+	void checkFilename(std::filesystem::path filePath);
+	// size_t findCheck(std::string hay, char needle, size_t pos);
+	// size_t findCheck(std::string hay, std::string needle, size_t pos);
 
 };

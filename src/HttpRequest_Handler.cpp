@@ -183,8 +183,8 @@ void RequestState::reset()
 	_readyToHandle			= false;
 	
 	// _tempUploadFilePath.clear();
-	// if (_uploadFile.is_open())
-	// 	_uploadFile.close();
+	if (_uploadFile.is_open())
+		_uploadFile.close();
 	// std::string		_tempDownloadFilePath;
 	// std::ifstream	_downloadFile;
 	if (debug)std::cout<<ORANGE<<"State reset"<<RESET<<std::endl;
