@@ -221,8 +221,10 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	/**********************************************************/
 	if (debug)std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
 
-
-	send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0);
+	size_t bytestosend = httpResponse.length();
+	size_t bytessent = send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0); //todo 
+	if (bytessent != bytestosend)
+		std::cout<<BG_BRIGHT_RED<<"SEND FAILED in CGI parentprocess"<<RESET<<std::endl;
 }
 
 // std::array<int, 3> a = {1, 2, 3};

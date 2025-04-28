@@ -69,7 +69,6 @@ void HttpRequest::handleUnknown(void)
 
 void HttpRequest::handleDelete(void)
 {
-	//TODO check if allowed to delete!!!!
 
 	std::string path = getPath();
 	if (path.front() == '/')
@@ -77,8 +76,9 @@ void HttpRequest::handleDelete(void)
 		path.erase(path.begin());
 	}
 	if (debug)std::cout << BG_BRIGHT_BLACK << "DELETE: "<<RESET<<BLACK<<path << RESET << std::endl;
-	if ((*_route)._uploadPath.empty() || path.find((*_route)._uploadPath) != std::string::npos)
+	if ((*_route)._uploadPath.empty() || path.find((*_route)._uploadPath) == std::string::npos)
 		sendErrorResponse(401);
+	
 	if(!fileExists(path))
 	{
 		sendErrorResponse(404);
@@ -89,7 +89,7 @@ void HttpRequest::handleDelete(void)
 		sendErrorResponse(500);
 		return;
 	}
-	sendResponse(204, "Resource deleted successfully");
+	sendResponse(202, "Resource deleted successfully");
 	_state.reset();
 }
 
