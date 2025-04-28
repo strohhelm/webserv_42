@@ -108,10 +108,12 @@ int HttpRequest::extractAndTokenizeHeader()
 			_headers[key] += value;
 		}
 	}
+	if (!_headers.count("Host"))
+		return 400;
 	_state._buffer = _state._buffer.substr(header.length() + 4); //cut the header from the buffer
 	if(debug)showHeader();
 	return error;
-	}catch(...){std::cout<<RED<<"ups1"<<std::endl;return 500;}
+	}catch(...){std::cout<<RED<<"extract Header failed (prob substr)"<<std::endl;return 500;}
 }
 
 void HttpRequest::tokenizeBody()
