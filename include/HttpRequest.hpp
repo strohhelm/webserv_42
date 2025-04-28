@@ -77,7 +77,10 @@ struct RequestState
 
 	std::string		_tempUploadFilePath;
 	std::ofstream	_uploadFile;
-	std::string		_downloadFileName;
+	std::string 	_filename;
+	std::string		_openBoundary;
+	std::string		_closeBoundary;
+	std::string		_tempDownloadFilePath;
 	std::ifstream	_downloadFile;
 	void	reset();
 };
