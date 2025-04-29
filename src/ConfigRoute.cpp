@@ -83,7 +83,13 @@ void	routeConfig::setUploadPath(std::vector<confToken> &context, size_t lineNum)
 	if (context.size() != 1)
 		throw std::runtime_error("Syntax error in directive 'upload_path' line: " + line);
 	_uploadPath = context[0].str;
-
+}
+void	routeConfig::setDownloadPath(std::vector<confToken>	&context, size_t lineNum)
+{
+	std::string line = std::to_string(lineNum);
+	if (context.size() != 1)
+		throw std::runtime_error("Syntax error in directive 'download_path' line: " + line);
+	_downloadPath = context[0].str;
 }
 void	routeConfig::setCGIExtension(std::vector<confToken> &context, size_t lineNum)
 {
@@ -102,6 +108,7 @@ void routeConfig::setDefaultValues(std::string& path)
 	_rootDir.clear();
 	_dirListing = false;
 	_uploadPath.clear();
+	_downloadPath.clear();
 	_errorcode = routeError::All_GOOD;
 	_defaultFile.clear();
 }
@@ -169,6 +176,7 @@ routeConfig::routeConfig(std::string& path, std::vector<confToken> &context)
 	directives.insert({std::string("autoindex"),	&routeConfig::setAutoIndex});
 	directives.insert({std::string("index"),		&routeConfig::setDefaultFiles});
 	directives.insert({std::string("upload_path"),	&routeConfig::setUploadPath});
+	directives.insert({std::string("download_path"),	&routeConfig::setUploadPath});
 	directives.insert({std::string("cgi"),			&routeConfig::setCGIExtension});
 	// std::cout<<" ------------------------------------------------Location--------------------------------------------------------"<<std::endl;
 	parseTokens<routeConfig>(context, directives, *this);

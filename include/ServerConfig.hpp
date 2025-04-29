@@ -55,8 +55,9 @@ class routeConfig
 	std::pair<int, std::string>	_redirect; //Define a HTTP redirection
 	std::string					_rootDir; //Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
 	bool						_dirListing; //Turn on or off directory listing.
-	std::vector<std::string>	_defaultFile; //Set a default file to answer if the request is a directory.
+	std::vector<std::string>	_defaultFile; //Set a defcclean
 	std::string					_uploadPath; //Make the route able to accept uploaded files and configure where they should be saved.
+	std::string					_downloadPath; //Make the route able to accept uploaded files and configure where they should be saved.
 	std::map<std::string, std::string>	_cgiExtension; //nExecute CGI based o certain file extension (for example .php)
 	routeError					_errorcode;
 	
@@ -74,6 +75,7 @@ class routeConfig
 	void	setAutoIndex(std::vector<confToken>		&context, size_t lineNum);
 	void	setDefaultFiles(std::vector<confToken>	&context, size_t lineNum);
 	void	setUploadPath(std::vector<confToken>	&context, size_t lineNum);
+	void	setDownloadPath(std::vector<confToken>	&context, size_t lineNum);
 	void	setCGIExtension(std::vector<confToken>	&context, size_t lineNum);
 	bool	isDirListingActive(void);
 	std::string getRootDir(void);
