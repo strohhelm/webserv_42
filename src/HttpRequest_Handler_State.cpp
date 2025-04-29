@@ -18,7 +18,7 @@ int	HttpRequest::evaluateState(void)
 	//this flag is set by the readfromclient function as soon as the first byte is recieved for a new request
 	if (_state._isNewRequest){return NEEDS_TO_READ;}
 	if (debug){std::cout<<BG_BRIGHT_YELLOW<<UNDERLINE<<BOLD<<"STATE for client on FD "<<BG_BRIGHT_MAGENTA<<_client_fd<<RESET":"<<std::endl;}
-	if (debug){printState();}
+	// if (debug){printState();}
 	if (!_state._requestlineRecieved)
 	{
 		if (debug)	std::cout<<YELLOW<<"Requestline not recieved"<<RESET<<std::endl;

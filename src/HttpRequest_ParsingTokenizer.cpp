@@ -92,7 +92,7 @@ int HttpRequest::extractAndTokenizeHeader()
 			line.pop_back();
 		if (line.empty())
 			break;
-		size_t delimiterPos = line.find(":");
+		size_t delimiterPos = line.find_first_of(':');
 		if(delimiterPos != std::string::npos)
 		{
 			std::string key = line.substr(0, delimiterPos);
@@ -101,17 +101,28 @@ int HttpRequest::extractAndTokenizeHeader()
 			if (std::isspace(key[0]))
 				continue;		//if a field line starts with whitespace, it is to be ignored or send 400 -> rcf 9112 page 7
 			eraseSpaceAndTab(key, value);
-			if ((key == "Host" && _headers.count("Host"))
-				||( (key == "Content-Type") && _headers.count("Content-Type"))
-				|| ((key == "Content-Length") && _headers.count("Content-Length") && _headers["Content-Length"] != value))
-				return 400;
+			if (key == "Host" && (_headers.count("Host") == 1))
+				{std::cout<<BG_BRIGHT_RED<<"Oh shit wrong Host Header"<<RESET
+					<<std::endl; for (auto i:_headers){std::cout<<BLUE<<i.first<<" -> "<<i.second<<RESET<<std::endl;}return 400;}
+
+
+
+
+
+
+			else if( (key == "Content-Type") && (_headers.count("Content-Type") == 1))
+				{std::cout<<BG_BRIGHT_RED<<"Oh shit Content-Type headers"<<RESET<<std::endl;std::cout<<header<<std::endl;return 400;}
+			else if ((key == "Content-Length") && (_headers.count("Content-Length") == 1) && (_headers["Content-Length"] != value))
+				{std::cout<<BG_BRIGHT_RED<<"Oh shit wrong Content-Length header"<<RESET<<std::endl;std::cout<<header<<std::endl;return 400;}
+
 			_headers[key] += value;
 		}
 	}
+	// if(debug)std::cout<<header<<std::endl;
 	if (!_headers.count("Host"))
-		return 400;
+		{std::cout<<BG_BRIGHT_RED<<"Oh shit no Host header"<<RESET<<std::endl;return 400;}
 	_state._buffer = _state._buffer.substr(header.length() + 4); //cut the header from the buffer
-	if(debug)showHeader();
+	
 	return error;
 	}catch(...){std::cout<<RED<<"extract Header failed (prob substr)"<<std::endl;return 500;}
 }

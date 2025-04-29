@@ -2,11 +2,11 @@
 
 void HttpRequest::postRespond()
 {
-	_state.reset();
 	// if (_state._uploadFile.is_open())
 	// 	_state._uploadFile.close();
 	std::string html_content = readFileContent("www/upload/upload.html");
-	sendResponse(200, html_content);
+	sendRedirectResponse(204, "/" );
+	reset();
 }
 
 void HttpRequest::checkFilename(std::filesystem::path filePath)

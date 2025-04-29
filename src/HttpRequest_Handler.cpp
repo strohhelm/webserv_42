@@ -49,7 +49,7 @@ void	HttpRequest::handleRedirect()
 	if (debug)std::cout << ORANGE <<"Redirect error response" << RESET<<std::endl;
 		sendErrorResponse(code);
 	}
-	_state.reset();
+	reset();
 }
 
 
@@ -90,48 +90,58 @@ void HttpRequest::handleDelete(void)
 		return;
 	}
 	sendResponse(202, "Resource deleted successfully");
-	_state.reset();
+	reset();
 }
 
 
-void RequestState::reset()
+void HttpRequest::reset()
 {
-	_buffer.clear();
-	_isNewRequest			= true;
-	_isValidRequest			= 0;
-	_ContentBytesRecieved	= 0;
-	_contentLength			= 0;
-	_requestlineRecieved	= false;
-	_requestlineParsed		= false;
-
-	_headersRecieved		= false;
-	_headersParsed			= false;
-
-	_uploadModeEvaluated	= false;
-	_uploadMode				= false;
-	_isCgiPost				= 0;
-	_bodyRecieved			= false;
-	_uploadComplete			= false;
-
-	_downloadEvaluated		= false;
-	_downloadMode			= false;
-	_downloadComplete		= false;
-	_downloadSize			= 0;
-	_websitefile			= false;
-	_readyToHandle			= false;
+	_state._buffer.clear();
+	_state._isNewRequest			= true;
+	_state._isValidRequest			= 0;
+	_state._ContentBytesRecieved	= 0;
+	_state._contentLength			= 0;
+	_state._requestlineRecieved	= false;
+	_state._requestlineParsed		= false;
+	_state._headersRecieved		= false;
+	_state._headersParsed			= false;
+	_state._uploadEvaluated		= false;
+	_state._uploadModeEvaluated	= false;
+	_state._uploadMode				= false;
+	_state._isCgiPost				= 0;
+	_state._bodyRecieved			= false;
+	_state._uploadComplete			= false;
+	_state._downloadEvaluated		= false;
+	_state._downloadMode			= false;
+	_state._downloadComplete		= false;
+	_state._downloadSize			= 0;
+	_state._websitefile			= true;
+	_state._readyToHandle			= false;
+	_state._errorOcurred			= 0;
+	if (_state._uploadFile.is_open())
+		_state._uploadFile.close();
+	_state._uploadFile.clear();
 	
-	_errorOcurred			= 0;
-	
-	if (_uploadFile.is_open())
-		_uploadFile.close();
-	_uploadFile.clear();
-	
-	if (_downloadFile.is_open())
-		_downloadFile.close();
-	_downloadFile.clear();
+	if (_state._downloadFile.is_open())
+		_state._downloadFile.close();
+	_state._downloadFile.clear();
 
-	_tempUploadFilePath.clear();
-	_downloadFileName.clear();
+	_state._tempUploadFilePath.clear();
+	_state._downloadFileName.clear();
+	_headers.clear();
+	_requestLine._path.clear();
+	_requestLine._version.clear();
+	_rawRequestLine.clear();
+	_rawBody.clear();
+	_body.clear();
+	_httpResponse.clear();
+	path.clear();
+	_contentHeader.clear();
+	_fileContent.clear();
+	_uploadDir = "file_upload";
+	_tempDir = "tmp_upload";
+	_fdPath.clear();
+	_path.clear();
 	if (debug)std::cout<<ORANGE<<"State reset"<<RESET<<std::endl;
 }
 

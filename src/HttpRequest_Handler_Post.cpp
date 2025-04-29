@@ -42,11 +42,12 @@ void HttpRequest::handlePost(void)
 		_contentHeader = _headers["Content-Type"];
 		_path = _requestLine._path;
 		_state._uploadEvaluated = true;
-
 	}
 	if (!_state._isCgiPost)
 	{
-		handlePost();
+		extractRawBody();
+		handleUpload();
+		//reset();
 		return;
 	}
 

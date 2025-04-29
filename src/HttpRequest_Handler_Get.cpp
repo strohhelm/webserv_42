@@ -20,7 +20,7 @@ int HttpRequest::evaluateFilepath(std::string& path)
 		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(filename.extension()), query);
 		_cgi.tokenizePath();
 		_cgi.execute("GET", _rawBody);
-		_state.reset();
+		reset();
 		return 1;
 	}
 	else if (isCgiRequest < 0)
@@ -36,9 +36,11 @@ void	HttpRequest::evaluateFiletype(std::string& filename)
 {
 	std::string fileend = filename.substr(filename.find_last_of('.'));
 
-	std::vector<std::string> endings = {".php", ".html", ".ico"};
-	if (std::find(endings.begin(), endings.end(), fileend)!= endings.end())
-		_state._websitefile = true;
+	// std::vector<std::string> endings = {".php", ".html", ".ico"};
+	// if (std::find(endings.begin(), endings.end(), fileend)!= endings.end())
+		// _state._websitefile = true;
+	 if (fileend == ".pdf" || fileend == ".txt" || fileend == "" )
+	 	_state._websitefile = false;
 }
 
 
@@ -107,7 +109,6 @@ void	HttpRequest::continueDownload()
 			_state._errorOcurred = SEND_ERROR;
 			return;
 		}
-		totalSent += bytesSent;
 		init = 1;
 	}
 	if (init == 1)
@@ -129,14 +130,18 @@ void	HttpRequest::continueDownload()
 			_state._errorOcurred = SEND_ERROR;
 			return;
 		}
-		if (debug)std::cout << ORANGE<<"\rStatus: " << RESET << totalSent<< " / "<< _state._downloadSize<<std::endl;
+		std::cout << ORANGE<<"\rStatus: " << RESET << totalSent<< " / "<< _state._downloadSize 
+		<< " ["
+		<< std::string((totalSent * 50) / _state._downloadSize, '=') 
+		<< std::string(50 - (totalSent * 50) / _state._downloadSize, ' ') 
+		<< "]" << std::flush;
 		if (_state._downloadFile.eof())
 		{
 			if (debug)std::cout << BG_BRIGHT_GREEN<<"Download successful!" << RESET<<std::endl;
 			_state._downloadFile.close();
 			init = 0;
 			totalSent = 0;
-			_state.reset();
+			reset();
 		}
 	}
 }
@@ -161,7 +166,7 @@ void	HttpRequest::singleGetRequest(std::string& path)
 		return ;
 	}
 	sendResponse(200, content);
-	_state.reset();
+	reset();
 	if (path == "./temp/dirListing.html")
 	{
 		std::filesystem::path p = path;

@@ -71,7 +71,7 @@ struct RequestState
 	bool			_downloadMode			= false;
 	bool			_downloadComplete		= false;
 	size_t			_downloadSize			= 0;
-	bool			_websitefile			= false;
+	bool			_websitefile			= true;
 	bool			_readyToHandle			= false;
 	
 	int				_errorOcurred			= 0;
@@ -83,7 +83,6 @@ struct RequestState
 	std::string		_closeBoundary;
 	std::string		_downloadFileName;
 	std::ifstream	_downloadFile;
-	void	reset();
 
 
 	
@@ -93,7 +92,7 @@ class HttpRequest
 {
 	private:
 	
-		requestLine	_requestLine;
+		requestLine		_requestLine;
 		std::string		_rawRequestLine;
 		std::string		_rawBody;
 		std::unordered_map<std::string, std::string> _headers;
@@ -139,6 +138,8 @@ class HttpRequest
 		//STATE
 		void		printState(void);
 		int			evaluateState(void);
+		void		reset();
+
 		//GET
 		int			evaluateDownload(std::string& path);
 		void		continueDownload(void);

@@ -30,7 +30,7 @@ void HttpRequest::sendErrorResponse(int statusCode)
 	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 	if (bytesToSend != bytesSent)
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
-	_state.reset();
+	reset();
 }
 
 
@@ -41,7 +41,7 @@ void HttpRequest::sendResponse(int statusCode, const std::string& message)
 		response = buildResponseHeader(statusCode , message.length(), "text/html");
 	else
 		response = buildDownloadHeader(statusCode,  message.length(), _state._downloadFileName);
-	if (debug)std::cout<<ORANGE<<"Headers: "<<RESET<<std::endl<<response<<std::endl;
+	if (debug)std::cout<<ORANGE<<"Send Response Headers: "<<RESET<<std::endl<<response<<std::endl;
 	response += message;
 	size_t bytesToSend = response.length();
 	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
