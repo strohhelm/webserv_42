@@ -39,12 +39,14 @@ void HttpRequest::handlePost(void)
 		}
 		if (_state._isCgiPost < 0)
 			sendErrorResponse(500);
+		_contentHeader = _headers["Content-Type"];
+		_path = _requestLine._path;
 		_state._uploadEvaluated = true;
+
 	}
-	if (_state._uploadMode && !_state._uploadComplete)
+	if (!_state._isCgiPost)
 	{
-		//open file and stream content
-		//tokens?
+		handlePost();
 		return;
 	}
 
