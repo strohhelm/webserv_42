@@ -10,7 +10,7 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
-
+#include <filesystem>
 #include "Colors.hpp"
 
 #include "CGI.hpp"
@@ -84,25 +84,36 @@ struct RequestState
 	std::string		_downloadFileName;
 	std::ifstream	_downloadFile;
 	void	reset();
+
+
+	
 };
 
 class HttpRequest
 {
 	private:
 	
+		requestLine	_requestLine;
 		std::string		_rawRequestLine;
 		std::string		_rawBody;
-		
 		std::unordered_map<std::string, std::string> _headers;
 		std::unordered_map<std::string, std::string> _body;
-		
-		requestLine	_requestLine;
-		
 		std::string _httpResponse;
-		
 		CGI	_cgi;
-		// const ServerConfig& _config;
-		
+		//POST
+		std::string path;
+		// std::string body;
+		std::string _contentHeader;
+		std::string _fileContent;
+		std::string _uploadDir = "file_upload";
+		std::string _tempDir = "tmp_upload";
+		std::string _fdPath;
+		std::filesystem::path _path;
+
+	bool _done = false;
+	
+	
+	
 		public:
 		int				_server_fd;
 		int				_client_fd;
@@ -134,6 +145,14 @@ class HttpRequest
 		void		singleGetRequest(std::string& path);
 		int			evaluateFilepath(std::string& path);
 		void		evaluateFiletype(std::string& filename);
+		//POST
+		void		handleUpload(void);
+		int			extractInfo(void);
+		int			dirSetup(void);
+		int			extractContent(void);
+		int			writeContent(void);
+		void		postRespond(void);
+		void		checkFilename(std::filesystem::path filePath);
 		//VALIDATE
 		int			validateRequest(void);
 		bool		validateHost(std::vector<std::string> &serverNames);

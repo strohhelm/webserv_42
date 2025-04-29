@@ -101,13 +101,19 @@ int HttpRequest::extractAndTokenizeHeader()
 			if (std::isspace(key[0]))
 				continue;		//if a field line starts with whitespace, it is to be ignored or send 400 -> rcf 9112 page 7
 			eraseSpaceAndTab(key, value);
-			_headers[key] = value;
+			if ((key == "Host" && _headers.count("Host"))
+				||( (key == "Content-Type") && _headers.count("Content-Type"))
+				|| ((key == "Content-Length") && _headers.count("Content-Length") && _headers["Content-Length"] != value))
+				return 400;
+			_headers[key] += value;
 		}
 	}
+	if (!_headers.count("Host"))
+		return 400;
 	_state._buffer = _state._buffer.substr(header.length() + 4); //cut the header from the buffer
 	if(debug)showHeader();
 	return error;
-	}catch(...){std::cout<<RED<<"ups1"<<std::endl;return 500;}
+	}catch(...){std::cout<<RED<<"extract Header failed (prob substr)"<<std::endl;return 500;}
 }
 
 void HttpRequest::tokenizeBody()

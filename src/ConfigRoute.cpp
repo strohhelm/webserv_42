@@ -141,7 +141,7 @@ void routeConfig::printConfig(std::string path)
 	std::stringstream print;
 	print<<ORANGE<<UNDERLINE<<"ROUTE CONFIG:"<< GREEN<<"\""<<path<<"\""<< RESET<<"\n";
 	print<<"Methods: "<<BLUE;if (_methods[0]) print<<"GET ";if(_methods[1])print<<"POST ";if(_methods[2])print<<"DELETE ";print<<RESET<<"\n";
-	print<<"Redirect: "<<BLUE<<_redirect.first<<RESET<<"Redirect Path: "<<BLUE<<_redirect.second<<RESET<<"\n";
+	print<<"Redirect: "<<BLUE<<_redirect.first<<RESET<<" Redirect Path: "<<BLUE<<_redirect.second<<RESET<<"\n";
 	print<<"Root Dir: "<<BLUE<<_rootDir<<RESET<<"\n";
 	print<<"Autoindex: "<<BLUE<<(_dirListing ? "ON" : "OFF")<<RESET<<"\n";
 	print<<"Default File: "<<BLUE;

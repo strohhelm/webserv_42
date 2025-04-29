@@ -1,5 +1,5 @@
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++17  -fsanitize=address -g -O0
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 -g -O0 
 # -g -fsanitize=address	
 
 NAME		= webserv
@@ -18,6 +18,7 @@ FUNCTIONS	=	$(SRC_DIR)/CGI.cpp \
 				$(SRC_DIR)/HttpRequest_Debugger.cpp \
 				$(SRC_DIR)/HttpRequest_GetterSetter.cpp \
 				$(SRC_DIR)/HttpRequest_Handler_Get.cpp \
+				$(SRC_DIR)/HttpRequest_Handler_Post_functions.cpp \
 				$(SRC_DIR)/HttpRequest_Handler_Post.cpp \
 				$(SRC_DIR)/HttpRequest_Handler_State.cpp \
 				$(SRC_DIR)/HttpRequest_Handler.cpp \
