@@ -11,7 +11,7 @@ void parseTokens(std::vector<confToken>	&tokens, std::map <std::string, void(typ
 				std::vector<confToken> context;
 				collectContext(tokens, it, context);
 				(obj.*directives[it->str])(context, it->lineNum);
-				if (!(it->str == "location"))
+				if (!((it->str == "location")|| (it->str == "http")))
 					it++;
 				it += context.size();
 			}

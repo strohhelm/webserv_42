@@ -52,7 +52,8 @@ void MainConfig::setTimeout(std::vector<confToken> &context, size_t lineNum)
 
 void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 {
-	(void)lineNum;
+	if (!_http.empty())
+		throw std::runtime_error("Only one \"http\" directive allowed! line:" + std::to_string(lineNum));
 	if (context.begin()->type == BLOCK_START && (context.end() - 1)->type == BLOCK_END)
 	{
 		// std::cout<<"Http Tokens:"<<std::endl;
@@ -76,9 +77,11 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 					_http.push_back(ServerConfig(servercontext));
 				}
 			}
-		}
-		else 
-			throw std::runtime_error("WTF that shouldnt happen at all");
+	}
+	else 
+		throw std::runtime_error("WTF that shouldnt happen at all");
+	if (_http.empty())
+		throw std::runtime_error("Empty \"http\" directive! line:" + std::to_string(lineNum));
 }
 
 void MainConfig::setDefaultValues(void)

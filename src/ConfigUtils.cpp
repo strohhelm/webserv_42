@@ -9,7 +9,7 @@ void prepareLine(std::string &line, size_t lineNum)
 	std::smatch match;
 	if (!std::regex_match(line, match, std::regex("^\\s*$|.*[;{}]\\s*$" )))
 	{
-		throw std::runtime_error("Missing delimiter in line: " + std::to_string(lineNum));
+		throw std::runtime_error("Missing delimiter in line: " + std::to_string(lineNum) + " lines must end with ; or { or }");
 	}
 }
 
