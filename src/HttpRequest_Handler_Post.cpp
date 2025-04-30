@@ -1,7 +1,34 @@
 #include "../include/ServerConfig.hpp"
-#include "../include/Post.hpp"
+#include "../include/HttpRequest.hpp"
 
-void HttpRequest::evaluateUpload(void)
+int HttpRequest::checkStorage(void)
+{
+	char cwd[PATH_MAX];
+	struct statvfs stat;
+	if(getcwd(cwd, sizeof(cwd)) == nullptr)
+	{
+		{std::cerr << RED << "Couldn't get current working directory" << RESET << std::endl;}
+		return (0);
+	}
+	if (statvfs(cwd, &stat) != 0)
+	{
+		{std::cerr << RED << "Couldn't get filesystem stats for current working directory" << RESET << std::endl;}
+		return (0);
+	}
+	size_t availableStorage = stat.f_bavail * stat.f_ffree;
+
+	if(debug){std::cout << YELLOW << "Free Space: " << availableStorage << RESET << std::endl;}
+	if (_state._contentLength > availableStorage)
+	{
+		{std::cerr << RED << "Not enough storage available on device" << RESET << std::endl;}
+		return(0);
+	}
+
+	return (1);
+}
+
+
+int HttpRequest::evaluateUpload(void)
 {
 	if (!_state._uploadEvaluated)
 	{
@@ -9,29 +36,35 @@ void HttpRequest::evaluateUpload(void)
 		if ((*_route)._uploadPath.empty() && !_state._isCgiPost)
 		{
 			sendErrorResponse(401);// wrong Code
-			return;
+			return(0);
+		}
+		if (!checkStorage())
+		{
+			sendErrorResponse(507);
+			return(0);
 		}
 		else if (!(*_route)._uploadPath.empty())
 			_uploadDir = (*_route)._uploadPath;
 		if (_state._isCgiPost < 0)
 		{
 			sendErrorResponse(500);
-			return;
+			return(0);
 		}
 		if (_state._contentLength > (*_config)._maxBody)
 		{
 			sendErrorResponse(413);
-			return;
+			return(0);
 		}
 		if(!_state._isCgiPost && !dirSetup())
 		{
 			sendErrorResponse(500);
-			return;
+			return(0);
 		}
 		_contentHeader = _headers["Content-Type"];
 		// _path = _requestLine._path;
 		_state._uploadEvaluated = true;
 	}
+	return (1);
 }
 
 void HttpRequest::cgiPost(void)
@@ -63,8 +96,9 @@ void HttpRequest::cgiPost(void)
 
 void HttpRequest::handlePost(void)
 {
-	std::cout << "HANDLE POST" << std::endl;
-	evaluateUpload();
+	if(debug){std::cout << GREEN << "HANDLE POST" << RESET << std::endl;}
+	if (!evaluateUpload())
+		return;
 	handleUpload();
 	cgiPost();
 }

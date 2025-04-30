@@ -1,4 +1,5 @@
-#include "../include/Post.hpp"
+#include "../include/HttpRequest.hpp"
+#include "../include/ServerConfig.hpp"
 
 void HttpRequest::postRespond()
 {
@@ -56,20 +57,20 @@ int HttpRequest::extractInfo()
 	{
 		begin = _contentHeader.find("boundary=", 0);
 		if (begin == std::string::npos){
-			std::cerr << "Couldnt find boundary in extract info" << std::endl; 
+			if(debug){std::cerr << "Couldnt find boundary in extract info" << std::endl;}
 			return(0);
 		}
 		begin += 9;
 
 		_state._openBoundary =  "--" + _contentHeader.substr(begin);
 		_state._closeBoundary = _state._openBoundary + "--";
-		std::cout << "OpenBoundary: " << _state._openBoundary << std::endl << "CloseBoundary: " << _state._closeBoundary << std::endl;
+		if(debug){std::cout << "OpenBoundary: " << _state._openBoundary << std::endl << "CloseBoundary: " << _state._closeBoundary << std::endl;}
 	}
 	if (_state._filename.empty() && _state._buffer.size())
 	{
 		begin = _state._buffer.find("filename=\"", 0);
 		if (begin == std::string::npos){
-			std::cerr << "Couldnt find filename in extract info" << std::endl;
+			if(debug){std::cerr << "Couldnt find filename in extract info" << std::endl;}
 			return(0);
 
 		}
@@ -77,12 +78,12 @@ int HttpRequest::extractInfo()
 
 		end = _state._buffer.find('"', begin);
 		if(end == std::string::npos){
-			std::cerr << "Couldnt find filename end in extract info" << std::endl;
+			if(debug){std::cerr << "Couldnt find filename end in extract info" << std::endl;}
 			return(0);
 		}
 
 		_state._filename = _state._buffer.substr(begin, end - begin);
-		std::cout << "filename: " << _state._filename << std::endl;
+		if(debug){std::cout << "filename: " << _state._filename << std::endl;}
 	}
 	return (1);
 }
@@ -95,11 +96,11 @@ int HttpRequest::extractContent()
 	if (!_state._uploadMode)
 	{
 		if ((begin = _state._buffer.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
-			std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;
+			if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 			return(0);
 		}
 		if ((end = _state._buffer.find("\r\n" + _state._closeBoundary, begin)) == std::string::npos){
-			std::cerr << "Couldnt find close boundary in _state._buffer in extract content" << std::endl;
+			if(debug){std::cerr << "Couldnt find close boundary in _state._buffer in extract content" << std::endl;}
 			return(0);
 		}
 		_fileContent = _state._buffer.substr(begin, end - begin);
@@ -110,7 +111,7 @@ int HttpRequest::extractContent()
 		if(!_state._uploadFile.is_open())
 		{
 			if ((begin = _state._buffer.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
-				std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;
+				if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 				return(0);
 			}
 			_fileContent = _state._buffer.substr(begin);
@@ -122,14 +123,14 @@ int HttpRequest::extractContent()
 				_fileContent = _state._buffer;
 			else
 			{
-				std::cout << GREEN << "Entire file recieved" << RESET << std::endl;
+				if(debug){std::cout << GREEN << "Entire file recieved" << RESET << std::endl;}
 				_fileContent = _state._buffer.substr(begin, end - begin);
 				_state._uploadComplete = true;
 			}
 			// if (_state._contentLength == _state._ContentBytesRecieved)
 			// 	_state._uploadComplete = true;
 
-			std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;
+			if(debug){std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;}
 		}
 	}
 	return(1);
@@ -151,7 +152,7 @@ int HttpRequest::writeContent()
 			}
 			else
 			{
-				std::cerr << "Unable to open file." << std::endl;
+				if(debug){std::cerr << "Unable to open file." << std::endl;}
 				return (0);
 			}
 		}
@@ -168,7 +169,7 @@ int HttpRequest::writeContent()
 			}
 			else
 			{
-				std::cerr << "Unable to open temp file." << std::endl;
+				if(debug){std::cerr << "Unable to open temp file." << std::endl;}
 				return (0);
 			}
 			if (_state._uploadComplete)
@@ -192,21 +193,21 @@ void HttpRequest::handleUpload()
 		return;
 	if(!_state._buffer.empty())
 		_state._ContentBytesRecieved += _state._buffer.size();
-	std::cout << RED << "Entered Post" << RESET << std::endl;
+	if(debug){std::cout << GREEN << "Entered hadleUpload" << RESET << std::endl;}
 	try
 	{
 		if (!extractInfo()){
-			std::cout << "Returned from extractInfo" << std::endl;
+			if(debug){std::cout << "Returned from extractInfo" << std::endl;}
 			_state._buffer.clear();
 			return;
 		}
 		if (!extractContent()){
-			std::cout << "Returned from extractContent" << std::endl;
+			if(debug){std::cout << "Returned from extractContent" << std::endl;}
 			_state._buffer.clear();
 			return;
 		}
 		if (!writeContent()){
-			std::cout << "Returned from writeContent" << std::endl;
+			if(debug){std::cout << "Returned from writeContent" << std::endl;}
 			_state._buffer.clear();
 			return;
 		}
