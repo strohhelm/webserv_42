@@ -1,5 +1,5 @@
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 -g -O0 -fsanitize=address	
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++17 -g -O0 #-fsanitize=address	
 # -g -fsanitize=address	
 
 NAME		= webserv
@@ -58,7 +58,7 @@ clean :
 
 fclean : clean
 	$(REMOVE) $(NAME)
-	rm -rf ./file_upload/
+	rm -rf ./file_uploads/
 	rm -rf ./tmp_upload/
 
 re : fclean all

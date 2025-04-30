@@ -91,18 +91,17 @@ class HttpRequest
 	
 		requestLine		_requestLine;
 		std::string		_rawRequestLine;
-		std::string		_rawBody;
 		std::unordered_map<std::string, std::string> _headers;
 		std::unordered_map<std::string, std::string> _body;
 		std::string _httpResponse;
 		CGI	_cgi;
 		std::string _cgiBuffer;
 		//POST
-		std::string path;
+		std::string _cgiFilePath;
 		// std::string body;
 		std::string _contentHeader;
 		std::string _fileContent;
-		std::string _uploadDir = "file_upload";
+		std::string _uploadDir;
 		std::string _tempDir = "tmp_upload";
 		std::string _fdPath;
 		std::filesystem::path _path;
@@ -125,7 +124,6 @@ class HttpRequest
 		// int		clearOldRequest(void);
 		size_t	extractContentLength(void);
 		int		extractAndTokenizeHeader(void);
-		void	extractRawBody(void);
 		int		extractRawRequestLine(void);
 		int		tokenizeRequestLine(void);
 		void	tokenizeBody(void);
@@ -145,7 +143,9 @@ class HttpRequest
 		int			evaluateFilepath(std::string& path);
 		void		evaluateFiletype(std::string& filename);
 		//POST
+		void		evaluateUpload(void);
 		void		handleUpload(void);
+		void		cgiPost(void);
 		int			extractInfo(void);
 		int			dirSetup(void);
 		int			extractContent(void);

@@ -12,11 +12,6 @@ const std::string& HttpRequest::getRawRequestLine(void)
 	return _rawRequestLine;
 }
 
-const std::string& HttpRequest::getRawBody(void)
-{
-	return _rawBody;
-}
-
 
 void HttpRequest::showHeader(void)
 {

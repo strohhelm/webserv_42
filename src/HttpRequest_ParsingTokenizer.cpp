@@ -29,17 +29,6 @@ int HttpRequest::tokenizeRequestLine()
 	return error;
 }
 
-void HttpRequest::extractRawBody()
-{
-	// std::string line;
-	// std::istringstream stream(_state._buffer);
-	// while (std::getline(stream, line) && line != "\r"){}
-	// std::getline(stream, _rawBody, '\0');
-	_rawBody = _state._buffer;
-	_state._buffer.clear();
-}
-
-
 int HttpRequest::extractRawRequestLine()
 {
 	// std::istringstream stream(requestBuffer); //andis way
@@ -121,23 +110,23 @@ int HttpRequest::extractAndTokenizeHeader()
 	}catch(...){std::cout<<RED<<"extract Header failed (prob substr)"<<std::endl;return 500;}
 }
 
-void HttpRequest::tokenizeBody()
-{
-	std::istringstream stream(_rawBody);
-	std::string pair;
+// void HttpRequest::tokenizeBody()
+// {
+// 	std::istringstream stream(_state._buffer);
+// 	std::string pair;
 
-	while (getline(stream, pair, '&'))
-	{
-		size_t delimiterPos = pair.find("=");
-		if (delimiterPos != std::string::npos)
-		{
-			std::string key = pair.substr(0, delimiterPos);
-			std::string value = pair.substr(delimiterPos + 1);
-			eraseSpaceAndTab(key, value);
-			_body[key] = value;
-		}
-	}
-}
+// 	while (getline(stream, pair, '&'))
+// 	{
+// 		size_t delimiterPos = pair.find("=");
+// 		if (delimiterPos != std::string::npos)
+// 		{
+// 			std::string key = pair.substr(0, delimiterPos);
+// 			std::string value = pair.substr(delimiterPos + 1);
+// 			eraseSpaceAndTab(key, value);
+// 			_body[key] = value;
+// 		}
+// 	}
+// }
 
 // void HttpRequest::clearOldRequest(void)
 // {
