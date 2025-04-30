@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <filesystem>
 #include "Colors.hpp"
+#include <sys/statvfs.h>
 
 #include "CGI.hpp"
 // #include "ServerConfig.hpp"
@@ -143,7 +144,8 @@ class HttpRequest
 		int			evaluateFilepath(std::string& path);
 		void		evaluateFiletype(std::string& filename);
 		//POST
-		void		evaluateUpload(void);
+		int			evaluateUpload(void);
+		int			checkStorage(void);
 		void		handleUpload(void);
 		void		cgiPost(void);
 		int			extractInfo(void);
