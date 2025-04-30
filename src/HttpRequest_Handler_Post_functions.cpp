@@ -43,7 +43,7 @@ int HttpRequest::dirSetup()
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr <<BG_BRIGHT_RED<<"SETUP UPLOAD DIRECTORY: "<< e.what() <<RESET<< '\n';
 		return (0);
 	}
 	return(1);

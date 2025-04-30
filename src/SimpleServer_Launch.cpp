@@ -7,20 +7,27 @@ void SimpleServer::checkIdleConnections(void)
 {
 	auto now = std::chrono::steady_clock::now();
 	
-	for (auto it = _clientLastActivityTimes.begin(); it != _clientLastActivityTimes.end(); ) {
+	for (auto it = _clientLastActivityTimes.begin(); it != _clientLastActivityTimes.end(); )
+	 {
 		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
 		
 		if (elapsed.count() >static_cast<long long> (_config._keepalive_timeout))
 		{
 			std::cout << "Closing idle connection on fd: " << it->first << std::endl;
-			close(it->first);
-			it = _clientLastActivityTimes.erase(it);
+			removeClient(it->first);
 		}
 		else
 		{
 			++it;
 		}
 	}
+	// for (auto it = _clients.rbegin(); it != _clients.rend(); it++)
+	// {
+	// 	if (std::find(CloseCodes.begin(), CloseCodes.end(),it->second._state._errorOcurred) != CloseCodes.end())
+	// 		removeClient(it->first);
+	// }
+
+
 }
 
 
@@ -47,6 +54,7 @@ void SimpleServer::launch(void)
 		handlePolls(pollcount);
 		checkIdleConnections();
 	}
+
 }
 
 /************************************************/
@@ -105,6 +113,8 @@ void SimpleServer::handlePolls(int pollCount)
 			if (debug)std::cout << BG_BRIGHT_RED<<"State Error" << RESET<<std::endl;
 			_clients[client_fd].sendErrorResponse(check);
 		}
+		if (std::find(CloseCodes.begin(), CloseCodes.end(),_clients[client_fd]._state._errorOcurred) != CloseCodes.end())
+			{std::cout<<BG_BRIGHT_RED<<"Remove because: "<<_clients[client_fd]._state._errorOcurred<<RESET<<std::endl;removeClient(client_fd);}
 		fdIndex--;
 	}
 }
@@ -165,72 +175,6 @@ int SimpleServer::readDataFromClient(int fdIndex)
 {
 
 	int		client_fd = _poll_fds[fdIndex].fd;
-	// const int buffer_size = 4096;
-	// char	buffer[buffer_size];
-	// int		bytesReceived;
-	// std::string request;
-	// _done[fdIndex] = false;
-
-	// bytesReceived = recv(client_fd, buffer, buffer_size, 0);
-	
-	// if (bytesReceived <= 0)
-	// {
-	// 	std::cerr << "RECV ERROR. " << bytesReceived << std::strerror(errno) << std::endl;
-	// 	_recvBuffer[fdIndex].clear();
-	// 	_recvHeader[fdIndex].clear();
-	// 	_done[fdIndex] = false;
-	// 	removeClient(fdIndex);
-	// 	return;
-	// }
-	// _recvBuffer[fdIndex].append(buffer, bytesReceived);
-
-	// std::cout << "buffer size: " <<  _recvBuffer[fdIndex].size() << std::endl;
-
-	// if (!_recvHeader[fdIndex].size())
-	// {
-	// 	size_t end = _recvBuffer[fdIndex].find("\r\n\r\n"); // add npos check?
-	// 	if (end == std::string::npos)
-	// 		return;
-	// 	_recvHeader[fdIndex] = _recvBuffer[fdIndex].substr(0, end + 4);
-	// 	_headerParsed[fdIndex] = false;
-	// 	std::cout << "Header received and stored\n";
-	// 	// return;
-	// }
-
-	// if (!_headerParsed[fdIndex])
-	// {
-	// 	size_t begin = _recvHeader[fdIndex].find("Content-Length:");
-	// 	if (begin != std::string::npos)
-	// 	{
-	// 		begin = _recvHeader[fdIndex].find(' ', begin) +1;
-	// 		size_t end = _recvHeader[fdIndex].find('\r', begin);
-	// 		std::string lenstr = _recvHeader[fdIndex].substr(begin, end - begin);
-	// 		if (lenstr.size())
-	// 			_clen[fdIndex] = std::stoi(lenstr);
-
-	// 	}
-	// 	else
-	// 		_clen[fdIndex] = 0;
-	// 	_headerParsed[fdIndex] = true;
-	// 	std::cout << "Header parsed. clen: " << _clen[fdIndex] << std::endl;
-	// 	// return;
-	// }
-
-	// size_t start = _recvBuffer[fdIndex].find("\r\n\r\n") + 4;
-	// int blen = _recvBuffer[fdIndex].size() - start;
-
-	// std::cout << "start: " << start << "size: " << _recvBuffer[fdIndex].size() << std::endl;
-
-	// std::cout << "blen: " << blen << "clen: " << _clen[fdIndex] << std::endl;
-
-	// if (blen < _clen[fdIndex])
-	// 	return;
-
-	// std::ofstream rq("request");
-	// 	rq << _recvBuffer[fdIndex];
-	// _done[fdIndex] = true;
-	
-	// return;
 	HttpRequest& client = _clients[client_fd]; // reference to current client
 	if (debug)std::cout << ORANGE<<"ReadDataFromClient" <<RESET<< std::endl;
 
@@ -263,9 +207,8 @@ int SimpleServer::readDataFromClient(int fdIndex)
 }
 
 
-void SimpleServer::removeClient(int fdIndex)
+void SimpleServer::removeClient(int client_fd)
 {
-	int client_fd = _poll_fds[fdIndex].fd;
 	// close(client_fd);
 	// _poll_fds.erase(_poll_fds.begin() + fdIndex);
 	// Close the client socket
@@ -280,6 +223,8 @@ void SimpleServer::removeClient(int fdIndex)
 		}
 	}
 	_clients.erase(client_fd);
+	_listeningServerFromClient.erase(client_fd);
+	_clientLastActivityTimes.erase(client_fd);
 }
 
 

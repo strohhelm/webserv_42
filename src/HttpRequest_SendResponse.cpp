@@ -30,6 +30,7 @@ void HttpRequest::sendErrorResponse(int statusCode)
 	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 	if (bytesToSend != bytesSent)
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
+	_state._errorOcurred = statusCode;
 	reset();
 }
 

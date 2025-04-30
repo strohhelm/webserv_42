@@ -2,6 +2,13 @@
 #define STATUSCODES_HPP
 #include <map>
 #include <string>
+#include <vector>
+const std::vector<int> CloseCodes = {
+	1,
+	400,
+	413,
+	500,
+};
 
 
 const std::map<int, const std::string> StatusCode = {

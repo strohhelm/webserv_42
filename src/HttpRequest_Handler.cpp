@@ -117,7 +117,6 @@ void HttpRequest::reset()
 	_state._downloadSize			= 0;
 	_state._websitefile			= true;
 	_state._readyToHandle			= false;
-	_state._errorOcurred			= 0;
 	if (_state._uploadFile.is_open())
 		_state._uploadFile.close();
 	_state._uploadFile.clear();
@@ -138,6 +137,7 @@ void HttpRequest::reset()
 	_body.clear();
 	_httpResponse.clear();
 	_cgiFilePath.clear();
+	_cgiBuffer.clear();
 	_contentHeader.clear();
 	_fileContent.clear();
 	_uploadDir = "file_upload";

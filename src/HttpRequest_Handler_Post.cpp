@@ -69,28 +69,28 @@ int HttpRequest::evaluateUpload(void)
 
 void HttpRequest::cgiPost(void)
 {
-	if (_state._isCgiPost > 0)
+
+	if (!_state._uploadComplete)
 	{
-		if (!_state._uploadComplete)
-		{
-			_cgiBuffer += _state._buffer;
-			_state._buffer.clear();
-			if (_cgiBuffer.size() == _state._contentLength)
-				_state._uploadComplete = true;
-			else
-				return;
-		}
-		if (_state._uploadComplete)
-		{
-			_cgiFilePath = getRequestedFile();
-			std::string query = "";
-			std::filesystem::path filename = _requestLine._path;
-			_cgi.setCgiParameter(_client_fd, (*_config), _cgiFilePath, (*_route).getCgiPath(filename.extension()), query);
-			_cgi.tokenizePath();
-			_cgi.execute("POST", _cgiBuffer);
-			reset();
+		_cgiBuffer += _state._buffer;
+		_state._buffer.clear();
+		if (_cgiBuffer.size() == _state._contentLength)
+			_state._uploadComplete = true;
+		else
 			return;
-		}
+	}
+	if (_state._uploadComplete)
+	{
+		_cgiFilePath = getRequestedFile();
+		std::string query = "";
+		std::filesystem::path filename = _requestLine._path;
+		_cgi.setCgiParameter(_client_fd, (*_config), _cgiFilePath, (*_route).getCgiPath(filename.extension()), query);
+		_cgi.tokenizePath();
+		int check = _cgi.execute("POST", _cgiBuffer);
+		if (check > 0)
+		sendErrorResponse(check);
+		reset();
+		return;
 	}
 }
 
@@ -100,5 +100,6 @@ void HttpRequest::handlePost(void)
 	if (!evaluateUpload())
 		return;
 	handleUpload();
-	cgiPost();
+	if (_state._isCgiPost > 0)
+		cgiPost();
 }

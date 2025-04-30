@@ -37,10 +37,8 @@ print("""
     <p><strong>Raw POST Body:</strong> <code>{raw}</code></p>
     <h2>Parsed Form Data:</h2>
     <ul>
-""".format(
-    method=html.escape(request_method),
-    raw=html.escape(post_data)
-))
+"""
+)
 
 # Output each parsed key-value
 for key, values in parsed_data.items():
@@ -50,7 +48,7 @@ for key, values in parsed_data.items():
 
 print("""
     </ul>
-    <p><a href="/test_form.html">Back to form</a></p>
+    <p><a href="/">Back to form</a></p>
 </body>
 </html>
 """)

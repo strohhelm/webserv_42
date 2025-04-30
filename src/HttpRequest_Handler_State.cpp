@@ -82,6 +82,8 @@ int	HttpRequest::evaluateState(void)
 		_state._contentLength = extractContentLength();
 		if ((!_state._contentLength) && (_requestLine._method == HttpMethod::POST))
 			return 411; //check for POST + 0 content length -> chunking
+		if (_state._contentLength > (*_config)._maxBody)
+			return 413;
 		_state._headersParsed = true;
 		if (debug)std::cout<<GREEN<<"Headers parsed"<<RESET<<std::endl;
 	}
