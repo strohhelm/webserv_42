@@ -19,7 +19,7 @@ int HttpRequest::evaluateFilepath(std::string& path)
 		std::filesystem::path filename = (path.substr(0, path.find('?')));
 		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(filename.extension()), query);
 		_cgi.tokenizePath();
-		_cgi.execute("GET", _rawBody);
+		_cgi.execute("GET", _state._buffer);
 		reset();
 		return 1;
 	}

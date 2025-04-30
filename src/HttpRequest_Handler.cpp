@@ -128,14 +128,16 @@ void HttpRequest::reset()
 
 	_state._tempUploadFilePath.clear();
 	_state._downloadFileName.clear();
+	_state._filename.clear();
+	_state._openBoundary.clear();
+	_state._closeBoundary.clear();
 	_headers.clear();
 	_requestLine._path.clear();
 	_requestLine._version.clear();
 	_rawRequestLine.clear();
-	_rawBody.clear();
 	_body.clear();
 	_httpResponse.clear();
-	path.clear();
+	_cgiFilePath.clear();
 	_contentHeader.clear();
 	_fileContent.clear();
 	_uploadDir = "file_upload";
@@ -149,7 +151,6 @@ HttpRequest::HttpRequest()
 {
 	_state._buffer.clear();
 	_rawRequestLine.clear();
-	_rawBody.clear();
 	_headers.clear();
 	_body.clear();
 	_httpResponse.clear();

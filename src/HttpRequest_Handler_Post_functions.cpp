@@ -2,9 +2,6 @@
 
 void HttpRequest::postRespond()
 {
-	// if (_state._uploadFile.is_open())
-	// 	_state._uploadFile.close();
-	// std::string html_content = readFileContent("www/upload/upload.html");
 	reset();
 	sendRedirectResponse(204, "/" );
 }
@@ -29,18 +26,25 @@ void HttpRequest::checkFilename(std::filesystem::path filePath)
 int HttpRequest::dirSetup()
 {
 	_path = "client_" + std::to_string(_client_fd);
-	if (_state._uploadMode)
+	try
 	{
-		std::cout << RED << "UPLOAD MODE SET" << RESET << std::endl;
-		if (!std::filesystem::exists(_tempDir) && !std::filesystem::is_directory(_tempDir))
-			std::filesystem::create_directory(_tempDir);
-		if (!std::filesystem::exists(_tempDir / _path) && !std::filesystem::is_directory(_tempDir / _path))
-			std::filesystem::create_directory(_tempDir / _path);
+		if (_state._uploadMode)
+		{
+			if (!std::filesystem::exists(_tempDir) && !std::filesystem::is_directory(_tempDir))
+				std::filesystem::create_directory(_tempDir);
+			if (!std::filesystem::exists(_tempDir / _path) && !std::filesystem::is_directory(_tempDir / _path))
+				std::filesystem::create_directory(_tempDir / _path);
+		}
+		if (!std::filesystem::exists(_uploadDir) && !std::filesystem::is_directory(_uploadDir))
+			std::filesystem::create_directory(_uploadDir);
+		if (!std::filesystem::exists(_uploadDir / _path) && !std::filesystem::is_directory(_uploadDir / _path))
+			std::filesystem::create_directory(_uploadDir / _path);
 	}
-	if (!std::filesystem::exists(_uploadDir) && !std::filesystem::is_directory(_uploadDir))
-		std::filesystem::create_directory(_uploadDir);
-	if (!std::filesystem::exists(_uploadDir / _path) && !std::filesystem::is_directory(_uploadDir / _path))
-		std::filesystem::create_directory(_uploadDir / _path);
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return (0);
+	}
 	return(1);
 }
 
@@ -61,9 +65,9 @@ int HttpRequest::extractInfo()
 		_state._closeBoundary = _state._openBoundary + "--";
 		std::cout << "OpenBoundary: " << _state._openBoundary << std::endl << "CloseBoundary: " << _state._closeBoundary << std::endl;
 	}
-	if (_state._filename.empty() && _rawBody.size())
+	if (_state._filename.empty() && _state._buffer.size())
 	{
-		begin = _rawBody.find("filename=\"", 0);
+		begin = _state._buffer.find("filename=\"", 0);
 		if (begin == std::string::npos){
 			std::cerr << "Couldnt find filename in extract info" << std::endl;
 			return(0);
@@ -71,13 +75,13 @@ int HttpRequest::extractInfo()
 		}
 		begin += 10;
 
-		end = _rawBody.find('"', begin);
+		end = _state._buffer.find('"', begin);
 		if(end == std::string::npos){
 			std::cerr << "Couldnt find filename end in extract info" << std::endl;
 			return(0);
 		}
 
-		_state._filename = _rawBody.substr(begin, end - begin);
+		_state._filename = _state._buffer.substr(begin, end - begin);
 		std::cout << "filename: " << _state._filename << std::endl;
 	}
 	return (1);
@@ -90,37 +94,41 @@ int HttpRequest::extractContent()
 
 	if (!_state._uploadMode)
 	{
-		if ((begin = _rawBody.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
-			std::cerr << "Couldnt find open boundary in _rawBody in extract content" << std::endl;
+		if ((begin = _state._buffer.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
+			std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;
 			return(0);
 		}
-		if ((end = _rawBody.find("\r\n" + _state._closeBoundary, begin)) == std::string::npos){
-			std::cerr << "Couldnt find close boundary in _rawBody in extract content" << std::endl;
+		if ((end = _state._buffer.find("\r\n" + _state._closeBoundary, begin)) == std::string::npos){
+			std::cerr << "Couldnt find close boundary in _state._buffer in extract content" << std::endl;
 			return(0);
 		}
-		_fileContent = _rawBody.substr(begin, end - begin);
+		_fileContent = _state._buffer.substr(begin, end - begin);
+		_state._uploadComplete = true;
 	}
 	else if (_state._uploadMode && !_state._filename.empty())
 	{
 		if(!_state._uploadFile.is_open())
 		{
-			if ((begin = _rawBody.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
-				std::cerr << "Couldnt find open boundary in _rawBody in extract content" << std::endl;
+			if ((begin = _state._buffer.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
+				std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;
 				return(0);
 			}
-			_fileContent = _rawBody.substr(begin);
+			_fileContent = _state._buffer.substr(begin);
 		}
 		if(_state._uploadFile.is_open())
 		{
-			end = _rawBody.find("\r\n" + _state._closeBoundary, begin);
+			end = _state._buffer.find("\r\n" + _state._closeBoundary, begin);
 			if (end == std::string::npos)
-				_fileContent = _rawBody;
+				_fileContent = _state._buffer;
 			else
 			{
 				std::cout << GREEN << "Entire file recieved" << RESET << std::endl;
-				_fileContent = _rawBody.substr(begin, end - begin);
-				_done = true;
+				_fileContent = _state._buffer.substr(begin, end - begin);
+				_state._uploadComplete = true;
 			}
+			// if (_state._contentLength == _state._ContentBytesRecieved)
+			// 	_state._uploadComplete = true;
+
 			std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;
 		}
 	}
@@ -141,7 +149,8 @@ int HttpRequest::writeContent()
 				output.close();
 				postRespond();
 			}
-			else{
+			else
+			{
 				std::cerr << "Unable to open file." << std::endl;
 				return (0);
 			}
@@ -157,48 +166,55 @@ int HttpRequest::writeContent()
 			{
 				_state._uploadFile << _fileContent;
 			}
-			else{
-				std::cerr << "Unable to open file." << std::endl;
+			else
+			{
+				std::cerr << "Unable to open temp file." << std::endl;
 				return (0);
 			}
-			if (_done)
+			if (_state._uploadComplete)
 			{
 				std::string curr_name = _state._filename;
 				checkFilename(_uploadDir / _path / _state._filename);
-				std::rename((_tempDir / _path / curr_name).c_str(), (_uploadDir / _path / _state._filename).c_str());
+				if (curr_name != _state._filename)
+					std::rename((_tempDir / _path / curr_name).c_str(), (_tempDir / _path / _state._filename).c_str());
+				std::rename((_tempDir / _path / _state._filename).c_str(), (_uploadDir / _path / _state._filename).c_str());
 				postRespond();
 			}
 		}
 	}
+	_fileContent.clear();
 	return (1);
 }
 
 void HttpRequest::handleUpload()
 {
-	if(!_rawBody.empty())
-		_state._ContentBytesRecieved += _rawBody.size();
+	if (_state._isCgiPost)
+		return;
+	if(!_state._buffer.empty())
+		_state._ContentBytesRecieved += _state._buffer.size();
 	std::cout << RED << "Entered Post" << RESET << std::endl;
-	if (!extractInfo()){
-		std::cout << "Returned from extractInfo" << std::endl;
-		return;
+	try
+	{
+		if (!extractInfo()){
+			std::cout << "Returned from extractInfo" << std::endl;
+			_state._buffer.clear();
+			return;
+		}
+		if (!extractContent()){
+			std::cout << "Returned from extractContent" << std::endl;
+			_state._buffer.clear();
+			return;
+		}
+		if (!writeContent()){
+			std::cout << "Returned from writeContent" << std::endl;
+			_state._buffer.clear();
+			return;
+		}
 	}
-	if (!dirSetup()){
-		std::cout << "Returned from dirSetup" << std::endl;
-		return;
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;	
 	}
-	if (!extractContent()){
-		std::cout << "Returned from extractContent" << std::endl;
-		return;
-	}
-	if (!writeContent()){
-		std::cout << "Returned from writeContent" << std::endl;
-		return;
-	}
+	_state._buffer.clear();
 }
 
-// Post::Post(std::string path, std::string _rawBody, std::string encoding, const int &fd, RequestState &_state) : 
-// path(path), _rawBody(_rawBody), _contentHeader(encoding), fd(fd), _state(_state)
-// {
-// 	if (path == "/upload")
-// 		handleUpload();
-// }
