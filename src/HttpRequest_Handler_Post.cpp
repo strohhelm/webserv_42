@@ -59,8 +59,10 @@ void HttpRequest::handlePost(void)
 		{
 			std::filesystem::path filename = _requestLine._path;
 			_cgi.setCgiParameter(_client_fd, (*_config), _requestLine._path, (*_route).getCgiPath(filename.extension()), query);
-			_cgi.tokenizePath();
-			_cgi.execute("POST", _rawBody);
+			// _cgi.tokenizePath();
+			int check = _cgi.execute("POST", _rawBody) > 0;
+			if (check > 0)
+				sendErrorResponse(check);
 			return;
 		}
 	}

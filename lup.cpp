@@ -8,18 +8,22 @@
 
 int main (int argc, char** argv)
 {
-	std::filesystem::path path = "./hallo/lol/pupu/index.php?haha=lol&pup=hih";
-	std::filesystem::path puth = "./hallo/lol/pupu/index";
+	// std::filesystem::path path = "./hallo/lol/pupu/index.php?haha=lol&pup=hih";
+	// std::filesystem::path puth = "./hallo/lol/pupu/index";
 	
 
-	std::cout<<path.extension()<<std::endl;
-	std::cout<<path.filename() <<std::endl;
-	std::cout<<path.has_relative_path() <<std::endl;
+	// std::cout<<path.extension()<<std::endl;
+	// std::cout<<path.filename() <<std::endl;
+	// std::cout<<path.has_relative_path() <<std::endl;
 
-	for (auto p:path)
-		std::cout<<p<<std::endl;
+	// for (auto p:path)
+	// 	std::cout<<p<<std::endl;
 	
-	std::cout<<path.compare(puth);
+	// std::cout<<path.compare(puth);
+
+
+	std::string request = "./hallo/lol/pupu/index.php?haha=lol&pup=hih";
+		std::cout<< request.substr(request.find('?') + 1)<<std::endl;
 	// std::string lol("GET /reference/string/string/ HTTP/1.1 \r\n Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8 \r\nAccept-Encoding: gzip, deflate, br, zstd\r\nAccept-Language: en-US,en;q=0.9\r\nCache-Control: max-age=0\r\nConnection: keep-alive\r\nCookie: atp32=C%2B%2B11%7Cnull; vis31=00025dbc67ff89f1\r\nHost: cplusplus.com\r\nIf-None-Match: W/\"c12c-6BzmumcAEpr2nS4F9Q+H2sZ5A30\"\r\nReferer: https://cplusplus.com/\r\nSec-Fetch-Dest: document\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-Site: same-origin\r\nSec-Fetch-User: ?1\r\nSec-GPC: 1\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36\r\nsec-ch-ua: \"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Brave\";v=\"126\"\r\nsec-ch-ua-mobile: ?0\r\n sec-ch-ua-platform: \"macOS\"\r\n\r\n");
 	// size_t pos = lol.find("\r\n");
 	// std::string test = lol.substr(pos +2);

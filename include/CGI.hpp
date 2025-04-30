@@ -46,7 +46,7 @@ class CGI
 		int		createPipes(void);
 		void	handleChildProcess(std::string method, std::string rawBody);
 		void	handleParentProcess(std::string method, std::string rawBody);
-		void	execute(std::string method, std::string rawBody);
+		int	execute(std::string method, std::string rawBody);
 
 		void	setPipeToRead(int fd);
 		void	setPipeToWrite(int fd);

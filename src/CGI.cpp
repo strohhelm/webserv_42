@@ -22,8 +22,8 @@ void CGI::setCgiParameter(const int& client_fd, ServerConfig& config, std::strin
 	_scriptPath = requestPath;
 	_phpCgiPathStr = cgiPath;
 	_queryString = query;
-	if (debug)std::cout << RED << _phpCgiPathStr << RESET << std::endl;
-	if (debug)std::cout << RED << _requestPath << RESET << std::endl;
+	if (debug)std::cout << ORANGE << _phpCgiPathStr << RESET << std::endl;
+	if (debug)std::cout << ORANGE << _requestPath << RESET << std::endl;
 }
 
 void CGI::tokenizePath(void)
@@ -42,9 +42,9 @@ void CGI::tokenizePath(void)
 		_scriptPath = _requestPath;
 		// std::cout << "CGI _scriptPath: " << _scriptPath << std::endl;
 	}
-	if (debug)std::cout << "CGI _fullPath: " << _fullPath << std::endl;
-	if (debug)std::cout << "SCRIPT_FILENAME: " << _fullPath << std::endl;
-	if (debug)std::cout << "Checking file: " << (access(_fullPath.c_str(), F_OK) == 0 ? "Exists" : "DOES NOT EXIST") << std::endl;
+	if (debug)std::cout <<YELLOW<< "CGI _fullPath: " << _fullPath <<RESET<< std::endl;
+	if (debug)std::cout <<YELLOW<< "SCRIPT_path: " << _scriptPath <<RESET<< std::endl;
+	if (debug)std::cout <<YELLOW<< "Checking file: " << (access(_fullPath.c_str(), F_OK) == 0 ? "Exists" : "DOES NOT EXIST") <<RESET<< std::endl;
 }
 
 
@@ -163,7 +163,6 @@ void CGI::handleChildProcess(std::string method, std::string rawBody)
 	execve(_phpCgiPathStr.c_str(), _argv, _envp.data());
 
 	std::cerr << "execve failed: " << std::endl;
-
 	exit(1); //?!?!?!?!?!?!?!
 }
 
@@ -228,7 +227,7 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 }
 
 // std::array<int, 3> a = {1, 2, 3};
-void CGI::execute(std::string method, std::string rawBody)
+int CGI::execute(std::string method, std::string rawBody)
 {
 	if (debug)std::cout << "CGI" << std::endl;
 	// init fds
@@ -237,15 +236,13 @@ void CGI::execute(std::string method, std::string rawBody)
 
 	if(createPipes() < 0)
 	{
-		// sendErrorResponse(client_fd, 500, "Pipe creation failed"); //???
-		return;
+		return 500;
 	}
 	pid_t pid = fork();
 	if (pid < 0)
 	{
 		closeAllPipes();
-		// sendErrorResponse(client_fd, 500, "Fork failed");
-		return;
+		return 500;
 	}
 	if(pid == 0)
 	{
@@ -256,4 +253,5 @@ void CGI::execute(std::string method, std::string rawBody)
 		handleParentProcess(method, rawBody);
 	}
 	closeAllPipes();
+	return 0;
 }
