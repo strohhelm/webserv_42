@@ -37,7 +37,7 @@ void HttpRequest::handlePost(void)
 			return;
 		}
 		if (_state._isCgiPost < 0)
-			sendErrorResponse(500);
+			{sendErrorResponse(500);return;}
 		_contentHeader = _headers["Content-Type"];
 		_path = _requestLine._path;
 		_state._uploadEvaluated = true;
@@ -49,7 +49,7 @@ void HttpRequest::handlePost(void)
 		_rawBody.clear();
 		return;
 	}
-	else if (_state._isCgiPost > 0)
+	else if (_state._isCgiPost > 0 && _state._uploadMode)
 	{
 		extractRawBody();
 		_cgiBuffer += _rawBody;
@@ -61,9 +61,7 @@ void HttpRequest::handlePost(void)
 			return;
 		}
 	}
-
-
-	if (_state._isCgiPost > 0 && _state._uploadComplete)
+	if (_state._isCgiPost > 0)
 	{
 		path = getRequestedFile();
 		std::string query = "";
@@ -72,7 +70,7 @@ void HttpRequest::handlePost(void)
 		_cgi.tokenizePath();
 		int check = _cgi.execute("POST", _rawBody);
 		if (check > 0)
-			sendErrorResponse(check);
+			{sendErrorResponse(check);return;};
 		reset();
 		return;
 	}

@@ -1,45 +1,56 @@
 #!/usr/bin/env python3
 
-import cgi
-import cgitb
-cgitb.enable()  # Enable debugging output
+import os
+import sys
+import urllib.parse
+import html
 
+# Read environment variables
+request_method = os.environ.get('REQUEST_METHOD', '')
+content_length = int(os.environ.get('CONTENT_LENGTH', '0'))
+
+# Read raw POST data from stdin
+post_data = sys.stdin.read(content_length)
+
+# Parse the POST data manually
+parsed_data = urllib.parse.parse_qs(post_data)
+
+# Build dynamic HTML response
 print("Content-Type: text/html\n")
-
-form = cgi.FieldStorage()
-
-html_response = """
+print("""
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>POST Request Test</title>
+    <title>Raw POST Handler</title>
     <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        .container {{ max-width: 600px; margin: auto; }}
-        .field {{ margin-bottom: 10px; }}
-        .label {{ font-weight: bold; }}
+        body { font-family: sans-serif; margin: 2em; }
+        h1 { color: #333; }
+        ul { padding-left: 1em; }
+        li { margin: 0.5em 0; }
+        code { background: #eee; padding: 2px 4px; border-radius: 3px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>POST Request Received</h1>
-        <p>Here are the submitted values:</p>
-        <ul>
-            {items}
-        </ul>
-        <a href="/cgi-bin/post_test.py">Submit another</a>
-    </div>
+    <h1>POST Data Received</h1>
+    <p><strong>Request Method:</strong> {method}</p>
+    <p><strong>Raw POST Body:</strong> <code>{raw}</code></p>
+    <h2>Parsed Form Data:</h2>
+    <ul>
+""".format(
+    method=html.escape(request_method),
+    raw=html.escape(post_data)
+))
+
+# Output each parsed key-value
+for key, values in parsed_data.items():
+    safe_key = html.escape(key)
+    safe_values = ', '.join(html.escape(v) for v in values)
+    print(f"<li><strong>{safe_key}:</strong> {safe_values}</li>")
+
+print("""
+    </ul>
+    <p><a href="/test_form.html">Back to form</a></p>
 </body>
 </html>
-"""
-
-items_html = ""
-if form:
-    for key in form.keys():
-        value = form.getvalue(key)
-        items_html += f"<li><span class='label'>{key}:</span> {value}</li>\n"
-else:
-    items_html = "<li>No POST data received.</li>"
-
-print(html_response.format(items=items_html))
+""")

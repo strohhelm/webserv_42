@@ -156,6 +156,8 @@ void	ServerConfig::checkValues(void)
 		_routes["/"]= tmp;
 		// throw std::runtime_error("Must have at least 1 location!");
 	}
+	if (_indexFile.empty())
+		_indexFile.push_back("index.html");
 	for (auto& r:_routes)
 	{
 		r.second.checkValues(*this);

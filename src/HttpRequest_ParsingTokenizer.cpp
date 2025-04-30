@@ -104,12 +104,6 @@ int HttpRequest::extractAndTokenizeHeader()
 			if (key == "Host" && (_headers.count("Host") == 1))
 				{std::cout<<BG_BRIGHT_RED<<"Oh shit wrong Host Header"<<RESET
 					<<std::endl; for (auto i:_headers){std::cout<<BLUE<<i.first<<" -> "<<i.second<<RESET<<std::endl;}return 400;}
-
-
-
-
-
-
 			else if( (key == "Content-Type") && (_headers.count("Content-Type") == 1))
 				{std::cout<<BG_BRIGHT_RED<<"Oh shit Content-Type headers"<<RESET<<std::endl;std::cout<<header<<std::endl;return 400;}
 			else if ((key == "Content-Length") && (_headers.count("Content-Length") == 1) && (_headers["Content-Length"] != value))
