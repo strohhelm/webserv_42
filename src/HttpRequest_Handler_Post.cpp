@@ -26,13 +26,12 @@ void HttpRequest::handlePost(void)
 	// if(getContentType() != "")
 	// 	sendErrorResponse(fd, 405, "405 Method Not Allowed");// wrong Code
 
-
+	std::cout << "HANDLE POST" << std::endl;
 	if (!_state._uploadEvaluated)
 	{
-		std::string path = _requestLine._path;
-		_state._isCgiPost = checkCgi(path);
+		_state._isCgiPost = checkCgi(_requestLine._path);
 		
-		if ((*_route)._uploadPath.empty())
+		if ((*_route)._uploadPath.empty() && !_state._isCgiPost)
 		{
 			sendErrorResponse(401);// wrong Code
 			return;
@@ -47,24 +46,38 @@ void HttpRequest::handlePost(void)
 	{
 		extractRawBody();
 		handleUpload();
-		//reset();
+		_rawBody.clear();
 		return;
 	}
-
-	if (_state._isCgiPost)
+	else if (_state._isCgiPost > 0)
 	{
 		extractRawBody();
-		std::string query = "";
-		if(_state._isCgiPost > 0)
+		_cgiBuffer += _rawBody;
+		std::cout << _cgiBuffer << std::endl;
+		if (_cgiBuffer.size() == _state._contentLength)
+			_state._uploadComplete = true;
+		else
 		{
-			std::filesystem::path filename = _requestLine._path;
-			_cgi.setCgiParameter(_client_fd, (*_config), _requestLine._path, (*_route).getCgiPath(filename.extension()), query);
-			_cgi.tokenizePath();
-			_cgi.execute("POST", _rawBody);
+			_rawBody.clear();
 			return;
 		}
 	}
+
+
+	if (_state._isCgiPost > 0 && _state._uploadComplete)
+	{
+		path = getRequestedFile();
+		std::string query = "";
+		std::filesystem::path filename = _requestLine._path;
+		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(filename.extension()), query);
+		_cgi.tokenizePath();
+		_cgi.execute("POST", _cgiBuffer);
+		_rawBody.clear();
+		reset();
+		return;
 	
+	}
+	_rawBody.clear();
 	sendErrorResponse(405);// wrong Code
 }
 

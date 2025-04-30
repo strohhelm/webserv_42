@@ -4,9 +4,9 @@ void HttpRequest::postRespond()
 {
 	// if (_state._uploadFile.is_open())
 	// 	_state._uploadFile.close();
-	std::string html_content = readFileContent("www/upload/upload.html");
-	sendRedirectResponse(204, "/" );
+	// std::string html_content = readFileContent("www/upload/upload.html");
 	reset();
+	sendRedirectResponse(204, "/" );
 }
 
 void HttpRequest::checkFilename(std::filesystem::path filePath)
@@ -42,7 +42,7 @@ int HttpRequest::dirSetup()
 	if (!std::filesystem::exists(_uploadDir / _path) && !std::filesystem::is_directory(_uploadDir / _path))
 		std::filesystem::create_directory(_uploadDir / _path);
 	return(1);
-}	
+}
 
 int HttpRequest::extractInfo()
 {

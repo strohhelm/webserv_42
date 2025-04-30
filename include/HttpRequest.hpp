@@ -83,9 +83,6 @@ struct RequestState
 	std::string		_closeBoundary;
 	std::string		_downloadFileName;
 	std::ifstream	_downloadFile;
-
-
-	
 };
 
 class HttpRequest
@@ -99,6 +96,7 @@ class HttpRequest
 		std::unordered_map<std::string, std::string> _body;
 		std::string _httpResponse;
 		CGI	_cgi;
+		std::string _cgiBuffer;
 		//POST
 		std::string path;
 		// std::string body;
@@ -109,7 +107,7 @@ class HttpRequest
 		std::string _fdPath;
 		std::filesystem::path _path;
 
-	bool _done = false;
+		bool _done = false;
 	
 	
 	
