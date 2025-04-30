@@ -1,43 +1,50 @@
+#!/usr/bin/php-cgi
 <?php
+// Read raw POST data
+$raw_body = file_get_contents("php://stdin");
+
+// Detect content type
+$content_type = $_SERVER['CONTENT_TYPE'] ?? 'unknown';
+$decoded = [];
+
+// Decode based on content type
+if (strpos($content_type, 'application/x-www-form-urlencoded') !== false) {
+    parse_str($raw_body, $decoded);
+} elseif (strpos($content_type, 'application/json') !== false) {
+    $decoded = json_decode($raw_body, true);
+}
+
 // Required CGI header
 echo "Content-Type: text/html\n\n";
 
-// Start HTML
+// Start HTML output
 echo "<!DOCTYPE html>";
-echo "<html><head><title>PHP CGI Test</title></head><body>";
-echo "<h1>Hello from PHP-CGI!</h1>";
+echo "<html><head><title>POST CGI Test</title></head><body>";
+echo "<h1>POST CGI Test (PHP)</h1>";
 
-// Show current server time
-echo "<p><strong>Server Time:</strong> " . date("Y-m-d H:i:s") . "</p>";
+// Request Info
+echo "<h2>Request Info</h2>";
+echo "<ul>";
+echo "<li><strong>Request Method:</strong> " . htmlspecialchars($_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN') . "</li>";
+echo "<li><strong>Content Type:</strong> " . htmlspecialchars($content_type) . "</li>";
+echo "<li><strong>Content Length:</strong> " . htmlspecialchars($_SERVER['CONTENT_LENGTH'] ?? 'UNKNOWN') . "</li>";
+echo "</ul>";
 
-// Show GET parameters (if any)
-echo "<h2>GET Parameters</h2>";
-if (!empty($_GET)) {
+// Raw POST Body
+echo "<h2>Raw POST Body</h2>";
+echo "<pre>" . htmlspecialchars($raw_body) . "</pre>";
+
+// Decoded Parameters
+echo "<h2>Decoded Parameters</h2>";
+if (!empty($decoded) && is_array($decoded)) {
     echo "<ul>";
-    foreach ($_GET as $key => $value) {
-        echo "<li><strong>$key:</strong> $value</li>";
+    foreach ($decoded as $key => $value) {
+        echo "<li><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "</li>";
     }
     echo "</ul>";
 } else {
-    echo "<p>No GET parameters.</p>";
+    echo "<p>No decodable parameters found or unsupported format.</p>";
 }
-
-// Show some environment details
-echo "<h2>Server Info (from \$_SERVER)</h2>";
-echo "<ul>";
-echo "<li><strong>REQUEST_METHOD:</strong> " . $_SERVER['REQUEST_METHOD'] . "</li>";
-echo "<li><strong>SCRIPT_FILENAME:</strong> " . $_SERVER['SCRIPT_FILENAME'] . "</li>";
-echo "<li><strong>SERVER_PROTOCOL:</strong> " . $_SERVER['SERVER_PROTOCOL'] . "</li>";
-echo "<li><strong>GATEWAY_INTERFACE:</strong> " . $_SERVER['GATEWAY_INTERFACE'] . "</li>";
-echo "</ul>";
-
-// Dump all env variables (for debugging)
-echo "<h2>Environment Dump</h2>";
-echo "<pre>";
-print_r($_SERVER);
-echo "</pre>";
-
-
 
 // End HTML
 echo "</body></html>";

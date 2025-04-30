@@ -53,7 +53,6 @@ void HttpRequest::handlePost(void)
 	{
 		extractRawBody();
 		_cgiBuffer += _rawBody;
-		std::cout << _cgiBuffer << std::endl;
 		if (_cgiBuffer.size() == _state._contentLength)
 			_state._uploadComplete = true;
 		else
@@ -72,12 +71,9 @@ void HttpRequest::handlePost(void)
 		_cgi.setCgiParameter(_client_fd, (*_config), path, (*_route).getCgiPath(filename.extension()), query);
 		_cgi.tokenizePath();
 		_cgi.execute("POST", _cgiBuffer);
-		_rawBody.clear();
 		reset();
 		return;
-	
 	}
-	_rawBody.clear();
 	sendErrorResponse(405);// wrong Code
 }
 
