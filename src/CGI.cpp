@@ -182,6 +182,7 @@ std::string CGI::readCgiOutput(void)
 void	CGI::sendPostDataToChild(std::string method, std::string rawBody)
 {
 	// Send POST data if any -> neeeds to be tested!?!?!?!?!
+	// std::cout << rawBody << std::endl;
 	if (method == "POST" && !rawBody.empty())
 	{
 		write(_parent[WRITE_FD], rawBody.c_str(), rawBody.size()); //check returnvalue?!?!?
