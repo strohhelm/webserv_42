@@ -26,8 +26,8 @@ void HttpRequest::sendErrorResponse(int statusCode)
 	response = buildResponseHeader(statusCode,  content.length(), contentType);
 	// std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 	response += content;
-	size_t bytesToSend = response.length();
-	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
+	int bytesToSend = response.length();
+	int bytesSent = send(_client_fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
 	if (bytesToSend != bytesSent)
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
 	_state._errorOcurred = statusCode;
@@ -44,8 +44,8 @@ void HttpRequest::sendResponse(int statusCode, const std::string& message)
 		response = buildDownloadHeader(statusCode,  message.length(), _state._downloadFileName);
 	if (debug)std::cout<<ORANGE<<"Send Response Headers: "<<RESET<<std::endl<<response<<std::endl;
 	response += message;
-	size_t bytesToSend = response.length();
-	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
+	int bytesToSend = response.length();
+	int bytesSent = send(_client_fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
 	if (bytesToSend != bytesSent)
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
 }
@@ -58,8 +58,8 @@ void HttpRequest::sendRedirectResponse(int statusCode, const std::string& messag
 	response += "\r\n";
 	response += "Location: " + message;
 	response += "\r\n\r\n";
-	size_t bytesToSend = response.length();
-	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0);
+	int bytesToSend = response.length();
+	int bytesSent = send(_client_fd, response.c_str(), response.size(), 0);
 	if (bytesToSend != bytesSent)
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
 }
