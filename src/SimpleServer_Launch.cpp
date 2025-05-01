@@ -124,8 +124,8 @@ void SimpleServer::handlePolls(int pollCount)
 		{
 			if(isServer)
 				acceptNewConnection(fdIndex);
-			else if (!isServer)
-				readDataFromClient(client_fd);
+			else if (!isServer && readDataFromClient(client_fd))
+				continue;
 		}
 		if (!isServer)
 		{try {
@@ -192,7 +192,7 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 }
 
 
-void SimpleServer::readDataFromClient(int client_fd)
+bool SimpleServer::readDataFromClient(int client_fd)
 {
 	try{
 	HttpRequest& client = _clients.at(client_fd); //reason for try{} // reference to current client
@@ -209,22 +209,23 @@ void SimpleServer::readDataFromClient(int client_fd)
 		// Handle error case (recv() failed)
 		std::cerr << RED << "Error receiving data from client: " << strerror(errno) << RESET << std::endl; //ERNO!?!?!?!??!?
 		removeClient(client_fd);  // Remove client on error
-		return ;
+		return 0;
 	}
 	if (bytesReceived == 0)
 	{
 		// Connection was closed by the client
 		std::cout << YELLOW << "CLIENT " << MAGENTA<< client_fd <<YELLOW<< " closed the connection."<<RESET << std::endl;
 		removeClient(client_fd);
-		return ;
+		return 0;
 	}
 	if (client._state._isNewRequest)
 		client._state._isNewRequest = false;
 	client._state._buffer.append(std::string(buffer, bytesReceived));
 	client._state._lastActivity = std::chrono::steady_clock::now();
-	return ;
+	return 1;
 	}
-	catch(std::exception &e ){std::cout<<BG_BRIGHT_RED<<"ERROR IN READ DATA FUNCTION!: "<<e.what()<<RESET<<std::endl;}
+	catch(std::exception &e ){std::cout<<BG_BRIGHT_RED<<"ERROR IN READ DATA FUNCTION!: "<<e.what()<<RESET<<std::endl;
+	return 0;}
 }
 
 

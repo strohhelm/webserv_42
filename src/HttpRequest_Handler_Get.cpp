@@ -103,8 +103,8 @@ void	HttpRequest::continueDownload()
 		if (debug)std::cout <<response<<std::endl;
 		
 		
-		size_t bytesSent = send(_client_fd, response.c_str(), response.length(), 0);
-		if (bytesSent == -1 || bytesSent == 0 || bytesSent != response.length())
+		long bytesSent = send(_client_fd, response.c_str(), response.length(), 0);
+		if (bytesSent == -1 || bytesSent == 0 || bytesSent != (long)response.length())
 		{	
 			std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
 			_state._errorOcurred = 500;
@@ -115,14 +115,14 @@ void	HttpRequest::continueDownload()
 	if (init == 1)
 	{
 		_state._downloadFile.read(responseBuffer, MAX_SEND_BYTES);
-		size_t bytesRead = _state._downloadFile.gcount();
+		long bytesRead = _state._downloadFile.gcount();
 		if (_state._downloadFile.bad())
 		{
 			if (debug)std::cout << BG_BRIGHT_RED<<"File reading error" << RESET<<std::endl;
 			_state._errorOcurred = READ_ERROR;
 			return;
 		}
-		size_t bytesSent = send(_client_fd, responseBuffer, bytesRead, 0);
+		long bytesSent = send(_client_fd, responseBuffer, bytesRead, 0);
 		totalSent += bytesRead;
 		if (bytesSent == -1 || bytesSent == 0 || bytesSent != bytesRead)
 		{

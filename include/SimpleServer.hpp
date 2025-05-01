@@ -74,7 +74,7 @@ class SimpleServer
 		void	acceptNewConnection(const int&	fdIndex);
 		
 
-		void	readDataFromClient(int	client_fd);
+		bool	readDataFromClient(int	client_fd);
 		void	removeClient(int		client_fd);
 
 		void	closeAllSockets(void);
