@@ -57,17 +57,17 @@ struct RequestState
 	size_t			_contentLength			= 0;
 	bool			_requestlineRecieved	= false;
 	bool			_requestlineParsed		= false;
-
+	
 	bool			_headersRecieved		= false;
 	bool			_headersParsed			= false;
-
+	
 	bool			_uploadEvaluated		= false;
 	bool			_uploadModeEvaluated	= false;
 	bool			_uploadMode				= false;
 	int				_isCgiPost				= 0;
 	bool			_bodyRecieved			= false;
 	bool			_uploadComplete			= false;
-
+	
 	bool			_downloadEvaluated		= false;
 	bool			_downloadMode			= false;
 	bool			_downloadComplete		= false;
@@ -76,7 +76,7 @@ struct RequestState
 	bool			_readyToHandle			= false;
 	
 	int				_errorOcurred			= 0;
-
+	
 	std::string		_tempUploadFilePath;
 	std::ofstream	_uploadFile;
 	std::string 	_filename;
@@ -84,6 +84,7 @@ struct RequestState
 	std::string		_closeBoundary;
 	std::string		_downloadFileName;
 	std::ifstream	_downloadFile;
+	std::chrono::steady_clock::time_point _lastActivity;
 };
 
 class HttpRequest
@@ -112,17 +113,15 @@ class HttpRequest
 	
 	
 		public:
-		int				_server_fd;
 		int				_client_fd;
 		routeConfig		*_route;
 		ServerConfig	*_config;
 		RequestState	_state;
 
 
+		// HttpRequest(void);
+		HttpRequest(int client_fd, ServerConfig* config);
 
-		HttpRequest(void);
-		// int		parseHttpRequest(void);
-		// int		clearOldRequest(void);
 		size_t	extractContentLength(void);
 		int		extractAndTokenizeHeader(void);
 		int		extractRawRequestLine(void);

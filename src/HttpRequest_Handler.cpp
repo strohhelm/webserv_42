@@ -117,6 +117,7 @@ void HttpRequest::reset()
 	_state._downloadSize			= 0;
 	_state._websitefile			= true;
 	_state._readyToHandle			= false;
+
 	if (_state._uploadFile.is_open())
 		_state._uploadFile.close();
 	_state._uploadFile.clear();
@@ -147,14 +148,19 @@ void HttpRequest::reset()
 	if (debug)std::cout<<ORANGE<<"State reset"<<RESET<<std::endl;
 }
 
-HttpRequest::HttpRequest()
+HttpRequest::HttpRequest(int client_fd, ServerConfig* config)
 {
-	_state._buffer.clear();
-	_rawRequestLine.clear();
-	_headers.clear();
-	_body.clear();
-	_httpResponse.clear();
-	_requestLine._path.clear();
+	_client_fd = client_fd;
+	_config = config;
+	reset();
 	_requestLine._method = HttpMethod::UNKNOWN;
-	_requestLine._version.clear();
+	_state._lastActivity = std::chrono::steady_clock::now();
 }
+
+// HttpRequest::HttpRequest(void)
+// {
+// 	std::cout
+// 	_requestLine._method = HttpMethod::UNKNOWN;
+// 	_state._lastActivity = std::chrono::steady_clock::now();
+// 	_state._errorOcurred = 2;
+// }

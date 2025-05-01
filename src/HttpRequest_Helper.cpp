@@ -131,12 +131,11 @@ std::string HttpRequest::buildFullPath(void)
 	{
 		if (debug)std::cout << "ends with /" << std::endl;
 		// are there a default files and does one of them exist?
+
 		for(auto it : (*_route)._defaultFile)
 		{
-			if (debug)std::cout << it << std::endl;
-		}
-		for(auto it : (*_route)._defaultFile)
-		{
+			
+			if (debug)std::cout <<ORANGE<<"checking default file: "<< it << std::endl;
 			std::string temp = fullPath + it;
 			if(access(temp.c_str(), F_OK) == 0)// read access?
 			{

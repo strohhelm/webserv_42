@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CGI Server Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-section {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 500px;
+        }
+        .form-section h2 {
+            margin-top: 0;
+            color: #444;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<h1>CGI Server Functionality Test</h1>
+
+<div class="form-section">
+    <h2>GET from get.py</h2>
+    <form action="/cgi/get.py" method="get">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Language:</label>
+        <input type="text" name="language">
+        <input type="submit" value="Submit via GET">
+    </form>
+</div>
+
+<div class="form-section">
+    <h2>GET from get.php</h2>
+    <form action="/cgi/get.php" method="get">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Language:</label>
+        <input type="text" name="language">
+        <input type="submit" value="Submit via GET">
+    </form>
+</div>
+
+<div class="form-section">
+    <h2>GET from get.php (No Parameters)</h2>
+    <form action="/cgi/get.php" method="get">
+        <input type="submit" value="Submit via GET">
+    </form>
+</div>
+
+<div class="form-section">
+    <h2>POST from post.php</h2>
+    <form action="/cgi/post.php" method="post">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Language:</label>
+        <input type="text" name="lang">
+        <input type="submit" value="Submit via POST">
+    </form>
+</div>
+
+<div class="form-section">
+    <h2>File Upload (POST)</h2>
+    <form action="/upload/" method="post" enctype="multipart/form-data">
+        <label>File:</label>
+        <input type="file" name="file">
+        <input type="submit" value="Submit via POST">
+    </form>
+</div>
+
+<div class="form-section">
+    <h2>Download File</h2>
+    <form action="/wbserv.pdf" method="get">
+        <input type="submit" value="Download webserv.pdf">
+    </form>
+</div>
+
+<div class="form-section">
+    <h2>POST from post.py</h2>
+    <form action="/cgi/post.py" method="post">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Email:</label>
+        <input type="text" name="email">
+        <input type="submit" value="Submit via POST to post.py">
+    </form>
+</div>
+
+<div class="footer">
+    Wowo now some cool shiit
+</div>
+
+</body>
+</html>

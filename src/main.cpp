@@ -42,8 +42,13 @@ void	myLog(std::string type, std::string message)
 		access_file<<ctime(&tt)<<message<<"\n";
 	else if (type == ERROR)
 		error_file<<ctime(&tt)<<message<<"\n";
-	else if (type == CLOSE)
-		throw std::runtime_error("Wrong Use of Function myLog!");
+	else if (type == CLOSE && init)
+	{
+		error_file<<"SESSION END -- " << ctime(&tt);
+		access_file<<"SESSION END -- " << ctime(&tt);
+		error_file.close();
+		access_file.close();
+	}
 }
 
 std::string getFilename(int argc, char**argv)
@@ -70,7 +75,7 @@ std::string getFilename(int argc, char**argv)
 			debug = true;
 			filename = argv[2];
 		}
-		else if (std::string(argv[1]) == "-d")
+		else if (std::string(argv[2]) == "-d")
 		{
 			debug = true;
 			filename = std::string(argv[1]);
@@ -95,6 +100,7 @@ int main(int argc, char **argv)
 		if (debug)std::cout<<BG_BRIGHT_MAGENTA<<"DEBUG MODE"<<RESET<<std::endl;
 		myLog(config._error_log, config._access_log);
 		SimpleServer server(AF_INET, SOCK_STREAM, 0, INADDR_ANY, config);
+		myLog(CLOSE, "");
 	}
 	catch(const std::exception& e)
 	{

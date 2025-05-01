@@ -3,16 +3,17 @@ handleDelete response code
 
 cgi ✅
 dir listing ✅
-errno output removen -> Error receiving data from client
+errno output removen -> Error receiving data from client✅
 
 default error files, checking in sendErrorResponse if there is  a default file in this server, if so send it instead of response.✅
 
 
 are all settings considered in the corresponding functions?
 
-return value check from send and recieve
+return value check from send and recieve -> dynamic send 
+return value check read and write and cgi
 
-Headers check -> some headers have to be there and cant be sent twice also-> 400 HOST check!
+Headers check -> some headers have to be there and cant be sent twice also-> 400 HOST check!✅
 
 understand the subject!✅
 
@@ -51,11 +52,28 @@ multiple root dir in one config works and takes last one and so does  indexes as
 
 defaultLocation when no location is set? << ✅ inlcuded but up to discussion
 		location / {
-			methods GET POST DELETE;
 		}
 
 
-more than on hhtp context makes error ✅
+more than on http context makes error ✅
 
 websitefile state jank fix
+
+
+
+
+
+if nothing else to do: 
+POLLERR on server socket:
+Means an I/O error occurred (e.g., an unexpected failure at the OS level).
+
+The actual error details require getsockopt(fd, SOL_SOCKET, SO_ERROR, ...) to inspect.
+
+Very rare, and typically indicates something serious like:
+
+Socket binding issues
+
+Kernel-level network problems
+
+Action: Log the issue; probably treat it as fatal and recreate the listening socket.
 

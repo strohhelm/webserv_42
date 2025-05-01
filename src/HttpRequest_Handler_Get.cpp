@@ -41,7 +41,7 @@ void	HttpRequest::evaluateFiletype(std::string& filename)
 	// std::vector<std::string> endings = {".php", ".html", ".ico"};
 	// if (std::find(endings.begin(), endings.end(), fileend)!= endings.end())
 		// _state._websitefile = true;
-	 if (fileend == ".pdf" || fileend == ".txt" || fileend == "" )
+	 if (fileend == ".pdf" || fileend == ".txt" || fileend.empty() )
 	 	_state._websitefile = false;
 }
 

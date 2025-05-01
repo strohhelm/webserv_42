@@ -33,9 +33,19 @@ int HttpRequest::evaluateUpload(void)
 	if (!_state._uploadEvaluated)
 	{
 		_state._isCgiPost = checkCgi(_requestLine._path);
+		if (_state._isCgiPost < 0)
+		{
+			sendErrorResponse(500);
+			return(0);
+		}
+		if (_state._isCgiPost > 0 && _state._contentLength > MAX_IN_MEMORY_BODY_SIZE)
+		{
+			sendErrorResponse(413);
+			return(0);
+		}
 		if ((*_route)._uploadPath.empty() && !_state._isCgiPost)
 		{
-			sendErrorResponse(401);// wrong Code
+			sendErrorResponse(401);
 			return(0);
 		}
 		if (!checkStorage())
@@ -45,11 +55,6 @@ int HttpRequest::evaluateUpload(void)
 		}
 		else if (!(*_route)._uploadPath.empty())
 			_uploadDir = (*_route)._uploadPath;
-		if (_state._isCgiPost < 0)
-		{
-			sendErrorResponse(500);
-			return(0);
-		}
 		if (_state._contentLength > (*_config)._maxBody)
 		{
 			sendErrorResponse(413);

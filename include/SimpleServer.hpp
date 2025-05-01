@@ -38,7 +38,6 @@ class SimpleServer
 		MainConfig&								_config;
 
 		std::vector<struct pollfd>				_poll_fds;
-		// std::unordered_map<int, std::string>	_recvBuffer;
 		
 		std::map<int, HttpRequest>				_clients;
 
@@ -46,9 +45,8 @@ class SimpleServer
 
 		std::unordered_set<int>					_serverSocket_fds;
 
-		std::unordered_map<int, int>			_listeningServerFromClient;
 		
-		std::unordered_map<int, std::chrono::steady_clock::time_point> _clientLastActivityTimes;
+		// std::unordered_map<int, std::chrono::steady_clock::time_point> _clientLastActivityTimes;
 
 
 	public:
@@ -70,15 +68,14 @@ class SimpleServer
 		int		initPoll(void);
 		void	handlePolls(int pollCount);
 
-		void	checkState();
 		int		isDataToRead(const int&			fdIndex);
 		int		isDataToWrite(const int&		fdIndex);
 		bool	isNewConnection(const int&		fdIndex);
 		void	acceptNewConnection(const int&	fdIndex);
 		
 
-		int				readDataFromClient(int	fdIndex);
-		void			removeClient(int		fdIndex);
+		void	readDataFromClient(int	client_fd);
+		void	removeClient(int		client_fd);
 
 		void	closeAllSockets(void);
 
