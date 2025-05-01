@@ -99,7 +99,12 @@ int main(int argc, char **argv)
 		MainConfig	config(filename);
 		if (debug)std::cout<<BG_BRIGHT_MAGENTA<<"DEBUG MODE"<<RESET<<std::endl;
 		myLog(config._error_log, config._access_log);
-		SimpleServer server(AF_INET, SOCK_STREAM, 0, INADDR_ANY, config);
+		while (1)
+		{
+			SimpleServer server(AF_INET, SOCK_STREAM, 0, INADDR_ANY, config);
+			if (!server._fatalError)
+				break;
+		}
 		myLog(CLOSE, "");
 	}
 	catch(const std::exception& e)

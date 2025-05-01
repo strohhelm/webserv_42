@@ -45,11 +45,11 @@ class SimpleServer
 
 		std::unordered_set<int>					_serverSocket_fds;
 
-		
 		// std::unordered_map<int, std::chrono::steady_clock::time_point> _clientLastActivityTimes;
-
-
-	public:
+		
+		
+		public:
+		bool									_fatalError = false;
 		SimpleServer(int domain, int type, int protocol, u_long networkInterface, MainConfig& config);
 		~SimpleServer();
 		
@@ -86,10 +86,7 @@ class SimpleServer
 			public:
 				const char* what() const noexcept override;
 		};
-
-		void	closeConnection(int			fdIndex);
-		bool	shouldCloseConnection(int	fdIndex);
-		void	resetIdleTimeout(int		fdIndex);
+		int		checkPollError(int fdIndex, bool isServer);
 
 		void	checkIdleConnections(void);
 

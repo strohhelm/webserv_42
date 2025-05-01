@@ -35,6 +35,8 @@ void SimpleServer::launch(void)
 			continue; 
 		}
 		handlePolls(pollcount);
+		if (_fatalError)
+			break ;
 		checkIdleConnections();
 	}
 
@@ -64,6 +66,39 @@ int SimpleServer::initPoll(void)
 	return pollCount;
 }
 
+int	SimpleServer::checkPollError(int fdIndex, bool isServer)
+{
+	try{
+		auto& current = _poll_fds.at(fdIndex);
+		if (!isServer)
+		{
+			HttpRequest &client = _clients.at(current.fd);
+			if (current.revents &( POLLHUP | POLLERR))
+				removeClient(client._client_fd);
+			else if (current.revents & POLLNVAL)
+			{
+				std::cout<<BG_BRIGHT_RED<<"CLIENT ERROR:"<<RESET<<RED<<" POLLNVAL on clientfd "<<MAGENTA<<client._client_fd<<RESET<<std::endl;
+				_poll_fds.erase(_poll_fds.begin() + fdIndex);
+				if(_clients.count(current.fd))
+					_clients.erase(current.fd);
+			}
+			return 1;
+		}
+		else if (isServer)
+		{
+			if (current.revents & (POLLHUP | POLLERR | POLLNVAL))
+			{
+				std::cout<<BG_BRIGHT_RED<<"FATAL ERROR:"<<RESET<<RED<<"serverfd "<<MAGENTA<<_poll_fds[fdIndex].fd<<RESET<<std::endl;
+				return 2;
+			}
+		}
+		return 0;
+	}catch(std::exception& e){
+		std::cout<<RED<<"lol check error poll fail! "<<e.what()<<RESET<<std::endl;
+		return -1;
+	}
+}
+
 
 void SimpleServer::handlePolls(int pollCount)
 {
@@ -74,8 +109,12 @@ void SimpleServer::handlePolls(int pollCount)
 	{
 		client_fd = _poll_fds[fdIndex].fd;
 		bool isServer = (_serverSocket_fds.count(client_fd));
-		
-		
+		int x = checkPollError(fdIndex, isServer);
+		if (x == 2)
+		{
+			_fatalError = true;
+			return ;
+		}
 		if (isDataToRead(fdIndex))
 		{
 			if(isServer)
