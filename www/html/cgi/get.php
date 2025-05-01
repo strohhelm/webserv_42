@@ -15,10 +15,10 @@ if (strpos($content_type, 'application/x-www-form-urlencoded') !== false) {
 }
 
 
-// while(1)
-// {
-//     sleep(1);
-// }
+while(1)
+{
+    sleep(1);
+}
 // Required CGI header
 echo "Content-Type: text/html\n\n";
 // Start HTML output
