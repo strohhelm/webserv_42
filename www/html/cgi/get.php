@@ -14,9 +14,13 @@ if (strpos($content_type, 'application/x-www-form-urlencoded') !== false) {
     $decoded = json_decode($raw_body, true);
 }
 
+
+while(1)
+{
+    sleep(1);
+}
 // Required CGI header
 echo "Content-Type: text/html\n\n";
-
 // Start HTML output
 echo "<!DOCTYPE html>";
 echo "<html><head><title>POST CGI Test</title></head><body>";

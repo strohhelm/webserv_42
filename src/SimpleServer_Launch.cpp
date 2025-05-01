@@ -80,8 +80,10 @@ int	SimpleServer::checkPollError(int fdIndex, bool isServer)
 				std::cout<<BG_BRIGHT_RED<<"CLIENT ERROR:"<<RESET<<RED<<" POLLNVAL on clientfd "<<MAGENTA<<client._client_fd<<RESET<<std::endl;
 				_poll_fds.erase(_poll_fds.begin() + fdIndex);
 				if(_clients.count(current.fd))
+				{
 					_clients.erase(current.fd);
 					return 1;
+				}
 			}
 		}
 		else if (isServer)

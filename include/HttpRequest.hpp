@@ -13,6 +13,7 @@
 #include <filesystem>
 #include "Colors.hpp"
 #include <sys/statvfs.h>
+#include <limits.h>
 
 #include "CGI.hpp"
 // #include "ServerConfig.hpp"
