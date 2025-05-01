@@ -1,8 +1,10 @@
 
 #include <arpa/inet.h> // send()
-#include "../include/ServerConfig.hpp"
+// #include "../include/ServerConfig.hpp"
+#include "../include/SimpleServer.hpp"
 #include <cerrno> // needs to be removed when done only for debugging
 #include <cstring> // needs to be removed when done only for debugging
+#include <fcntl.h>
 
 std::string HttpRequest::extractQueryString(std::string& request)
 {
@@ -69,11 +71,14 @@ void CGI::closePipesFromFd(std::array<int, 2>& fd)
 
 void	CGI::closeAllPipes(void)
 {
-	// check before closing default -1 to avoid error
-	close(_parent[READ_FD]);
-	close(_parent[WRITE_FD]);
-	close(_child[READ_FD]);
-	close(_child[WRITE_FD]);
+	if(_parent[READ_FD] != -1)
+		close(_parent[READ_FD]);
+	if(_parent[WRITE_FD] != -1)
+		close(_parent[WRITE_FD]);
+	if(_child[READ_FD] != -1)
+		close(_child[READ_FD]);
+	if(_child[WRITE_FD] != -1)
+		close(_child[WRITE_FD]);
 }
 
 void	CGI::setArgv(void)
@@ -148,7 +153,7 @@ void CGI::buildEnvStrings(std::string method, std::string rawBody)
 }
 
 
-void CGI::handleChildProcess(std::string method, std::string rawBody)
+int CGI::handleChildProcess(std::string method, std::string rawBody)
 {
 	setPipeToRead(_parent[READ_FD]); // return value of dup2 check
 	setPipeToWrite(_child[WRITE_FD]);
@@ -163,44 +168,83 @@ void CGI::handleChildProcess(std::string method, std::string rawBody)
 	execve(_phpCgiPathStr.c_str(), _argv, _envp.data());
 
 	std::cerr << "execve failed: " << std::endl;
-	exit(1); //?!?!?!?!?!?!?!
+	return 1;
 }
 
-std::string CGI::readCgiOutput(void)
+std::string CGI::readCgiOutput(int& error)
 {
 	std::string cgiOutput;
 	char buffer[1024];
-	ssize_t bytesRead;
+	ssize_t bytes;
+	
+	fcntl(_child[READ_FD], F_SETFL, O_NONBLOCK);
+	struct pollfd reader = {_child[READ_FD], POLLIN, 0};
 
-	while ((bytesRead = read(_child[READ_FD], buffer, sizeof(buffer))) > 0) //check returnvalue?!?!?
+	int ret = poll(&reader, 1, 2000);
+	if(ret == -1)
 	{
-		cgiOutput.append(buffer, bytesRead);
+		error = -1;
+		return "";
+	}
+	if(ret == 0)
+	{
+		error = 0;
+		return "";
+	}
+
+
+	while ((bytes = read(_child[READ_FD], buffer, sizeof(buffer))) > 0)
+	{
+		if(bytes == -1)
+		{
+			error = -1;
+			return "";
+		}
+		if(bytes == 0)
+		{
+			error = 0;
+			return "";
+		}
+		cgiOutput.append(buffer, bytes);
 	}
 	return cgiOutput;
 }
 
-void	CGI::sendPostDataToChild(std::string method, std::string rawBody)
+void	CGI::sendPostDataToChild(std::string method, std::string rawBody, int& error)
 {
-	// Send POST data if any -> neeeds to be tested!?!?!?!?!
-	// std::cout << rawBody << std::endl;
+	ssize_t bytes;
 	if (method == "POST" && !rawBody.empty())
 	{
-		write(_parent[WRITE_FD], rawBody.c_str(), rawBody.size()); //check returnvalue?!?!?
+		bytes = write(_parent[WRITE_FD], rawBody.c_str(), rawBody.size());
+		if(bytes == -1)
+		{
+			error = -1;
+			return ;
+		}
+		if(bytes == 0)
+		{
+			error = 0;
+			return ;
+		}
 	}
-	// done writing
 }
 
 
 
-void CGI::handleParentProcess(std::string method, std::string rawBody)
+int CGI::handleParentProcess(std::string method, std::string rawBody)
 {
+	int error = 1;
 	close(_parent[READ_FD]); // Parent doesn't need to read from this
 	close(_child[WRITE_FD]); // Parent doesn't need to write to this
 	
-	sendPostDataToChild(method, rawBody);
+	sendPostDataToChild(method, rawBody, error);
+	if(error == -1 || error == 0)
+		return 1;
 	close(_parent[WRITE_FD]);
-
-	std::string cgiOutput = readCgiOutput();
+		
+	std::string cgiOutput = readCgiOutput(error);
+	if(error == -1 || error == 0)
+		return 1;
 	close(_child[READ_FD]);
 
 	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
@@ -221,10 +265,13 @@ void CGI::handleParentProcess(std::string method, std::string rawBody)
 	/**********************************************************/
 	if (debug)std::cout << "CGI raw output:\n" << cgiOutput << std::endl;
 
-	size_t bytestosend = httpResponse.length();
-	size_t bytessent = send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0); //todo 
+	int bytestosend = httpResponse.length();
+	int bytessent = send(_client_fd, httpResponse.c_str(), httpResponse.size(), 0); //todo 
 	if (bytessent != bytestosend)
 		std::cout<<BG_BRIGHT_RED<<"SEND FAILED in CGI parentprocess"<<RESET<<std::endl;
+	if(bytessent == -1 || bytessent == 0)
+		return 1;
+	return 0;
 }
 
 // std::array<int, 3> a = {1, 2, 3};
@@ -247,11 +294,19 @@ int CGI::execute(std::string method, std::string rawBody)
 	}
 	if(pid == 0)
 	{
-		handleChildProcess(method, rawBody);
+		if(handleChildProcess(method, rawBody))
+		{
+			closeAllPipes();
+			return 500;
+		}
 	}
 	else
 	{
-		handleParentProcess(method, rawBody);
+		if(handleParentProcess(method, rawBody))
+		{
+			closeAllPipes();
+			return 500;
+		}
 	}
 	closeAllPipes();
 	return 0;

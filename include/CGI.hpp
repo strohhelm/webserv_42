@@ -44,8 +44,8 @@ class CGI
 		void	closePipesFromFd(std::array<int, 2>& fd);
 		void	closeAllPipes(void);
 		int		createPipes(void);
-		void	handleChildProcess(std::string method, std::string rawBody);
-		void	handleParentProcess(std::string method, std::string rawBody);
+		int	handleChildProcess(std::string method, std::string rawBody);
+		int	handleParentProcess(std::string method, std::string rawBody);
 		int	execute(std::string method, std::string rawBody);
 
 		void	setPipeToRead(int fd);
@@ -61,8 +61,8 @@ class CGI
 		void buildEnvStrings(std::string method, std::string rawBody);
 		void convertEnvStringsToChar(void);
 
-		void		sendPostDataToChild(std::string method, std::string rawBody);
-		std::string	readCgiOutput(void);
+		void		sendPostDataToChild(std::string method, std::string rawBody, int& error);
+		std::string	readCgiOutput(int& error);
 
 
 };

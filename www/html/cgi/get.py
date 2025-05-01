@@ -14,6 +14,8 @@ form = cgi.FieldStorage()
 name = form.getfirst('name', '').strip()
 language = form.getfirst('language', '').strip()
 
+
+
 # Start HTML output
 print("\r\n")  # Very important: empty line after headers
 print("<!DOCTYPE html>")

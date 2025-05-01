@@ -93,7 +93,7 @@ void HttpRequest::cgiPost(void)
 		_cgi.tokenizePath();
 		int check = _cgi.execute("POST", _cgiBuffer);
 		if (check > 0)
-		sendErrorResponse(check);
+			sendErrorResponse(check);
 		reset();
 		return;
 	}

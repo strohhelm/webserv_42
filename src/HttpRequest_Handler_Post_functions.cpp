@@ -146,7 +146,7 @@ int HttpRequest::writeContent()
 			std::ofstream output(_uploadDir / _path / _state._filename, std::ios::binary);
 			if (output.is_open())
 			{
-				output.write(_fileContent.c_str(), _fileContent.size());
+				output << _fileContent;
 				output.close();
 				postRespond();
 			}

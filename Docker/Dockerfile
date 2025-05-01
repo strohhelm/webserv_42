@@ -16,6 +16,8 @@ RUN apt-get install -y \
 	php-cgi \
     siege
 
+RUN apt install python3-locust -y
+
 
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && zsh
 
