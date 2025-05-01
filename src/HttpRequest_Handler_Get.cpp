@@ -104,12 +104,11 @@ void	HttpRequest::continueDownload()
 		
 		
 		size_t bytesSent = send(_client_fd, response.c_str(), response.length(), 0);
-
-		if (bytesSent != response.length())
-		{
-			if (debug)std::cout << BG_BRIGHT_RED<<"Sending header error" << RESET<<std::endl;
-			_state._errorOcurred = SEND_ERROR;
-			return;
+		if (bytesSent == -1 || bytesSent == 0 || bytesSent != response.length())
+		{	
+			std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
+			_state._errorOcurred = 500;
+			return ;
 		}
 		init = 1;
 	}
@@ -125,7 +124,7 @@ void	HttpRequest::continueDownload()
 		}
 		size_t bytesSent = send(_client_fd, responseBuffer, bytesRead, 0);
 		totalSent += bytesRead;
-		if (bytesSent != bytesRead)
+		if (bytesSent == -1 || bytesSent == 0 || bytesSent != bytesRead)
 		{
 			if (debug)std::cout << BG_BRIGHT_RED<<"Sending body error" << RESET<<std::endl;
 			if (debug)std::cout << BG_BRIGHT_RED<<"BytesRead: "<<bytesRead<<" BytesSent: "<<bytesSent << RESET<<std::endl;

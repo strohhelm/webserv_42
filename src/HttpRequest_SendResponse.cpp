@@ -28,9 +28,11 @@ void HttpRequest::sendErrorResponse(int statusCode)
 	response += content;
 	size_t bytesToSend = response.length();
 	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
-	if (bytesToSend != bytesSent)
+	if (bytesSent == -1 || bytesSent == 0 || bytesToSend != bytesSent)
+	{	
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
-	_state._errorOcurred = statusCode;
+		_state._errorOcurred = 500;
+	}
 	reset();
 }
 
@@ -46,8 +48,11 @@ void HttpRequest::sendResponse(int statusCode, const std::string& message)
 	response += message;
 	size_t bytesToSend = response.length();
 	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
-	if (bytesToSend != bytesSent)
+	if (bytesSent == -1 || bytesSent == 0 || bytesToSend != bytesSent)
+	{	
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
+		_state._errorOcurred = 500;
+	}
 }
 
 void HttpRequest::sendRedirectResponse(int statusCode, const std::string& message)
@@ -60,8 +65,11 @@ void HttpRequest::sendRedirectResponse(int statusCode, const std::string& messag
 	response += "\r\n\r\n";
 	size_t bytesToSend = response.length();
 	size_t bytesSent = send(_client_fd, response.c_str(), response.size(), 0);
-	if (bytesToSend != bytesSent)
+	if (bytesSent == -1 || bytesSent == 0 || bytesToSend != bytesSent)
+	{	
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
+		_state._errorOcurred = 500;
+	}
 }
 
 std::string HttpRequest::buildResponseHeader(int statusCode, size_t size, std::string contentType)

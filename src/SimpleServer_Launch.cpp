@@ -74,15 +74,15 @@ int	SimpleServer::checkPollError(int fdIndex, bool isServer)
 		{
 			HttpRequest &client = _clients.at(current.fd);
 			if (current.revents &( POLLHUP | POLLERR))
-				removeClient(client._client_fd);
+				{removeClient(client._client_fd); return 1;}
 			else if (current.revents & POLLNVAL)
 			{
 				std::cout<<BG_BRIGHT_RED<<"CLIENT ERROR:"<<RESET<<RED<<" POLLNVAL on clientfd "<<MAGENTA<<client._client_fd<<RESET<<std::endl;
 				_poll_fds.erase(_poll_fds.begin() + fdIndex);
 				if(_clients.count(current.fd))
 					_clients.erase(current.fd);
+					return 1;
 			}
-			return 1;
 		}
 		else if (isServer)
 		{
@@ -102,11 +102,14 @@ int	SimpleServer::checkPollError(int fdIndex, bool isServer)
 
 void SimpleServer::handlePolls(int pollCount)
 {
-	int fdIndex = _poll_fds.size() - 1;
+	
 	int client_fd;
 	int check = 0;
-	while (pollCount && fdIndex >= 0)
+	for (int fdIndex = _poll_fds.size() - 1; pollCount > 0 && fdIndex >= 0; fdIndex--)
 	{
+		if (_poll_fds[fdIndex].revents == 0)
+			continue;
+		pollCount--;
 		client_fd = _poll_fds[fdIndex].fd;
 		bool isServer = (_serverSocket_fds.count(client_fd));
 		int x = checkPollError(fdIndex, isServer);
@@ -115,6 +118,8 @@ void SimpleServer::handlePolls(int pollCount)
 			_fatalError = true;
 			return ;
 		}
+		else if (x != 0)
+			continue;
 		if (isDataToRead(fdIndex))
 		{
 			if(isServer)
@@ -139,7 +144,6 @@ void SimpleServer::handlePolls(int pollCount)
 			{std::cout<<BG_BRIGHT_RED<<"Remove because: "<<client._state._errorOcurred<<RESET<<std::endl;removeClient(client_fd);}
 			}catch(...){}
 		}
-		fdIndex--;
 	}
 }
 
