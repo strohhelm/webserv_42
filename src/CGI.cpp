@@ -171,7 +171,6 @@ std::string CGI::readCgiOutput(void)
 	std::string cgiOutput;
 	char buffer[1024];
 	ssize_t bytesRead;
-
 	while ((bytesRead = read(_child[READ_FD], buffer, sizeof(buffer))) > 0) //check returnvalue?!?!?
 	{
 		cgiOutput.append(buffer, bytesRead);

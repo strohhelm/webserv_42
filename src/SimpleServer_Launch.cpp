@@ -187,8 +187,7 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 	// make new fd and add it with the read and write flags to the poll_fds container(vector)
 	struct pollfd client_poll_fd = {client_fd, POLLIN | POLLOUT, 0};
 	_poll_fds.push_back(client_poll_fd);
-	ServerConfig *config = &(_serverConfigs[server_fd]);
-	_clients.insert({client_fd, HttpRequest(client_fd, config)});
+	_clients.insert({client_fd, HttpRequest(client_fd, &(_serverConfigs[server_fd]))});
 }
 
 
@@ -257,7 +256,7 @@ int SimpleServer::isDataToWrite(const int& fdIndex)
 void SimpleServer::handler(int fdIndex)
 {
 	try{
-	int client_fd = _poll_fds[fdIndex].fd;
+	int client_fd = _poll_fds.at(fdIndex).fd;
 	HttpRequest &client = _clients.at(client_fd);
 	if (client._state._isValidRequest == 0)
 	{
@@ -266,11 +265,8 @@ void SimpleServer::handler(int fdIndex)
 		if (invalid != 0)
 		{
 			client._state._isValidRequest = -1;
-			int code = 404;
-			if (invalid < 0)
-			code = 400;
 			if (debug)std::cout << BG_BRIGHT_RED<<"invalid request " << RESET<<std::endl;
-			client.sendErrorResponse(code);
+			client.sendErrorResponse(invalid);
 			return;
 		}
 		if (debug)std::cout << ORANGE << "Request Valid" << RESET << std::endl;

@@ -20,6 +20,8 @@
 #include "./HttpRequest.hpp"
 #include "./Macros.hpp"
 #include <filesystem>
+#include <fcntl.h>
+#include <unistd.h>
 
 enum class HttpMethod;
 

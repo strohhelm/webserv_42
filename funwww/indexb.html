@@ -19,12 +19,12 @@
 
 /* ========== Light Theme Override ========== */
 body.light-mode {
-  --bg-color: #f2f2f2;
-  --text-color: #0d0d0d;
-  --accent-color: #0066ff;
-  --form-bg: rgba(255, 255, 255, 0.9);
-  --button-bg: #0d0d0d;
-  --button-text: #ffffff;
+  --bg-color: #ca7e7e;
+  --text-color: #ff006a;
+  --accent-color: #00ffe7;
+  --form-bg: rgba(197, 159, 159, 0.9);
+  --button-bg: #00ffe7;
+  --button-text: #ff006a;
   --input-bg: #e0e0e0;
 }
 
@@ -108,13 +108,16 @@ input[type="file"]::file-selector-button {
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
   margin-right: 10px;
   transition: background 0.2s ease;
 }
 
 input[type="file"]::file-selector-button:hover {
-  background-color: var(--accent-color);
-  color: white;
+	background: var(--accent-color);
+  box-shadow: 0 0 10px var(--text-color), 0 0 20px var(--text-color) inset;
+  transform: scale(1.05);
+
 }
 
 /* ======= Submit Button ======= */

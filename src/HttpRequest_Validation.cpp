@@ -3,7 +3,7 @@
 bool HttpRequest::validateHost(std::vector<std::string> &serverNames)
 {
 	std::string host = _headers["Host"];
-	host = host.substr(0, host.find(':'));
+	host = host.substr(0, host.find_first_of(':'));
 	if (debug)std::cout<<GREEN<<"HOST: "<<YELLOW<<host<<std::endl;
 	if (std::find(serverNames.begin(), serverNames.end(), host) != serverNames.end() || host == "127.0.0.1" || (host.find("10.1") == 0) )
 		return true;
@@ -29,10 +29,13 @@ int HttpRequest::validateRequest(void)
 	if (debug)std::cout<<ORANGE<<"Validating request"<<RESET<<std::endl;
 	std::string path = _requestLine._path;
 	auto &routes = (*_config)._routes;
+	ServerConfig* conf = _config;
+	if (!conf)
+		return 500;
 	if (!validateHost((*_config)._serverNames))
 	{
 		if (debug)std::cout << BG_BRIGHT_MAGENTA << "Host invalid" << RESET << std::endl;
-		return -1;
+		return 400;
 	}
 	// does route exist?
 	while (!path.empty())
@@ -60,5 +63,5 @@ int HttpRequest::validateRequest(void)
 			path = path.substr(0, pos);
 		}
 	}	
-	return 1;
+	return 404;
 }
