@@ -95,10 +95,16 @@ int HttpRequest::extractContent()
 
 	if (!_state._uploadMode)
 	{
-		if ((begin = _state._buffer.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
+		if ((begin = _state._buffer.find(_state._openBoundary, 0)) == std::string::npos){
 			if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 			return(0);
 		}
+		begin += _state._openBoundary.size();
+		if ((begin = _state._buffer.find("\r\n\r\n", begin)) == std::string::npos){
+			if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
+			return(0);
+		}
+		begin += 4;
 		if ((end = _state._buffer.find("\r\n" + _state._closeBoundary, begin)) == std::string::npos){
 			if(debug){std::cerr << "Couldnt find close boundary in _state._buffer in extract content" << std::endl;}
 			return(0);
@@ -110,10 +116,16 @@ int HttpRequest::extractContent()
 	{
 		if(!_state._uploadFile.is_open())
 		{
-			if ((begin = _state._buffer.find(_state._openBoundary + "\r\n\r\n", 0) + _state._openBoundary.size() + 4) == std::string::npos){
+			if ((begin = _state._buffer.find(_state._openBoundary, 0)) == std::string::npos){
 				if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 				return(0);
 			}
+			begin += _state._openBoundary.size();
+			if ((begin = _state._buffer.find("\r\n\r\n", begin)) == std::string::npos){
+				if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
+				return(0);
+			}
+			begin += 4;
 			_fileContent = _state._buffer.substr(begin);
 		}
 		if(_state._uploadFile.is_open())
