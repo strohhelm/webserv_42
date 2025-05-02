@@ -112,7 +112,7 @@ void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 			_rootDir = context[0].str;
 	}
 }
-
+// 9898dea10d759896e2100c95784a3b8bbcf90dc9
 void	ServerConfig::setRoute(std::vector<confToken>	&context, size_t lineNum)
 {
 	std::string line = std::to_string(lineNum);
@@ -134,9 +134,19 @@ void ServerConfig::setDefaultValues(void)
 	_serverNames.clear();
 	_rootDir.clear();
 	_indexFile.clear();
-	_errorPage.clear();
 	_maxBody = 1048576; //1MB
 	_routes.clear();
+	_errorPage.clear();
+
+	// auto it = StatusCode.begin();
+	// while(it != StatusCode.end())
+	// {
+	// 	if(it->first >= 400 && it->first < 500)
+	// 		_errorPage.insert({it->first, "40x.html"});
+	// 	else if(it->first >= 500 && it->first < 600)
+	// 		_errorPage.insert({it->first, "50x.html"});
+	// 	it++;
+	// }
 }
 
 void	ServerConfig::checkValues(void)
