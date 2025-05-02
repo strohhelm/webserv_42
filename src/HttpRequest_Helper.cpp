@@ -122,12 +122,13 @@ std::string HttpRequest::buildFullPath(void)
 	{
 		path = path.substr(0, pos);
 	}
-	
-	fullPath = rootDir + path;
+	path = path.substr(path.find((*_route)._path) + (*_route)._path.length());
+
+	fullPath = rootDir +"/"+ path;
 
 	if (debug)std::cout << ORANGE<<"Build fullPath: " << fullPath << std::endl;
 
-	auto it = _requestLine._path.rbegin();
+	auto it = fullPath.rbegin();
 	if(*it == '/')
 	{
 		if (debug)std::cout << "ends with /" << std::endl;
@@ -152,7 +153,6 @@ std::string HttpRequest::buildFullPath(void)
 	{
 		return "";
 	}
-	
 	if (debug)std::cout << ORANGE<<"fullPath: " << fullPath <<RESET<< std::endl;
 	return fullPath;
 }
