@@ -5,6 +5,7 @@ void HttpRequest::sendErrorResponse(int statusCode)
 	std::string response;
 	std::string content;
 	std::string contentType;
+	_state._errorOcurred = statusCode;
 	if (_config != nullptr)
 	{	auto it = (*_config)._errorPage.find(statusCode);
 		if(it != (*_config)._errorPage.end())

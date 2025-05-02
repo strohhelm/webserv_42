@@ -122,6 +122,7 @@ std::string HttpRequest::buildFullPath(void)
 	{
 		path = path.substr(0, pos);
 	}
+	
 	fullPath = rootDir + path;
 
 	if (debug)std::cout << ORANGE<<"Build fullPath: " << fullPath << std::endl;
