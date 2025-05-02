@@ -4,28 +4,50 @@ void HttpRequest::sendErrorResponse(int statusCode)
 {
 	std::string response;
 	std::string content;
-	std::string contentType;
+	std::string contentType = "text/html";
 	_state._errorOcurred = statusCode;
 	if (_config != nullptr)
 	{	auto it = (*_config)._errorPage.find(statusCode);
 		if(it != (*_config)._errorPage.end())
 		{
-			
 			std::string pathToErrorPage = (*_config)._rootDir + "/" + (*_config)._errorPage[statusCode];
 			content = readFileContent(pathToErrorPage);
-			// if(debug)std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
-			// if(debug)std::cout << "content " << content << std::endl;
-			contentType = "text/html";
 		}
 	}
-	// else
-	// {
-	// 	if (!(*_route)._redirect.second.empty())
-	// 		content = (*_route)._redirect.second;
-	// 	else
-	// 		content = "";
-	// 	contentType = "text/plain";
-	// }
+	if (content.empty()) //in case the errorpage from config doesnt exist
+	{
+		std::string message;
+		try{ message =  StatusCode.at(statusCode);}
+		catch (...){message = "Error";}
+		content = "<!DOCTYPE html><html><head><title>" + std::to_string(statusCode) + "</title> \
+		<style> \
+			@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap'); \
+			html, body {height: 100%;margin: 0;} \
+			body{font-family: 'Orbitron', sans-serif; \
+				display:flex; \
+				background-color: #00ffe7; \
+				align-items: center; \
+				justify-content: center; \
+				background-image: radial-gradient(circle at center,rgb(150, 8, 160) 0%, #000000 100%); \
+				background-size: cover; \
+				background-repeat: no-repeat; \
+				background-position: center;} \
+		.content{ \
+			text-align: center; \
+			color: #ff006a; \
+			padding: 2rem; \
+			text-shadow: 0 0 10px #000000;} \
+		</style> \
+		</head> \
+			<body> \
+			<div class=\"content\"> \
+				<h1>OOOps an Error occured!</h1> \
+				<h2>"+ std::to_string(statusCode) +" " + message + "</h2> \
+				<h2>Sorry for the Inconvenience!</h2> \
+			</div> \
+			</body> \
+		</html>";
+	}
 	response = buildResponseHeader(statusCode,  content.length(), contentType);
 	// std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 	response += content;

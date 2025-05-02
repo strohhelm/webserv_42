@@ -133,17 +133,6 @@ void ServerConfig::setDefaultValues(void)
 	_indexFile.clear();
 	_maxBody = 1048576; //1MB
 	_routes.clear();
-
-	auto it = StatusCode.begin();
-	while(it != StatusCode.end())
-	{
-		if(it->first >= 400 && it->first < 500)
-			_errorPage.insert({it->first, "40x.html"});
-		else if(it->first >= 500 && it->first < 600)
-			_errorPage.insert({it->first, "50x.html"});
-		it++;
-	}
-
 }
 
 void	ServerConfig::checkValues(void)
