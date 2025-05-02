@@ -101,6 +101,7 @@ class HttpRequest
 		std::string _cgiBuffer;
 		//POST
 		std::string _cgiFilePath;
+		std::string _fileName;
 		// std::string body;
 		std::string _contentHeader;
 		std::string _fileContent;
