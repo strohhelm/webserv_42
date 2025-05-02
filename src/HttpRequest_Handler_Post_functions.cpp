@@ -43,7 +43,7 @@ int HttpRequest::dirSetup()
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr <<BG_BRIGHT_RED<<"SETUP UPLOAD DIRECTORY: "<< e.what() <<RESET<< '\n';
+		std::cout <<BG_BRIGHT_RED<<"SETUP UPLOAD DIRECTORY: "<< e.what() <<RESET<< '\n';
 		return (0);
 	}
 	return(1);
@@ -57,7 +57,7 @@ int HttpRequest::extractInfo()
 	{
 		begin = _contentHeader.find("boundary=", 0);
 		if (begin == std::string::npos){
-			if(debug){std::cerr << "Couldnt find boundary in extract info" << std::endl;}
+			if(debug){std::cout << "Couldnt find boundary in extract info" << std::endl;}
 			return(0);
 		}
 		begin += 9;
@@ -70,7 +70,7 @@ int HttpRequest::extractInfo()
 	{
 		begin = _state._buffer.find("filename=\"", 0);
 		if (begin == std::string::npos){
-			if(debug){std::cerr << "Couldnt find filename in extract info" << std::endl;}
+			if(debug){std::cout << "Couldnt find filename in extract info" << std::endl;}
 			return(0);
 
 		}
@@ -78,7 +78,7 @@ int HttpRequest::extractInfo()
 
 		end = _state._buffer.find('"', begin);
 		if(end == std::string::npos){
-			if(debug){std::cerr << "Couldnt find filename end in extract info" << std::endl;}
+			if(debug){std::cout << "Couldnt find filename end in extract info" << std::endl;}
 			return(0);
 		}
 
@@ -97,17 +97,17 @@ int HttpRequest::extractContent()
 	if (!_state._uploadMode)
 	{
 		if ((begin = _state._buffer.find(_state._openBoundary, 0)) == std::string::npos){
-			if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
+			if(debug){std::cout << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 			return(0);
 		}
 		begin += _state._openBoundary.size();
 		if ((begin = _state._buffer.find("\r\n\r\n", begin)) == std::string::npos){
-			if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
+			if(debug){std::cout << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 			return(0);
 		}
 		begin += 4;
 		if ((end = _state._buffer.find("\r\n" + _state._closeBoundary, begin)) == std::string::npos){
-			if(debug){std::cerr << "Couldnt find close boundary in _state._buffer in extract content" << std::endl;}
+			if(debug){std::cout << "Couldnt find close boundary in _state._buffer in extract content" << std::endl;}
 			return(0);
 		}
 		_fileContent = _state._buffer.substr(begin, end - begin);
@@ -118,12 +118,12 @@ int HttpRequest::extractContent()
 		if(!_state._uploadFile.is_open())
 		{
 			if ((begin = _state._buffer.find(_state._openBoundary, 0)) == std::string::npos){
-				if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
+				if(debug){std::cout << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 				return(0);
 			}
 			begin += _state._openBoundary.size();
 			if ((begin = _state._buffer.find("\r\n\r\n", begin)) == std::string::npos){
-				if(debug){std::cerr << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
+				if(debug){std::cout << "Couldnt find open boundary in _state._buffer in extract content" << std::endl;}
 				return(0);
 			}
 			begin += 4;
@@ -165,7 +165,7 @@ int HttpRequest::writeContent()
 			}
 			else
 			{
-				if(debug){std::cerr << "Unable to open file." << std::endl;}
+				if(debug){std::cout << "Unable to open file." << std::endl;}
 				return (0);
 			}
 		}
@@ -182,7 +182,7 @@ int HttpRequest::writeContent()
 			}
 			else
 			{
-				if(debug){std::cerr << "Unable to open temp file." << std::endl;}
+				if(debug){std::cout << "Unable to open temp file." << std::endl;}
 				return (0);
 			}
 			if (_state._uploadComplete)
@@ -214,14 +214,11 @@ void HttpRequest::handleUpload()
 			_state._buffer.clear();
 			return;
 		}
-		if(debug){std::cout << "Returned from extract Info" << std::endl;}
 		if (!extractContent()){
 			if(debug){std::cout << "Returned from extractContent" << std::endl;}
 			_state._buffer.clear();
 			return;
 		}
-		if(debug){std::cout << "Returned from extractContent" << std::endl;}
-
 		if (!writeContent()){
 			if(debug){std::cout << "Returned from writeContent" << std::endl;}
 			_state._buffer.clear();
@@ -235,7 +232,7 @@ void HttpRequest::handleUpload()
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << e.what() << std::endl;	
+		std::cout << e.what() << std::endl;	
 	}
 	_state._buffer.clear();
 }

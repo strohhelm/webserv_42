@@ -46,10 +46,7 @@ void	ServerConfig::setErrorPages(std::vector<confToken> &context, size_t lineNum
 		int key = std::stoi(it->str);
 		if (StatusCode.find(key) != StatusCode.end())
 		{
-			if (_errorPage.find(key) == _errorPage.end())
-				_errorPage.insert({key, filename});
-			else
-				throw std::runtime_error("Double Errorcode set: \"" + it->str + "\" line: " + line);
+				_errorPage[key] =  filename;
 		}
 		else
 			throw std::runtime_error("Unknown Errorcode: \"" + it->str + "\" line: " + line);
@@ -136,7 +133,7 @@ void ServerConfig::setDefaultValues(void)
 	_indexFile.clear();
 	_maxBody = 1048576; //1MB
 	_routes.clear();
-	_errorPage.clear();
+	// _errorPage.[];
 
 	// auto it = StatusCode.begin();
 	// while(it != StatusCode.end())
