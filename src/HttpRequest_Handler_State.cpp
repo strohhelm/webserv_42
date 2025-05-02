@@ -74,6 +74,7 @@ int	HttpRequest::evaluateState(void)
 		//checks if the headers are already parsed.
 	if (!_state._headersParsed)
 	{
+		_state._headersParsed = true;
 		if (debug)std::cout<<YELLOW<<"Headers not parsed"<<RESET<<std::endl;
 
 		int error = extractAndTokenizeHeader(); //also cuts the headers from the buffer
@@ -84,7 +85,6 @@ int	HttpRequest::evaluateState(void)
 			return 411; //check for POST + 0 content length -> chunking
 		if (_state._contentLength > (*_config)._maxBody)
 			return 413;
-		_state._headersParsed = true;
 		if (debug)std::cout<<GREEN<<"Headers parsed"<<RESET<<std::endl;
 	}
 	else

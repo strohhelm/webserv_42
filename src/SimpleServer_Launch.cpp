@@ -143,7 +143,13 @@ void SimpleServer::handlePolls(int pollCount)
 				client.sendErrorResponse(check);
 			}
 			if (std::find(CloseCodes.begin(), CloseCodes.end(),client._state._errorOcurred) != CloseCodes.end()) //look up current clients errorstate and if in list of clon=sing codes, remove client
-			{std::cout<<BG_BRIGHT_RED<<"Remove because: "<<client._state._errorOcurred<<RESET<<std::endl;removeClient(client_fd);}
+			{
+				std::cout<<BG_BRIGHT_RED<<"Remove because: "<<client._state._errorOcurred<<RESET<<std::endl;removeClient(client_fd);
+			}
+			else
+			{
+				client._state._errorOcurred = 0;
+			}
 			}catch(...){}
 		}
 	}

@@ -5,24 +5,26 @@ void HttpRequest::sendErrorResponse(int statusCode)
 	std::string response;
 	std::string content;
 	std::string contentType;
-	auto it = (*_config)._errorPage.find(statusCode);
-	if(it != (*_config)._errorPage.end())
-	{
-		
-		std::string pathToErrorPage = (*_config)._rootDir + "/" + (*_config)._errorPage[statusCode];
-		content = readFileContent(pathToErrorPage);
-		// if(debug)std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
-		// if(debug)std::cout << "content " << content << std::endl;
-		contentType = "text/html";
+	if (_config != nullptr)
+	{	auto it = (*_config)._errorPage.find(statusCode);
+		if(it != (*_config)._errorPage.end())
+		{
+			
+			std::string pathToErrorPage = (*_config)._rootDir + "/" + (*_config)._errorPage[statusCode];
+			content = readFileContent(pathToErrorPage);
+			// if(debug)std::cout << "pathToErrorPage " << pathToErrorPage << std::endl;
+			// if(debug)std::cout << "content " << content << std::endl;
+			contentType = "text/html";
+		}
 	}
-	else
-	{
-		if (!(*_route)._redirect.second.empty())
-			content = (*_route)._redirect.second;
-		else
-			content = "";
-		contentType = "text/plain";
-	}
+	// else
+	// {
+	// 	if (!(*_route)._redirect.second.empty())
+	// 		content = (*_route)._redirect.second;
+	// 	else
+	// 		content = "";
+	// 	contentType = "text/plain";
+	// }
 	response = buildResponseHeader(statusCode,  content.length(), contentType);
 	// std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 	response += content;

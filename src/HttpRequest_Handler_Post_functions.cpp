@@ -213,16 +213,20 @@ void HttpRequest::handleUpload()
 			_state._buffer.clear();
 			return;
 		}
+		if(debug){std::cout << "Returned from extract Info" << std::endl;}
 		if (!extractContent()){
 			if(debug){std::cout << "Returned from extractContent" << std::endl;}
 			_state._buffer.clear();
 			return;
 		}
+		if(debug){std::cout << "Returned from extractContent" << std::endl;}
+
 		if (!writeContent()){
 			if(debug){std::cout << "Returned from writeContent" << std::endl;}
 			_state._buffer.clear();
 			return;
 		}
+		if(debug){std::cout << "Returned from writeContent" << std::endl;}
 	}
 	catch (const std::exception &e)
 	{
