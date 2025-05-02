@@ -59,7 +59,7 @@ clean :
 fclean : clean
 	$(REMOVE) $(NAME)
 	rm -rf ./upload/
-	rm -rf ./tmp_upload/
+	rm -rf ./temp/
 
 re : fclean all
 

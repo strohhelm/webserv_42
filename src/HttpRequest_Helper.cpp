@@ -67,13 +67,13 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 {
 	if((!(*_route).isDirListingActive()))
 		return"";
-	std::string tempdir(DEFAULT_DOWNLOAD_PATH);
+	std::string tempdir(DEFAULT_TEMP_PATH);
 	std::string filename = tempdir + "dirListing.html";
 	std::ofstream html(filename, std::ios::out);
 	if (!html.is_open() || html.bad())
 	{
-		
-		return "erroropen";
+		_state._errorOcurred = 500;
+		return "";
 	}
 	
 	html << "<!DOCTYPE html>\n"
@@ -174,12 +174,16 @@ std::string HttpRequest::getRequestedFile(void)
 
 std::string HttpRequest::readFileContent(const std::string& path)
 {
-	std::ifstream file(path, std::ios::binary);
+	std::ifstream file(path, std::ios::in);
+	if(debug)std::cout <<ORANGE<< "Reading file content: " << RESET<<path << std::endl;
 	if(!file.is_open())
 	{
-		return "erroropen";
+		_state._errorOcurred = 500;
+		if(debug)std::cout <<ORANGE<<path<< "not open" << RESET<<path << std::endl;
+		return "";
 	}
 	std::stringstream buffer;
 	buffer << file.rdbuf();
+	file.close();
 	return buffer.str();
 }

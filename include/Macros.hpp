@@ -10,8 +10,7 @@ extern bool debug;
 #define MAX_METHOD_LENGTH sizeof("DELETE")
 
 //std File Paths for down and uploads
-#define DEFAULT_UPLOAD_PATH "./temp/"
-#define DEFAULT_DOWNLOAD_PATH "./temp/"
+#define DEFAULT_TEMP_PATH "./temp/"
 
 // ServerConfiguration Macros
 #define DEFAULT_CONFIG_PATH "./config/test.conf"

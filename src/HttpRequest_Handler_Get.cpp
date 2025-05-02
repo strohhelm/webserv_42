@@ -152,20 +152,25 @@ void	HttpRequest::singleGetRequest(std::string& path)
 	if (debug)std::cout << BG_BRIGHT_BLUE <<"Root directory:"<<RESET<<BLUE<< (*_config)._rootDir << RESET << std::endl;
 	
 	std::string	content;
+	if(debug)std::cout <<ORANGE<< "State Error:" << RESET<<_state._errorOcurred << std::endl;
+
 	content = readFileContent(path);
 	
-	if(content.empty())
+	if(_state._errorOcurred == 0 && content.empty())
 	{
 		if (debug)std::cout << BG_BRIGHT_RED<<"Content empty " << RESET<<std::endl;
 		sendErrorResponse(403);
 		return ;
 	}
-	else if (content == "erroropen")
+	else if (_state._errorOcurred != 0)
 	{
 		if (debug)std::cout << BG_BRIGHT_RED<<"ERROR opening temp dirlisting file!" << RESET<<std::endl;
 		sendErrorResponse(500);
 		return ;
 	}
+	if(debug)std::cout <<ORANGE<< "State Error:" << RESET<<_state._errorOcurred << std::endl;
+	if(debug)std::cout <<ORANGE<< "Send Response" << RESET << std::endl;
+
 	sendResponse(200, content);
 	reset();
 	if (path == "./temp/dirListing.html")
@@ -205,4 +210,3 @@ void HttpRequest::handleGet()
 	}
 	return;
 }
-

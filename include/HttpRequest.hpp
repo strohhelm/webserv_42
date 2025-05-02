@@ -106,7 +106,7 @@ class HttpRequest
 		std::string _contentHeader;
 		std::string _fileContent;
 		std::string _uploadDir;
-		std::string _tempDir = "tmp_upload";
+		std::string _tempDir;
 		std::string _fdPath;
 		std::filesystem::path _path;
 

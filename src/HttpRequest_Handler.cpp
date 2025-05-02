@@ -125,7 +125,6 @@ void HttpRequest::reset()
 	if (_state._downloadFile.is_open())
 		_state._downloadFile.close();
 	_state._downloadFile.clear();
-
 	_state._tempUploadFilePath.clear();
 	_state._downloadFileName.clear();
 	_state._filename.clear();
@@ -141,8 +140,8 @@ void HttpRequest::reset()
 	_cgiBuffer.clear();
 	_contentHeader.clear();
 	_fileContent.clear();
-	_uploadDir = "file_upload";
-	_tempDir = "tmp_upload";
+	_uploadDir.clear();
+	_tempDir = DEFAULT_TEMP_PATH;
 	_fdPath.clear();
 	_path.clear();
 	_fileName.clear();
@@ -157,11 +156,3 @@ HttpRequest::HttpRequest(int client_fd, ServerConfig* config)
 	_requestLine._method = HttpMethod::UNKNOWN;
 	_state._lastActivity = std::chrono::steady_clock::now();
 }
-
-// HttpRequest::HttpRequest(void)
-// {
-// 	std::cout
-// 	_requestLine._method = HttpMethod::UNKNOWN;
-// 	_state._lastActivity = std::chrono::steady_clock::now();
-// 	_state._errorOcurred = 2;
-// }
