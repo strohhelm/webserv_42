@@ -12,16 +12,16 @@ void HttpRequest::checkFilename(std::filesystem::path filePath)
 	int i = 1;
 	while (std::filesystem::exists(filePath))
 	{
-		size_t end = filePath.stem().string().find("_", 0);
+		size_t end = filePath.stem().string().rfind("_");
 		std::string new_stem;
-		if (end == std::string::npos)
+		if (end == std::string::npos || ((std::count(_fileName.begin(), _fileName.end(), '_')) == (std::count(_state._filename.begin(), _state._filename.end(), '_'))))
 			new_stem = filePath.stem().string() + "_" + std::to_string(i);
 		else
 			new_stem = filePath.stem().string().substr(0, end) + "_" + std::to_string(i);
 		filePath.replace_filename(new_stem + filePath.extension().string());
 		i++;
+		_fileName = filePath.filename().string();
 	}
-	_state._filename = filePath.filename().string();
 }
 
 int HttpRequest::dirSetup()
@@ -83,6 +83,7 @@ int HttpRequest::extractInfo()
 		}
 
 		_state._filename = _state._buffer.substr(begin, end - begin);
+		_fileName = _state._filename;
 		if(debug){std::cout << "filename: " << _state._filename << std::endl;}
 	}
 	return (1);
@@ -154,8 +155,8 @@ int HttpRequest::writeContent()
 	{	
 		if (!_state._uploadMode)
 		{
-			checkFilename(_uploadDir / _path / _state._filename);
-			std::ofstream output(_uploadDir / _path / _state._filename, std::ios::binary);
+			checkFilename(_uploadDir / _path / _fileName);
+			std::ofstream output(_uploadDir / _path / _fileName, std::ios::binary);
 			if (output.is_open())
 			{
 				output << _fileContent;
@@ -172,8 +173,8 @@ int HttpRequest::writeContent()
 		{
 			if (!_state._uploadFile.is_open())
 			{
-				checkFilename(_tempDir / _path / _state._filename);
-				_state._uploadFile.open(_tempDir / _path / _state._filename, std::ios::binary | std::ios::app);
+				checkFilename(_tempDir / _path / _fileName);
+				_state._uploadFile.open(_tempDir / _path / _fileName, std::ios::binary | std::ios::app);
 			}
 			if (_state._uploadFile.is_open())
 			{
@@ -186,11 +187,11 @@ int HttpRequest::writeContent()
 			}
 			if (_state._uploadComplete)
 			{
-				std::string curr_name = _state._filename;
-				checkFilename(_uploadDir / _path / _state._filename);
-				if (curr_name != _state._filename)
-					std::rename((_tempDir / _path / curr_name).c_str(), (_tempDir / _path / _state._filename).c_str());
-				std::rename((_tempDir / _path / _state._filename).c_str(), (_uploadDir / _path / _state._filename).c_str());
+				std::string curr_name = _fileName;
+				checkFilename(_uploadDir / _path / _fileName);
+				if (curr_name != _fileName)
+					std::rename((_tempDir / _path / curr_name).c_str(), (_tempDir / _path / _fileName).c_str());
+				std::rename((_tempDir / _path / _fileName).c_str(), (_uploadDir / _path / _fileName).c_str());
 				postRespond();
 			}
 		}
@@ -226,7 +227,11 @@ void HttpRequest::handleUpload()
 			_state._buffer.clear();
 			return;
 		}
-		if(debug){std::cout << "Returned from writeContent" << std::endl;}
+		if ((_state._uploadMode && !_state._uploadComplete) && _state._ContentBytesRecieved == _state._contentLength)
+		{
+			if(debug){std::cout << "Closing boundary extraction error." << std::endl;}
+			sendErrorResponse(400);
+		}
 	}
 	catch (const std::exception &e)
 	{

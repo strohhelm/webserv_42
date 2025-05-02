@@ -145,6 +145,7 @@ void HttpRequest::reset()
 	_tempDir = "tmp_upload";
 	_fdPath.clear();
 	_path.clear();
+	_fileName.clear();
 	if (debug)std::cout<<ORANGE<<"State reset"<<RESET<<std::endl;
 }
 
