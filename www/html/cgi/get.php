@@ -1,55 +1,57 @@
-#!/usr/bin/php-cgi
 <?php
-// Read raw POST data
-$raw_body = file_get_contents("php://stdin");
-
-// Detect content type
-$content_type = $_SERVER['CONTENT_TYPE'] ?? 'unknown';
-$decoded = [];
-
-// Decode based on content type
-if (strpos($content_type, 'application/x-www-form-urlencoded') !== false) {
-    parse_str($raw_body, $decoded);
-} elseif (strpos($content_type, 'application/json') !== false) {
-    $decoded = json_decode($raw_body, true);
-}
-
-
-while(1)
-{
-    sleep(1);
-}
-// Required CGI header
-echo "Content-Type: text/html\n\n";
-// Start HTML output
-echo "<!DOCTYPE html>";
-echo "<html><head><title>POST CGI Test</title></head><body>";
-echo "<h1>POST CGI Test (PHP)</h1>";
-
-// Request Info
-echo "<h2>Request Info</h2>";
-echo "<ul>";
-echo "<li><strong>Request Method:</strong> " . htmlspecialchars($_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN') . "</li>";
-echo "<li><strong>Content Type:</strong> " . htmlspecialchars($content_type) . "</li>";
-echo "<li><strong>Content Length:</strong> " . htmlspecialchars($_SERVER['CONTENT_LENGTH'] ?? 'UNKNOWN') . "</li>";
-echo "</ul>";
-
-// Raw POST Body
-echo "<h2>Raw POST Body</h2>";
-echo "<pre>" . htmlspecialchars($raw_body) . "</pre>";
-
-// Decoded Parameters
-echo "<h2>Decoded Parameters</h2>";
-if (!empty($decoded) && is_array($decoded)) {
-    echo "<ul>";
-    foreach ($decoded as $key => $value) {
-        echo "<li><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "</li>";
-    }
-    echo "</ul>";
-} else {
-    echo "<p>No decodable parameters found or unsupported format.</p>";
-}
-
-// End HTML
-echo "</body></html>";
+header('Content-Type: text/html; charset=utf-8');
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GET Query Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        h1 {
+            color: #333;
+        }
+        .pair {
+            margin: 5px 0;
+        }
+        .key {
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .value {
+            color: #333;
+        }
+        .raw {
+            margin-bottom: 20px;
+            font-family: monospace;
+            background: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>GET Request Parameters</h1>
+
+    <?php
+    $query = $_SERVER['QUERY_STRING'];
+
+    if (!empty($query)) {
+        echo "<div class='raw'><strong>Raw Query String:</strong> " . htmlspecialchars(urldecode($query)) . "</div>";
+
+        // Parse the query string manually
+        parse_str($query, $params);
+
+        foreach ($params as $key => $value) {
+            $decodedKey = htmlspecialchars(urldecode($key));
+            $decodedValue = htmlspecialchars(urldecode($value));
+            echo "<div class='pair'><span class='key'>$decodedKey:</span> <span class='value'>$decodedValue</span></div>";
+        }
+    } else {
+        echo "<p>No query string received.</p>";
+    }
+    ?>
+</body>
+</html>
