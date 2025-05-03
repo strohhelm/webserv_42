@@ -8,6 +8,7 @@ const std::vector<int> CloseCodes = {
 	400,
 	413,
 	500,
+	507,
 };
 
 

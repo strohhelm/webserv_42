@@ -160,6 +160,12 @@ int HttpRequest::writeContent()
 			if (output.is_open())
 			{
 				output << _fileContent;
+				if (!output)
+				{
+					if(debug){std::cout << "File stream error." << std::endl;}
+					output.close();
+					return(0);
+				}
 				output.close();
 				postRespond();
 			}
@@ -179,6 +185,17 @@ int HttpRequest::writeContent()
 			if (_state._uploadFile.is_open())
 			{
 				_state._uploadFile << _fileContent;
+				if (!_state._uploadFile)
+				{
+					if(debug){std::cout << "File write error." << std::endl;}
+					return(0);
+				}
+				_state._uploadFile.flush();
+				if (!_state._uploadFile)
+				{
+					if(debug){std::cout << "File flush error." << std::endl;}
+					return(0);
+				}
 			}
 			else
 			{
@@ -211,17 +228,17 @@ void HttpRequest::handleUpload()
 	{
 		if (!extractInfo()){
 			if(debug){std::cout << "Returned from extractInfo" << std::endl;}
-			_state._buffer.clear();
+			sendErrorResponse(500);
 			return;
 		}
 		if (!extractContent()){
 			if(debug){std::cout << "Returned from extractContent" << std::endl;}
-			_state._buffer.clear();
+			sendErrorResponse(500);
 			return;
 		}
 		if (!writeContent()){
 			if(debug){std::cout << "Returned from writeContent" << std::endl;}
-			_state._buffer.clear();
+			sendErrorResponse(500);
 			return;
 		}
 		if ((_state._uploadMode && !_state._uploadComplete) && _state._ContentBytesRecieved == _state._contentLength)
