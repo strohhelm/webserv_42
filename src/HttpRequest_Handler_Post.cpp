@@ -82,7 +82,6 @@ void HttpRequest::cgiPost(void)
 		std::string query = "";
 		std::filesystem::path filename = _requestLine._path;
 		_cgi.setCgiParameter(_client_fd, (*_config), _cgiFilePath, (*_route).getCgiPath(filename.extension()), query);
-		_cgi.tokenizePath();
 		int check = _cgi.execute("POST", _cgiBuffer);
 		if (check > 0)
 			sendErrorResponse(check);

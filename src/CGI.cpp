@@ -191,11 +191,13 @@ std::string CGI::readCgiOutput(int& error)
 		error = 0;
 		return "";
 	}
-
+	std::cout<<"poll: "<<ret<<std::endl;
 
 	while (1)
 	{
 		bytes = read(_child[READ_FD], buffer, sizeof(buffer));
+		
+		if(debug){std::cout<<"Bytes read: "<<bytes <<" "<< errno<<std::endl;}
 		if(bytes == -1)
 		{
 			error = -1;
@@ -206,6 +208,8 @@ std::string CGI::readCgiOutput(int& error)
 			return cgiOutput;
 		}
 		cgiOutput.append(buffer, bytes);
+		if (bytes < (ssize_t)sizeof(buffer))
+			return (cgiOutput);
 	}
 	return cgiOutput;
 }

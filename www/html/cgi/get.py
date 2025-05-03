@@ -5,7 +5,6 @@ import cgi
 import cgitb
 cgitb.enable()  # Enable CGI debugging output (optional, super helpful)
 
-print("Content-Type: text/html\r\n")
 
 # Parse query parameters
 form = cgi.FieldStorage()
@@ -17,7 +16,6 @@ language = form.getfirst('language', '').strip()
 
 
 # Start HTML output
-print("\r\n")  # Very important: empty line after headers
 print("<!DOCTYPE html>")
 print("<html>")
 print("<head><title>CGI Input Test</title></head>")
