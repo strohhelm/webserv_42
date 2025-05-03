@@ -1,65 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CGI</title>
+    <meta charset="UTF-8">
+    <title>🛸 CGI Server Test Interface</title>
+	<link rel="stylesheet" href="/style.css">
 </head>
-<p>CGI GET from get.py </p>
+<script>
+	function toggleTheme() {
+	  document.body.classList.toggle('light-mode');
+	}
+  </script>
 <body>
+
+<h1>🛠 CGI INTERFACE — TEST PANEL</h1>
+
+<div class="form-section">
+    <h2>GET Request → get.py</h2>
     <form action="/cgi/get.py" method="get">
-        <label>Name: <input type="text" name="name"></label><br>
-        <label>Language: <input type="text" name="language"></label><br>
-        <input type="submit" value="Submit via GET">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Language:</label>
+        <input type="text" name="language">
+        <input type="submit" value="Fire GET Protocol">
     </form>
-</body>
+</div>
 
-<p>CGI GET from get.php </p>
-<body>
+<div class="form-section">
+    <h2>GET Request → get.php</h2>
     <form action="/cgi/get.php" method="get">
-        <label>Name: <input type="text" name="name"></label><br>
-        <label>Language: <input type="text" name="language"></label><br>
-        <input type="submit" value="Submit via GET">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Language:</label>
+        <input type="text" name="language">
+        <input type="submit" value="Execute GET">
     </form>
-</body>
+</div>
 
-<p>CGI GET from get no parameteres.php </p>
-<body>
+<div class="form-section">
+    <h2>GET Request (No Parameters)</h2>
     <form action="/cgi/get.php" method="get">
-        <input type="submit" value="Submit via GET">
+        <input type="submit" value="Trigger GET Empty">
     </form>
-</body>
+</div>
 
-
-<p>CGI POST from post.php </p>
-<body>
+<div class="form-section">
+    <h2>POST Request → post.php</h2>
     <form action="/cgi/post.php" method="post">
-        <label>Name: <input type="text" name="name"></label><br>
-        <label>Language: <input type="text" name="lang"></label><br>
-        <input type="submit" value="Submit via POST">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Language:</label>
+        <input type="text" name="lang">
+        <input type="submit" value="Transmit POST Signal">
     </form>
-</body>
+</div>
 
-<p>POST  request </p>
-<body>
+<div class="form-section">
+    <h2>Upload File (POST)</h2>
     <form action="/upload/" method="post" enctype="multipart/form-data">
-        <label for="file">File</label>
-        <input id="file" name="file" type="file" />
-        <input type="submit" value="Submit via post">
+        <label>Choose file:</label>
+        <input type="file" name="file">
+        <input type="submit" value="Upload to Server">
     </form>
-</body>
+</div>
 
-
-<p>Wowo now some cool shiit</p>
-<body>
+<div class="form-section">
+    <h2>Download PDF</h2>
     <form action="/wbserv.pdf" method="get">
-        <input type="submit" value="Download webserv.pdf">
+        <input type="submit" value="Retrieve webserv.pdf">
     </form>
-</body>
-<p>CGI POST from post.py </p>
-<body>
+</div>
+
+<div class="form-section">
+    <h2>POST Request → post.py</h2>
     <form action="/cgi/post.py" method="post">
-        <label>Name: <input type="text" name="name"></label><br>
-        <label>email: <input type="text" name="email"></label><br>
-        <input type="submit" value="Submit via POST to post.py">
+        <label>Name:</label>
+        <input type="text" name="name">
+        <label>Email:</label>
+        <input type="text" name="email">
+        <input type="submit" value="Initiate POST Transmission">
     </form>
+</div>
+
+<div class="footer">
+    🚀 Interface Online — Awaiting Commands...
+</div>
+<button onclick="toggleTheme()">Toggle Theme</button>
 </body>
 </html>

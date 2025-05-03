@@ -122,35 +122,34 @@ void SimpleServer::handlePolls(int pollCount)
 		}
 		else if (x != 0)
 			continue;
-		if (isDataToRead(fdIndex))
+		if(isServer && isDataToRead(fdIndex))
+			acceptNewConnection(fdIndex);
+		else
 		{
-			if(isServer)
-				acceptNewConnection(fdIndex);
-			else
-			{
+			if (isDataToRead(fdIndex))
 				readDataFromClient(client_fd);
-				try {
-					HttpRequest &client = _clients.at(client_fd);
-					check = client.evaluateState();
-					if(check == NEEDS_TO_WRITE && isDataToWrite(fdIndex))
-					{
-						handler(fdIndex);
-					}
-					else if (check > NEEDS_TO_WRITE  && isDataToWrite(fdIndex))
-					{
-						if (debug)std::cout << BG_BRIGHT_RED<<"State Error" << RESET<<std::endl;
-						client.sendErrorResponse(check);
-					}
-					if (std::find(CloseCodes.begin(), CloseCodes.end(),client._state._errorOcurred) != CloseCodes.end()) //look up current clients errorstate and if in list of clon=sing codes, remove client
-					{
-						std::cout<<BG_BRIGHT_RED<<"Remove because: "<<client._state._errorOcurred<<RESET<<std::endl;
-						removeClient(client_fd);
-					}
-					else
-						client._state._errorOcurred = 0;
-				}catch(...){}
-			}
+			try {
+				HttpRequest &client = _clients.at(client_fd);
+				check = client.evaluateState();
+				if(check == NEEDS_TO_WRITE && isDataToWrite(fdIndex))
+				{
+					handler(fdIndex);
+				}
+				else if (check > NEEDS_TO_WRITE  && isDataToWrite(fdIndex))
+				{
+					if (debug)std::cout << BG_BRIGHT_RED<<"State Error" << RESET<<std::endl;
+					client.sendErrorResponse(check);
+				}
+				if (std::find(CloseCodes.begin(), CloseCodes.end(),client._state._errorOcurred) != CloseCodes.end()) //look up current clients errorstate and if in list of clon=sing codes, remove client
+				{
+					std::cout<<BG_BRIGHT_RED<<"Remove because: "<<client._state._errorOcurred<<RESET<<std::endl;
+					removeClient(client_fd);
+				}
+				else
+					client._state._errorOcurred = 0;
+			}catch(...){}
 		}
+		
 	}
 }
 
