@@ -243,12 +243,14 @@ void HttpRequest::handleUpload()
 		{
 			if(debug){std::cout << "Closing boundary extraction error." << std::endl;}
 			sendErrorResponse(400);
+			return ;
 		}
 	}
 	catch (const std::exception &e)
 	{
-		std::cout << e.what() << std::endl;	
+		std::cout << e.what() << std::endl;
+		sendErrorResponse(500);
+		return ;
 	}
 	_state._buffer.clear();
 }
-
