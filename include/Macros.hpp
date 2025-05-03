@@ -13,7 +13,7 @@ extern bool debug;
 #define DEFAULT_TEMP_PATH "./temp/"
 
 // ServerConfiguration Macros
-#define DEFAULT_CONFIG_PATH "./config/test.conf"
+#define DEFAULT_CONFIG_PATH "./config/default.conf"
 #define ACCESS "access"
 #define ERROR "error"
 #define CLOSE "close"
