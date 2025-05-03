@@ -25,6 +25,8 @@ int HttpRequest::validateRequest(void)
 	std::string path = _requestLine._path;
 	auto &routes = (*_config)._routes;
 	ServerConfig* conf = _config;
+	if (_headers["Connection"] != "keep-alive")
+		_state._errorOcurred = 1;
 	if (!conf)
 		return 500;
 	if (!validateHost((*_config)._serverNames))

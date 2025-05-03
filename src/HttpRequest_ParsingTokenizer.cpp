@@ -101,8 +101,6 @@ int HttpRequest::extractAndTokenizeHeader()
 	if(debug){std::cout<<ORANGE<<"Headers:\n"<<RESET<<header<<std::endl;}
 	if (!_headers.count("Host"))
 		{std::cout<<BG_BRIGHT_RED<<"Oh shit no Host header"<<RESET<<std::endl;return 400;}
-	if (_headers["Connection"] != "keep-alive")
-		_state._errorOcurred = 1;
 	_state._buffer = _state._buffer.substr(header.length() + 4); //cut the header from the buffer
 	return error;
 	}catch(...){std::cout<<RED<<"extract Header failed (prob substr)"<<std::endl;return 500;}
