@@ -13,11 +13,9 @@ int SimpleServer::serverConfiguration(void)
 		if(serverSocket_fd < 0)
 		{
 			std::cout << RED << "FAILED TO CREATE SOCKET" << RESET << std::endl;
-			// myLog(ERROR, "Failed to create socket for server:" + conf._serverNames[0] + ":" + std::to_string(conf._port));
 			return 1;
 		}
 		std::cout << GREEN << "SOCKET CREATED"<<RESET<<std::endl;
-		// std::cout << "CGI " << conf._cgiExtension << std::endl;
 
 		serviceAddress = initAddress(conf._port);
 
@@ -86,8 +84,6 @@ int SimpleServer::serverConfiguration(void)
 int SimpleServer::createSocket(void)
 {
 	return socket(_domain, _type, _protocol);
-	// _serverSocket_fd = socket(_domain, _type, _protocol);
-	// return _serverSocket_fd;
 }
 
 int SimpleServer::startListenOnSocket(int serverSocket_fd)

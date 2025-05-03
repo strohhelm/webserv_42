@@ -8,7 +8,6 @@ SimpleServer::~SimpleServer()
 	{
 		close(fd.fd);
 	}
-	closeAllSockets();
 	removeHostnamesFromSystem();
 }
 
@@ -18,18 +17,15 @@ _domain(domain), _type(type), _protocol(protocol),_networkInterface(networkInter
 
 	if(serverConfiguration())
 	{
-		// close(_serverSocket_fd);
 		closeAllSockets();
 		throw ServerConfigException();
 	}
-	
 	setHostnamesToSystem();
 	launch();
 }
 
 std::vector<std::string> SimpleServer::readCurrentHosts(std::string pathToFile)
 {
-	// std::cout << "readCurrentHosts\n";
 	std::vector<std::string> hostsInFile;
 	std::string buffer;
 	std::fstream readFile;
@@ -87,12 +83,7 @@ void SimpleServer::removeHostnamesFromSystem()
 	{
 		if (isHostDefault(host) || host.find("localhost") != std::string::npos)
 		{
-			// std::cout << "Added: " << host << "\n";
 			writeFile << host << "\n";
-		}
-		else
-		{
-			// std::cout << "Removed: " << host << "\n";
 		}
 	}
 }
@@ -103,10 +94,6 @@ void SimpleServer::setHostnamesToSystem(void)
 	std::fstream writeFile;
 
 	writeFile.open(pathToFile, std::ios::app); //app -> append
-	if(writeFile.fail() == true)
-	{
-		// error
-	}
 	if(writeFile.is_open())
 	{
 		for(auto& conf : _config._http )

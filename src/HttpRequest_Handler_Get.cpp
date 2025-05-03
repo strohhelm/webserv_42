@@ -38,9 +38,6 @@ void	HttpRequest::evaluateFiletype(std::string& filename)
 {
 	std::string fileend = filename.substr(filename.find_last_of('.'));
 
-	// std::vector<std::string> endings = {".php", ".html", ".ico"};
-	// if (std::find(endings.begin(), endings.end(), fileend)!= endings.end())
-		// _state._websitefile = true;
 	 if (fileend == ".pdf" || fileend == ".txt" || fileend.empty() )
 	 	_state._websitefile = false;
 }
@@ -185,9 +182,6 @@ void	HttpRequest::singleGetRequest(std::string& path)
 
 void HttpRequest::handleGet()
 {
-	
-	//check if we ALREADY HANDLED this request and are in downnloadmode.
-	// If Host is missing in an HTTP/1.1 request, return 400 Bad Request.
 
 	std::string path;
 	if (!_state._downloadEvaluated)

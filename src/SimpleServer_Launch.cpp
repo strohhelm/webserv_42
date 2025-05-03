@@ -51,19 +51,7 @@ int SimpleServer::initPoll(void)
 	poll() returns the number of descriptors that are ready for I/O, or -1 if an error occurred.  If the time limit expires, poll() returns 0.  If poll() returns with
     an error, including one due to an interrupted call, the fds array will be unmodified and the global variable errno will be set to indicate the error.
 */
-	int pollCount = poll(_poll_fds.data(), _poll_fds.size(), 200);
-	// if (pollCount == 0)
-	// {
-	// 	// std::cout << "pollCount = 0" << std::endl;
-	// 	return 0;
-	// }	
-	// else if (pollCount < 0)
-	// {
-	// 	//std::cout << "pollCount = <1" << std::endl;
-	// 	return pollCount;
-	// }	
-	//std::cout << "else poll" << std::endl;
-	return pollCount;
+	return  poll(_poll_fds.data(), _poll_fds.size(), 200);
 }
 
 int	SimpleServer::checkPollError(int fdIndex, bool isServer)
@@ -140,7 +128,7 @@ void SimpleServer::handlePolls(int pollCount)
 					if (debug)std::cout << BG_BRIGHT_RED<<"State Error" << RESET<<std::endl;
 					client.sendErrorResponse(check);
 				}
-				if (std::find(CloseCodes.begin(), CloseCodes.end(),client._state._errorOcurred) != CloseCodes.end()) //look up current clients errorstate and if in list of clon=sing codes, remove client
+				if (std::find(CloseCodes.begin(), CloseCodes.end(),client._state._errorOcurred) != CloseCodes.end())
 				{
 					std::cout<<BG_BRIGHT_RED<<"Remove because: "<<client._state._errorOcurred<<RESET<<std::endl;
 					removeClient(client_fd);
@@ -177,7 +165,7 @@ void SimpleServer::acceptNewConnection(const int& fdIndex)
 	int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
 	if (client_fd < 0)
 	{
-		std::cerr << RED << "new Client connection FAILED" << strerror(errno) << RESET<< std::endl; //ERNO !?!?!?!?!?!?!??!
+		std::cerr << RED << "new Client connection FAILED" << RESET<< std::endl;
 		return;
 	}
 	std::cout << BG_BRIGHT_GREEN << "new Client connection SUCCESSFULL!" << RESET;
@@ -212,8 +200,8 @@ bool SimpleServer::readDataFromClient(int client_fd)
 	if (bytesReceived < 0)
 	{
 		// Handle error case (recv() failed)
-		std::cerr << RED << "Error receiving data from client: " << strerror(errno) << RESET << std::endl; //ERNO!?!?!?!??!?
-		removeClient(client_fd);  // Remove client on error
+		std::cerr << RED << "Error receiving data from client: " << RESET << std::endl; 
+		removeClient(client_fd); 
 		return 0;
 	}
 	if (bytesReceived == 0)
@@ -243,7 +231,7 @@ void SimpleServer::removeClient(int client_fd)
 		if (it->fd == client_fd)
 		{
 			_poll_fds.erase(it);
-			break;  // Exit after removing the client
+			break;
 		}
 	}
 	_clients.erase(client_fd);

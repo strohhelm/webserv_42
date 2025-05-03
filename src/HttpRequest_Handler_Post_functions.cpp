@@ -140,8 +140,6 @@ int HttpRequest::extractContent()
 				_fileContent = _state._buffer.substr(begin, end - begin);
 				_state._uploadComplete = true;
 			}
-			// if (_state._contentLength == _state._ContentBytesRecieved)
-			// 	_state._uploadComplete = true;
 
 			if(debug){std::cout << _state._contentLength << " | " << _state._ContentBytesRecieved << std::endl;}
 		}

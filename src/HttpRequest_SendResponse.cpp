@@ -49,10 +49,9 @@ void HttpRequest::sendErrorResponse(int statusCode)
 		</html>";
 	}
 	response = buildResponseHeader(statusCode,  content.length(), contentType);
-	// std::string response = buildResponse(statusCode, StatusCode.at(statusCode), StatusCode.at(statusCode), "text/plain");
 	response += content;
 	long bytesToSend = response.length();
-	long bytesSent = send(_client_fd, response.c_str(), response.size(), 0); // return value check!?!?!?!?!?
+	long bytesSent = send(_client_fd, response.c_str(), response.size(), 0); 
 	if (bytesSent == -1 || bytesSent == 0 || bytesToSend != bytesSent)
 	{	
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;
@@ -72,7 +71,7 @@ void HttpRequest::sendResponse(int statusCode, const std::string& message)
 	if (debug)std::cout<<ORANGE<<"Send Response Headers: "<<RESET<<std::endl<<response<<std::endl;
 	response += message;
 	long bytesToSend = response.length();
-	long bytesSent = send(_client_fd, response.c_str(), response.size(), 0);// return value check!?!?!?!?!?
+	long bytesSent = send(_client_fd, response.c_str(), response.size(), 0);
 	if (bytesSent == -1 || bytesSent == 0 || bytesToSend != bytesSent)
 	{	
 		std::cout<<BG_BRIGHT_RED<<"Error in send function!"<<std::endl;

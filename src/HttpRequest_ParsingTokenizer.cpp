@@ -31,8 +31,7 @@ int HttpRequest::tokenizeRequestLine()
 
 int HttpRequest::extractRawRequestLine()
 {
-	// std::istringstream stream(requestBuffer); //andis way
-	// std::getline(stream, _rawRequestLine);
+
 	int error = 0;
 	size_t pos = _state._buffer.find("\r\n");
 	_rawRequestLine = _state._buffer.substr(0, pos);
@@ -62,8 +61,6 @@ void HttpRequest::eraseSpaceAndTab(std::string &key, std::string &value)
 	if (std::isspace(value.back()))
 		value.erase(value.length() - 1, 1);
 	(void)key;
-	// key.erase(key.find_last_not_of(" \t") + 1);
-	// value.erase(0, value.find_first_not_of(" \t")); //idk what it does
 }
 
 int HttpRequest::extractAndTokenizeHeader()
@@ -101,7 +98,6 @@ int HttpRequest::extractAndTokenizeHeader()
 			_headers[key] += value;
 		}
 	}
-	// if(debug)std::cout<<header<<std::endl;
 	if (!_headers.count("Host"))
 		{std::cout<<BG_BRIGHT_RED<<"Oh shit no Host header"<<RESET<<std::endl;return 400;}
 	if (_headers["Connection"] != "keep-alive")
@@ -110,44 +106,3 @@ int HttpRequest::extractAndTokenizeHeader()
 	return error;
 	}catch(...){std::cout<<RED<<"extract Header failed (prob substr)"<<std::endl;return 500;}
 }
-
-// void HttpRequest::tokenizeBody()
-// {
-// 	std::istringstream stream(_state._buffer);
-// 	std::string pair;
-
-// 	while (getline(stream, pair, '&'))
-// 	{
-// 		size_t delimiterPos = pair.find("=");
-// 		if (delimiterPos != std::string::npos)
-// 		{
-// 			std::string key = pair.substr(0, delimiterPos);
-// 			std::string value = pair.substr(delimiterPos + 1);
-// 			eraseSpaceAndTab(key, value);
-// 			_body[key] = value;
-// 		}
-// 	}
-// }
-
-// void HttpRequest::clearOldRequest(void)
-// {
-	// _rawRequestLine.clear();
-	// _rawBody.clear();
-	// _body.clear();
-	// _headers.clear();
-	// _requestLine = {}; // Set struct to default values as given in declaration
-// }
-
-// void HttpRequest::parseHttpRequest()
-// {
-	// clearOldRequest();
-	// extractRawRequestLine(requestBuffer);
-	// tokenizeRequestLine();
-	// extractAndTokenizeHeader(requestBuffer);
-	// extractRawBody(requestBuffer);
-	// tokenizeBody();
-	
-	// if(isValidRequest() == false)
-		// TODO
-// }
-

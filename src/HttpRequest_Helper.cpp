@@ -2,15 +2,7 @@
 
 #include <filesystem>
 
-/*
-400 Bad Request → Malformed request line, missing Host, or invalid headers.
 
-405 Method Not Allowed → Unsupported HTTP methods.
-
-411 Length Required → Missing Content-Length for POST requests.
-
-414 URI Too Long → Request path too long.
-*/
 int HttpRequest::deleteFile(const std::string& filename)
 {
 	return (remove(filename.c_str()) == 0);
@@ -100,18 +92,6 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 	return filename;
 }
 
-/*
-	size_t pos = _requestPath.find('?');
-	if(pos != std::string::npos) // only at get
-	{
-		_scriptPath = _requestPath.substr(0, pos); // "/index2.php"
-		_queryString = _requestPath.substr(pos + 1); // "name=Alice&lang=de"
-	}
-	else // only at Post
-	{
-		_scriptPath = _requestPath;
-	}
-*/
 
 
 std::string HttpRequest::buildFullPath(void)
@@ -145,11 +125,11 @@ std::string HttpRequest::buildFullPath(void)
 			if(access(temp.c_str(), F_OK) == 0)// read access?
 			{
 				if (debug)std::cout << "default file found: "<< it << std::endl;
-				fullPath += it; //extract from config. if 2 indexes are availiable check all and give first that fits?
+				fullPath += it;
 				break;
 			} 
 		}
-		// return fullPath; //extract from config. if 2 indexes are availiable check all and give first that fits?
+	
 	}
 	if(debug)std::cout<< RESET;
 	if(fullPath.find("..") != std::string::npos) //to avoid forbidden access
