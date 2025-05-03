@@ -59,7 +59,6 @@ int HttpRequest::evaluateUpload(void)
 			return(0);
 		}
 		_contentHeader = _headers["Content-Type"];
-		// _path = _requestLine._path;
 		_state._uploadEvaluated = true;
 	}
 	return (1);

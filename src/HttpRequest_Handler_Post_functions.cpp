@@ -85,6 +85,11 @@ int HttpRequest::extractInfo()
 		_state._filename = _state._buffer.substr(begin, end - begin);
 		_fileName = _state._filename;
 		if(debug){std::cout << "filename: " << _state._filename << std::endl;}
+		if (_state._filename.empty())
+		{
+			postRespond();
+			return(1);
+		}
 	}
 	return (1);
 }
@@ -93,7 +98,8 @@ int HttpRequest::extractContent()
 {	
 	size_t begin = 0;
 	size_t end = 0;
-
+	if (_state._buffer.empty())
+		return(1);
 	if (!_state._uploadMode)
 	{
 		if ((begin = _state._buffer.find(_state._openBoundary, 0)) == std::string::npos){
