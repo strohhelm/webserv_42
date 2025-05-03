@@ -13,6 +13,7 @@ int HttpRequest::checkStorage(void)
 	if (space.available < _state._contentLength)
 	{
 		if(debug){std::cout << "Not enough space on device." << std::endl;}
+		if(debug){std::cout << "Available storage on device: " << space.available << " | Incoming file size: " << _state._contentLength << std::endl;}
 		return (0);
 	}
 	if(debug){std::cout << "Available storage on device: " << space.available << " | Incoming file size: " << _state._contentLength << std::endl;}
