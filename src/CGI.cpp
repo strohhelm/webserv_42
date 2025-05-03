@@ -193,8 +193,9 @@ std::string CGI::readCgiOutput(int& error)
 	}
 
 
-	while ((bytes = read(_child[READ_FD], buffer, sizeof(buffer))) > 0)
+	while (1)
 	{
+		bytes = read(_child[READ_FD], buffer, sizeof(buffer));
 		if(bytes == -1)
 		{
 			error = -1;
@@ -202,8 +203,7 @@ std::string CGI::readCgiOutput(int& error)
 		}
 		if(bytes == 0)
 		{
-			error = 0;
-			return "";
+			return cgiOutput;
 		}
 		cgiOutput.append(buffer, bytes);
 	}

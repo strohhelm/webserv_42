@@ -132,13 +132,9 @@ class ServerConfig
 class MainConfig
 {
 	public:
-		std::string _error_log;
-		std::string _access_log;
 		size_t _worker_connections;
 		size_t _keepalive_timeout;
 		std::vector<ServerConfig> _http;
-		void setErrorLog(std::vector<confToken>		&tokens, size_t lineNum);
-		void setAccessLog(std::vector<confToken>	&tokens, size_t lineNum);
 		void setWorkConn(std::vector<confToken>		&tokens, size_t lineNum);
 		void setTimeout(std::vector<confToken>		&tokens, size_t lineNum);
 		void setHttp(std::vector<confToken>			&tokens, size_t lineNum);

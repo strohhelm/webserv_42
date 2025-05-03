@@ -19,38 +19,6 @@ static void handleSignalINT(int signal)
 	g_stopFlag = 1;
 }
 
-// for initiation "type" is for error and  "message" is for access file
-//Macros ACCESS and ERROR to make it easier to select output
-void	myLog(std::string type, std::string message)
-{
-	static std::ofstream	error_file;
-	static std::ofstream	access_file;
-	static int				init = 0;
-	std::chrono::system_clock::time_point today = std::chrono::system_clock::now();
-	time_t tt = std::chrono::system_clock::to_time_t(today);
-
-	if (!init)
-	{
-		OpenLogFile(type, error_file);
-		OpenLogFile(message, access_file);
-		error_file<<"SESSION STARTED -- " << ctime(&tt);
-		access_file<<"SESSION STARTED -- " << ctime(&tt);
-		init = 1;
-		return;
-	}
-	if (type == ACCESS)
-		access_file<<ctime(&tt)<<message<<"\n";
-	else if (type == ERROR)
-		error_file<<ctime(&tt)<<message<<"\n";
-	else if (type == CLOSE && init)
-	{
-		error_file<<"SESSION END -- " << ctime(&tt);
-		access_file<<"SESSION END -- " << ctime(&tt);
-		error_file.close();
-		access_file.close();
-	}
-}
-
 std::string getFilename(int argc, char**argv)
 {
 	std::string	filename;
@@ -98,14 +66,12 @@ int main(int argc, char **argv)
 		std::string	filename = getFilename(argc, argv);
 		MainConfig	config(filename);
 		if (debug)std::cout<<BG_BRIGHT_MAGENTA<<"DEBUG MODE"<<RESET<<std::endl;
-		myLog(config._error_log, config._access_log);
 		while (1)
 		{
 			SimpleServer server(AF_INET, SOCK_STREAM, 0, INADDR_ANY, config);
 			if (!server._fatalError)
 				break;
 		}
-		myLog(CLOSE, "");
 	}
 	catch(const std::exception& e)
 	{

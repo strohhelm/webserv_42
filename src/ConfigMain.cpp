@@ -1,29 +1,7 @@
 #include "../include/ServerConfig.hpp"
 
-void MainConfig::setErrorLog(std::vector<confToken> &context, size_t lineNum)
-{
-	// std::cout<<"Error_log Tokens:"<<std::endl;
-	// printConfTokens(context);
-	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive 'error_log' line: " + std::to_string(lineNum));
-	else
-		_error_log = context[0].str;
-}
-
-void MainConfig::setAccessLog(std::vector<confToken> &context, size_t lineNum)
-{
-	// std::cout<<"Access_log  Tokens:"<<std::endl;
-	// printConfTokens(context);
-	if (context.size() != 1 || context[0].type != VALUE)
-		throw std::runtime_error("Syntax error in directive 'access_log'. line:" + std::to_string(lineNum));
-	else
-		_access_log = context[0].str;
-}
-
 void MainConfig::setWorkConn(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"Worker connect Tokens:"<<std::endl;
-	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive 'worker_connections' line:" + std::to_string(lineNum));
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
@@ -34,8 +12,6 @@ void MainConfig::setWorkConn(std::vector<confToken> &context, size_t lineNum)
 
 void MainConfig::setTimeout(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"Timeout Tokens:"<<std::endl;
-	// printConfTokens(context);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive 'keepalive_timeout' line: " + std::to_string(lineNum));
 	else if (!all_of(context[0].str.begin(), context[0].str.end(), [](char c){return std::isdigit(c);}))
@@ -56,8 +32,6 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 		throw std::runtime_error("Only one \"http\" directive allowed! line:" + std::to_string(lineNum));
 	if (context.begin()->type == BLOCK_START && (context.end() - 1)->type == BLOCK_END)
 	{
-		// std::cout<<"Http Tokens:"<<std::endl;
-		// printConfTokens(context);
 		for(auto it = context.begin() + 1; it < (context.end() - 1); it++)
 		{
 			if (!(it->type == DIRECTIVE && it->str == "server"))
@@ -86,8 +60,6 @@ void MainConfig::setHttp(std::vector<confToken> &context, size_t lineNum)
 
 void MainConfig::setDefaultValues(void)
 {
-	_error_log = DEFAULT_ERROR_LOG;
-	_access_log = DEFAULT_ACCESS_LOG;
 	_worker_connections = DEFAULT_MAX_WORKER_CONNECTIONS;
 	_keepalive_timeout = DEFAULT_TIMEOUT;
 	_http.clear();
@@ -109,8 +81,6 @@ void MainConfig::printConfig(void)
 {
 	std::stringstream print;
 	print<<MAGENTA<<UNDERLINE<<"MAIN CONFIG:"<<RESET<<"\n";
-	print<<"Error Log: "<<BLUE<<_error_log<<RESET<<"\n";
-	print<<"Access Log: "<<BLUE<<_access_log<<RESET<<"\n";
 	print<<"Worker Connections: "<<BLUE<<_worker_connections<<RESET<<"\n";
 	print<<"Keepalive Timeout: "<<BLUE<<_keepalive_timeout<<RESET<<"\n";
 	std::cout<<print.str()<<std::endl;
@@ -123,8 +93,6 @@ MainConfig::MainConfig(std::string &filename)
 	setDefaultValues();
 
 	std::map <std::string, void(MainConfig::*)(std::vector<confToken> &, size_t lineNum)> directives;
-	directives.insert({std::string("error_log"), &MainConfig::setErrorLog});
-	directives.insert({std::string("access_log"), &MainConfig::setAccessLog});
 	directives.insert({std::string("worker_connections"), &MainConfig::setWorkConn});
 	directives.insert({std::string("keepalive_timeout"), &MainConfig::setTimeout});
 	directives.insert({std::string("http"), &MainConfig::setHttp});

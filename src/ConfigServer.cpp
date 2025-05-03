@@ -2,8 +2,6 @@
 
 void	ServerConfig::setPort(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"setPort Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive 'listen' line: " + line);
@@ -18,8 +16,6 @@ void	ServerConfig::setPort(std::vector<confToken> &context, size_t lineNum)
 
 void	ServerConfig::setServerNames(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"ServerNames Tokens:"<<std::endl;
-	// printConfTokens(context);
 
 	std::string line = std::to_string(lineNum);
 	if (! context.size())
@@ -32,8 +28,6 @@ void	ServerConfig::setServerNames(std::vector<confToken> &context, size_t lineNu
 }
 void	ServerConfig::setErrorPages(std::vector<confToken> &context, size_t lineNum)
 {
-	// std::cout<<"ErrorPage Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() < 2)
 		throw std::runtime_error("Syntax error in directive 'error_page': Too few arguments. line: " + line);
@@ -55,8 +49,6 @@ void	ServerConfig::setErrorPages(std::vector<confToken> &context, size_t lineNum
 
 void	ServerConfig::setClientBodySize(std::vector<confToken>	&context, size_t lineNum)
 {
-	// std::cout<<"ErrorPage Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive 'client_max_body_size'. line: "+ line);
@@ -79,8 +71,6 @@ void	ServerConfig::setClientBodySize(std::vector<confToken>	&context, size_t lin
 }
 void	ServerConfig::setIndex(std::vector<confToken>	&context, size_t lineNum)
 {
-	// std::cout<<"setIndex Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::vector<std::string> tmp;
 	std::string line = std::to_string(lineNum);
 	if (context.size() < 1)
@@ -99,8 +89,6 @@ void	ServerConfig::setIndex(std::vector<confToken>	&context, size_t lineNum)
 }
 void	ServerConfig::setRootDir(std::vector<confToken>	&context, size_t lineNum)
 {
-	// std::cout<<"RootDir Tokens:"<<std::endl;
-	// printConfTokens(context);
 	std::string line = std::to_string(lineNum);
 	if (context.size() != 1 || context[0].type != VALUE)
 		throw std::runtime_error("Syntax error in directive 'listen' line: "  + line);
@@ -204,8 +192,6 @@ ServerConfig::ServerConfig(std::vector<confToken> context)
 	directives.insert({std::string("error_page"), &ServerConfig::setErrorPages});
 	directives.insert({std::string("client_max_body_size"), &ServerConfig::setClientBodySize});
 	directives.insert({std::string("index"), &ServerConfig::setIndex});
-	// std::cout<<" -----------------------------------------------------Server---------------------------------------------------"<<std::endl;
-	// printConfTokens(context);
 	parseTokens<ServerConfig>(context, directives, *this);
 	// std::cout<<"-----Server end -----"<<std::endl;
 }
