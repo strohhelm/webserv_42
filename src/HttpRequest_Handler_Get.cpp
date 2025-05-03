@@ -7,7 +7,7 @@ int HttpRequest::evaluateFilepath(std::string& path)
 	if(path.empty())
 	{
 		if (debug)std::cout << RED<<"Filepath empty " << RESET<<std::endl;
-		sendErrorResponse(404);
+		sendErrorResponse((_state._errorOcurred != 0 ?_state._errorOcurred : 404));
 		return -1;
 	}
 	int isCgiRequest = checkCgi(path);

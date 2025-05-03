@@ -66,7 +66,10 @@ bool HttpRequest::directoryExists(const std::string& path)
 std::string HttpRequest::serveDirectory(std::string fullPath)
 {
 	if((!(*_route).isDirListingActive()))
-		return"";
+	{
+		_state._errorOcurred = 401;
+		return "";
+	}
 	std::string tempdir(DEFAULT_TEMP_PATH);
 	std::string filename = tempdir + "dirListing.html";
 	std::ofstream html(filename, std::ios::out);
