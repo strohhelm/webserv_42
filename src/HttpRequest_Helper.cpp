@@ -124,7 +124,7 @@ std::string HttpRequest::buildFullPath(void)
 	}
 	path = path.substr(path.find((*_route)._path) + (*_route)._path.length());
 
-	fullPath = rootDir +"/"+ path;
+	fullPath = rootDir +(path.front() == '/' ? "":"/")+ path;
 
 	if (debug)std::cout << ORANGE<<"Build fullPath: " << fullPath << std::endl;
 

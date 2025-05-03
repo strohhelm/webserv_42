@@ -63,17 +63,6 @@ websitefile state jank fix
 statvfs!!!! not allowed
 
 
-if nothing else to do: 
-POLLERR on server socket:
-Means an I/O error occurred (e.g., an unexpected failure at the OS level).
+dondt semn 200 ok when cgi is empty?
 
-The actual error details require getsockopt(fd, SOL_SOCKET, SO_ERROR, ...) to inspect.
-
-Very rare, and typically indicates something serious like:
-
-Socket binding issues
-
-Kernel-level network problems
-
-Action: Log the issue; probably treat it as fatal and recreate the listening socket.
-
+cgi script not working with wordpress

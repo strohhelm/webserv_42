@@ -18,7 +18,6 @@ int	HttpRequest::checkCgi(std::string path)
 
 
 	std::filesystem::path filepath(path.substr(0, path.find('?')));
-	
 	int iscgi = (*_route).checkCgiPath(filepath.extension());
 	if (debug)std::cout << ORANGE<<"is CGI " << filepath.extension().string()<<" "<<MAGENTA<< (iscgi == 1 ? "true" : "false") << RESET<< std::endl;
 	return iscgi;
