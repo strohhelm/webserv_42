@@ -36,6 +36,14 @@ int HttpRequest::evaluateUpload(void)
 			sendErrorResponse(413);
 			return(0);
 		}
+		_contentHeader = _headers["Content-Type"];
+		std::cout << _contentHeader << std::endl;
+		if (!_state._isCgiPost && _contentHeader == "plain/text")
+		{
+			sendResponse(200, "Thanks, we received your message :)");
+			reset();
+			return(0);
+		}
 		if ((*_route)._uploadPath.empty() && !_state._isCgiPost)
 		{
 			sendErrorResponse(401);
@@ -58,7 +66,7 @@ int HttpRequest::evaluateUpload(void)
 			sendErrorResponse(500);
 			return(0);
 		}
-		_contentHeader = _headers["Content-Type"];
+
 		_state._uploadEvaluated = true;
 	}
 	return (1);
