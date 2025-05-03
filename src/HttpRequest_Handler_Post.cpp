@@ -1,31 +1,23 @@
 #include "../include/ServerConfig.hpp"
 #include "../include/HttpRequest.hpp"
 
-// int HttpRequest::checkStorage(void)
-// {
-// 	char cwd[PATH_MAX];
-// 	struct statvfs stat;
-// 	if(getcwd(cwd, sizeof(cwd)) == nullptr)
-// 	{
-// 		{std::cerr << RED << "Couldn't get current working directory" << RESET << std::endl;}
-// 		return (0);
-// 	}
-// 	if (statvfs(cwd, &stat) != 0)
-// 	{
-// 		{std::cerr << RED << "Couldn't get filesystem stats for current working directory" << RESET << std::endl;}
-// 		return (0);
-// 	}
-// 	size_t availableStorage = stat.f_bavail * stat.f_ffree;
-
-// 	if(debug){std::cout << YELLOW << "Free Space: " << availableStorage << RESET << std::endl;}
-// 	if (_state._contentLength > availableStorage)
-// 	{
-// 		{std::cerr << RED << "Not enough storage available on device" << RESET << std::endl;}
-// 		return(0);
-// 	}
-
-// 	return (1);
-// }
+int HttpRequest::checkStorage(void)
+{
+	char cwd[PATH_MAX];
+	if(getcwd(cwd, sizeof(cwd)) == nullptr)
+	{
+		if(debug){std::cout << RED << "Couldn't get current working directory" << RESET << std::endl;}
+		return (0);
+	}
+	std::filesystem::space_info space = std::filesystem::space(cwd);
+	if (space.available < _state._contentLength)
+	{
+		if(debug){std::cout << "Not enough space on device." << std::endl;}
+		return (0);
+	}
+	if(debug){std::cout << "Available storage on device: " << space.available << " | Incoming file size: " << _state._contentLength << std::endl;}
+	return (1);
+}
 
 
 int HttpRequest::evaluateUpload(void)
@@ -48,11 +40,11 @@ int HttpRequest::evaluateUpload(void)
 			sendErrorResponse(401);
 			return(0);
 		}
-		// if (!checkStorage())
-		// {
-		// 	sendErrorResponse(507);
-		// 	return(0);
-		// }
+		if (!checkStorage())
+		{
+			sendErrorResponse(507);
+			return(0);
+		}
 		else if (!(*_route)._uploadPath.empty())
 			_uploadDir = (*_route)._uploadPath;
 		if (_state._contentLength > (*_config)._maxBody)
