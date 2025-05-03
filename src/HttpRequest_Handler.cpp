@@ -75,10 +75,13 @@ void HttpRequest::handleDelete(void)
 	{
 		path.erase(path.begin());
 	}
-	if (debug)std::cout << BG_BRIGHT_BLACK << "DELETE: "<<RESET<<BLACK<<path << RESET << std::endl;
+	path = buildFullPath();
+	if (debug)std::cout << GREEN << "DELETE: "<<path <<"route path: "<<(*_route)._uploadPath<< RESET << std::endl;
+
 	if ((*_route)._uploadPath.empty() || path.find((*_route)._uploadPath) == std::string::npos)
-		sendErrorResponse(401);
-	
+	{	sendErrorResponse(401);
+		return ;
+	}
 	if(!fileExists(path))
 	{
 		sendErrorResponse(404);
@@ -89,7 +92,7 @@ void HttpRequest::handleDelete(void)
 		sendErrorResponse(500);
 		return;
 	}
-	sendResponse(202, "Resource deleted successfully");
+	sendResponse(202, "Resource deleted successfully!\n");
 	reset();
 }
 
