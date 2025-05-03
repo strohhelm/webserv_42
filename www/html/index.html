@@ -79,7 +79,7 @@ label {
 }
 
 button {
-	background-color: var(--button-bg);
+  background-color: var(--button-bg);
   color: var(--button-text);
   border: none;
   padding: 8px 15px;
@@ -89,6 +89,12 @@ button {
   font-family: 'Orbitron', sans-serif;
   margin-right: 10px;
   transition: background 0.2s ease;
+}
+
+button [type="button"]:hover {
+  background: var(--accent-color);
+  box-shadow: 0 0 10px var(--text-color), 0 0 20px var(--text-color) inset;
+  transform: scale(1.05);
 }
 
 input[type="text"],
@@ -219,6 +225,11 @@ input[type="submit"]:hover {
         <input type="file" name="file">
         <input type="submit" value="Upload to Server">
     </form>
+	<form action="/upload" method = "get">
+		<button type = "button" onclick="location.href='/upload'">
+			checkout upload folder
+		</button>
+	</form>
 </div>
 
 <div class="form-section">

@@ -38,7 +38,7 @@ void	HttpRequest::evaluateFiletype(std::string& filename)
 {
 	std::string fileend = filename.substr(filename.find_last_of('.'));
 
-	 if (fileend == ".pdf" || fileend == ".txt" || fileend.empty() )
+	 if (fileend != ".html" && fileend != ".php" && fileend != ".py")
 	 	_state._websitefile = false;
 }
 
