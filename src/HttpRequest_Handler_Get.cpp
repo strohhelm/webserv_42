@@ -151,6 +151,7 @@ void	HttpRequest::singleGetRequest(std::string& path)
 	std::string	content;
 	if(debug)std::cout <<ORANGE<< "State Error:" << RESET<<_state._errorOcurred << std::endl;
 
+	// _state._errorOcurred = 0;
 	content = readFileContent(path);
 	
 	if(_state._errorOcurred == 0 && content.empty())
@@ -159,7 +160,7 @@ void	HttpRequest::singleGetRequest(std::string& path)
 		sendErrorResponse(403);
 		return ;
 	}
-	else if (_state._errorOcurred != 0)
+	else if (_state._errorOcurred > 1)
 	{
 		if (debug)std::cout << BG_BRIGHT_RED<<"ERROR opening temp dirlisting file!" << RESET<<std::endl;
 		sendErrorResponse(500);
