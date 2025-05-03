@@ -59,7 +59,6 @@ std::string HttpRequest::serveDirectory(std::string fullPath)
 {
 	if((!(*_route).isDirListingActive()))
 	{
-		_state._errorOcurred = 401;
 		return "";
 	}
 	std::string tempdir(DEFAULT_TEMP_PATH);
