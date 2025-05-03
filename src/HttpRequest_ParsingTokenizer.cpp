@@ -101,7 +101,7 @@ int HttpRequest::extractAndTokenizeHeader()
 			_headers[key] += value;
 		}
 	}
-	if(debug)std::cout<<header<<std::endl;
+	// if(debug)std::cout<<header<<std::endl;
 	if (!_headers.count("Host"))
 		{std::cout<<BG_BRIGHT_RED<<"Oh shit no Host header"<<RESET<<std::endl;return 400;}
 	if (_headers["Connection"] != "keep-alive")

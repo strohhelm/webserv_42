@@ -6,7 +6,7 @@ int HttpRequest::evaluateFilepath(std::string& path)
 {
 	if(path.empty())
 	{
-		if (debug)std::cout << BG_BRIGHT_RED<<"Filepath empty " << RESET<<std::endl;
+		if (debug)std::cout << RED<<"Filepath empty " << RESET<<std::endl;
 		sendErrorResponse(404);
 		return -1;
 	}

@@ -28,13 +28,13 @@ void HttpRequest::sendErrorResponse(int statusCode)
 				background-color: #00ffe7; \
 				align-items: center; \
 				justify-content: center; \
-				background-image: radial-gradient(circle at center,rgb(150, 8, 160) 0%, #000000 100%); \
+				background-image: radial-gradient(circle at center,rgb(255, 255, 255) 20%, #000000 100%); \
 				background-size: cover; \
 				background-repeat: no-repeat; \
 				background-position: center;} \
 		.content{ \
 			text-align: center; \
-			color: #ff006a; \
+			color:rgb(50, 49, 49); \
 			padding: 2rem; \
 			text-shadow: 0 0 10px #000000;} \
 		</style> \
