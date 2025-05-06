@@ -62,7 +62,7 @@
 |`listen 8080;`| Port the server should listen on|
 |`server_name localhost example.com;`| the hostnames for this server (will get appended if more than once in config file)|
 |`root /var/www/html;`| the root directory for the website files to serve |
-|`error_page 400 401 403 ./www/html/40x.html;'  | maps certain error status codes to custom .html files|
+|`error_page 400 401 403 ./www/html/40x.html;`  | maps certain error status codes to custom .html files|
 |`index index.html index.php;` | default files to look for if directory is requested. If not set, these will always be set by default.|
 |`client_max_body_size 3gb;` | maximum allowed upload size for a single request. Default is 1 mb if not set.|
 |`location {}` | configuration for endpoints|
