@@ -176,7 +176,6 @@ routeConfig::routeConfig(std::string& path, std::vector<confToken> &context)
 	directives.insert({std::string("autoindex"),	&routeConfig::setAutoIndex});
 	directives.insert({std::string("index"),		&routeConfig::setDefaultFiles});
 	directives.insert({std::string("upload_path"),	&routeConfig::setUploadPath});
-	directives.insert({std::string("download_path"),	&routeConfig::setUploadPath});
 	directives.insert({std::string("cgi"),			&routeConfig::setCGIExtension});
 	// std::cout<<" ------------------------------------------------Location--------------------------------------------------------"<<std::endl;
 	parseTokens<routeConfig>(context, directives, *this);
